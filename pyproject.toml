@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "PFE - Cyberdeception pilotee par un modele explicable et optimisee sous contraintes"
 requires-python = ">=3.11"
 dependencies = [
-    "pydantic>=2.0",
+    "pydantic>=2,<3",
 ]
 
 [project.optional-dependencies]

@@ -244,11 +244,38 @@ class DeceptionEvidence(StrictModel):
 class DeceptionResourceRequirements(StrictModel):
     """Réf. architecture : "9.2 Schéma conceptuel recommandé pour une fiche
     de déception" — resource_requirements. cpu/ram sont les deux champs du
-    schéma de référence ; laissés optionnels car non toujours documentés par
-    la source (§25.3 : ne pas inventer une valeur absente)."""
+    schéma de référence ; disk/network sont ajoutés pour couvrir les quatre
+    dimensions du coût des ressources (§15.2 : r_CPU, r_RAM, r_disk,
+    r_network), utiles au futur cost_engine.py. Tous optionnels car non
+    toujours documentés par la source (§25.3 : ne pas inventer une valeur
+    absente)."""
 
     cpu: str | None = None
     ram: str | None = None
+    disk: str | None = None
+    network: str | None = None
+
+
+class DeceptionAdmissibilityProfile(StrictModel):
+    """Réf. architecture : "10.4 Étape 3 — Emplacements admissibles" (§5.3.1
+    PDF) — représentation normalisée minimale destinée aux futures règles
+    déterministes Allowed(d, l) et RequirementsSatisfied(d, l) du module
+    admissibility.py (§26, SP1). Cette structure ne prend aucune décision
+    SP1 elle-même : elle ne fait que porter, sous forme normalisée, des
+    données déjà présentes de façon documentaire dans requirements,
+    target_artifacts et possible_placements. Le calcul de L_{i,h,d} et
+    C_{i,h} reste hors périmètre de schemas.py.
+
+    exposure_mode reste un champ libre (pas d'énumération fermée à ce
+    stade, l'architecture ne l'impose pas).
+    """
+
+    allowed_location_types: list[str] = Field(default_factory=list)
+    required_asset_types: list[str] = Field(default_factory=list)
+    required_services: list[str] = Field(default_factory=list)
+    required_artifacts: list[str] = Field(default_factory=list)
+    exposure_mode: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class DeceptionMechanism(StrictModel):
@@ -283,6 +310,13 @@ class DeceptionMechanism(StrictModel):
     maintenance_requirements: list[str] = Field(default_factory=list)
     evidence: list[DeceptionEvidence] = Field(default_factory=list)
     version: str = Field(..., min_length=1)
+    admissibility_profile: DeceptionAdmissibilityProfile = Field(
+        default_factory=DeceptionAdmissibilityProfile,
+        description="Représentation normalisée préparant l'admissibilité "
+        "SP1 (§10.4) — ne remplace pas requirements/target_artifacts/"
+        "possible_placements, qui restent les champs documentaires de "
+        "référence.",
+    )
     metadata: dict[str, Any] = Field(
         default_factory=dict,
         description="Champs techniques supplémentaires explicitement "
@@ -355,11 +389,21 @@ class Annotation(StrictModel):
 
 class AttackOccurrenceRef(StrictModel):
     """Réf. architecture : "27. Schéma minimal conseillé pour le contexte
-    d'annotation" — bloc attack_occurrence."""
+    d'annotation" — bloc attack_occurrence. Le champ est nommé asset_id
+    (plutôt que 'asset' comme dans l'exemple JSON du §27) pour rester
+    cohérent avec TechniqueOccurrence, Asset et Location ; §27 autorise
+    explicitement cette évolution de format (« le format exact de code peut
+    évoluer »)."""
 
     technique_id: str = Field(..., pattern=ATTACK_TECHNIQUE_ID_PATTERN)
-    asset: str = Field(..., min_length=1)
+    asset_id: str = Field(..., min_length=1)
     attributes: NodeAttributes
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def occurrence_id(self) -> str:
+        """Identifiant canonique T_{i,h}, cohérent avec TechniqueOccurrence."""
+        return build_occurrence_id(self.technique_id, self.asset_id)
 
 
 class DeceptionRef(StrictModel):
@@ -484,13 +528,41 @@ class Location(StrictModel):
     )
 
 
+class SITopologyEdge(StrictModel):
+    """Réf. architecture : "10.4 Étape 3 — Emplacements admissibles" (§5.3.1
+    PDF) — Relevant(T_{i,h}, d, l) peut dépendre de la relation topologique
+    entre h et l. Représentation minimale et générique d'une relation
+    physique/logique entre deux actifs du SI.
+
+    À distinguer explicitement de AttackGraphEdge : une arête topologique
+    relie deux actifs du SI (relation d'infrastructure), alors qu'une arête
+    du graphe d'attaque relie deux occurrences T_{i,h} (précédence dans un
+    scénario). relation_type est volontairement un champ libre : ni
+    CLAUDE.md ni le PDF ne définissent d'ontologie fermée de relations
+    topologiques. Aucune contrainte d'acyclicité n'est imposée à ce stade.
+    """
+
+    source_asset_id: str = Field(..., min_length=1)
+    target_asset_id: str = Field(..., min_length=1)
+    relation_type: str = Field(
+        ...,
+        min_length=1,
+        description="Nature de la relation (ex. 'network_adjacency', "
+        "'hosts_service', 'trust_relationship', ...) — champ libre, non "
+        "fermé par l'architecture.",
+    )
+    bidirectional: bool
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
 class SIInventory(StrictModel):
     """Réf. architecture : "10.3 Étape 2 — Ensemble global des
-    emplacements" — inventaire du système d'information : actifs et
-    emplacements L^SI."""
+    emplacements" — inventaire du système d'information : actifs,
+    emplacements L^SI et topologie entre actifs (§10.4, Relevant)."""
 
     assets: list[Asset] = Field(default_factory=list)
     locations: list[Location] = Field(default_factory=list)
+    topology_edges: list[SITopologyEdge] = Field(default_factory=list)
 
 
 class SystemInstance(StrictModel):
@@ -547,6 +619,18 @@ class SystemInstance(StrictModel):
                 raise ValueError(
                     f"L'emplacement '{location.location_id}' référence un "
                     f"actif '{location.asset_id}' absent de l'inventaire SI."
+                )
+
+        for edge in self.si_inventory.topology_edges:
+            if edge.source_asset_id not in assets_by_id:
+                raise ValueError(
+                    f"L'arête topologique référence un actif source "
+                    f"'{edge.source_asset_id}' absent de l'inventaire SI."
+                )
+            if edge.target_asset_id not in assets_by_id:
+                raise ValueError(
+                    f"L'arête topologique référence un actif cible "
+                    f"'{edge.target_asset_id}' absent de l'inventaire SI."
                 )
 
         return self

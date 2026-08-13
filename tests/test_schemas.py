@@ -15,12 +15,14 @@ from src.schemas import (
     AttackGraph,
     AttackGraphEdge,
     AttackOccurrenceRef,
+    DeceptionAdmissibilityProfile,
     DeceptionMechanism,
     DeceptionRef,
     GraphContext,
     Location,
     NodeAttributes,
     SIInventory,
+    SITopologyEdge,
     SystemInstance,
     TechniqueOccurrence,
 )
@@ -91,7 +93,7 @@ def make_annotation_context(**overrides):
     base = dict(
         attack_occurrence=AttackOccurrenceRef(
             technique_id="T1003",
-            asset="DC",
+            asset_id="DC",
             attributes=NodeAttributes(**make_node_attributes()),
         ),
         deception=DeceptionRef(id="DT11", name="Honeytoken credentials"),
@@ -127,9 +129,50 @@ class TestValidCases:
         mechanism = DeceptionMechanism(**make_deception_mechanism(id="d3f:DecoyObject"))
         assert mechanism.id == "d3f:DecoyObject"
 
+    def test_deception_resource_requirements_disk_network_valid(self):
+        """§15.2 : le coût des ressources porte sur CPU, RAM, disk et network."""
+        mechanism = DeceptionMechanism(
+            **make_deception_mechanism(
+                resource_requirements={
+                    "cpu": "faible",
+                    "ram": "faible",
+                    "disk": "négligeable",
+                    "network": "faible",
+                }
+            )
+        )
+        assert mechanism.resource_requirements.disk == "négligeable"
+        assert mechanism.resource_requirements.network == "faible"
+
+    def test_deception_mechanism_default_admissibility_profile_valid(self):
+        mechanism = DeceptionMechanism(**make_deception_mechanism())
+        assert mechanism.admissibility_profile.allowed_location_types == []
+        assert mechanism.admissibility_profile.exposure_mode is None
+
+    def test_deception_admissibility_profile_explicit_valid(self):
+        profile = DeceptionAdmissibilityProfile(
+            allowed_location_types=["poste", "serveur"],
+            required_asset_types=["windows"],
+            required_services=["smb"],
+            required_artifacts=["credential_store"],
+            exposure_mode="passive",
+        )
+        mechanism = DeceptionMechanism(**make_deception_mechanism(admissibility_profile=profile))
+        assert mechanism.admissibility_profile.exposure_mode == "passive"
+        assert mechanism.admissibility_profile.allowed_location_types == ["poste", "serveur"]
+
     def test_annotation_valid(self):
         annotation = Annotation(**make_annotation())
         assert annotation.metric == "R_context"
+
+    def test_attack_occurrence_ref_asset_id_and_occurrence_id_valid(self):
+        ref = AttackOccurrenceRef(
+            technique_id="T1003",
+            asset_id="DC",
+            attributes=NodeAttributes(**make_node_attributes()),
+        )
+        assert ref.asset_id == "DC"
+        assert ref.occurrence_id == "T1003@DC"
 
     def test_annotation_context_valid(self):
         context = AnnotationContext(
@@ -140,6 +183,7 @@ class TestValidCases:
             )
         )
         assert context.placement == "credential_store::DC"
+        assert context.attack_occurrence.occurrence_id == "T1003@DC"
 
     def test_attack_graph_non_divergent_valid(self):
         parent = make_occurrence("T1078", "DC")
@@ -196,6 +240,29 @@ class TestValidCases:
         instance = SystemInstance(graph=graph, si_inventory=inventory)
         assert instance.si_inventory.assets[0].asset_id == "DC"
 
+    def test_system_instance_with_topology_edge_valid(self):
+        """Réf. architecture : "10.4 Étape 3 — Emplacements admissibles"
+        (Relevant dépend de la relation topologique entre h et l)."""
+        node = make_occurrence("T1003", "DC")
+        graph = AttackGraph(nodes=[node], edges=[])
+        inventory = SIInventory(
+            assets=[
+                Asset(asset_id="DC", critical=False, accessible=True),
+                Asset(asset_id="WS-01", critical=False, accessible=True),
+            ],
+            locations=[],
+            topology_edges=[
+                SITopologyEdge(
+                    source_asset_id="DC",
+                    target_asset_id="WS-01",
+                    relation_type="network_adjacency",
+                    bidirectional=True,
+                )
+            ],
+        )
+        instance = SystemInstance(graph=graph, si_inventory=inventory)
+        assert instance.si_inventory.topology_edges[0].relation_type == "network_adjacency"
+
 
 # ---------------------------------------------------------------------------
 # Cas rejetés
@@ -220,6 +287,14 @@ class TestRejectedCases:
     def test_missing_attributes_on_occurrence_rejected(self):
         with pytest.raises(ValidationError):
             TechniqueOccurrence(technique_id="T1003", asset_id="DC")
+
+    def test_unknown_extra_field_rejected(self):
+        """StrictModel (extra="forbid") : un champ non déclaré doit être
+        rejeté plutôt que silencieusement ignoré."""
+        attrs = make_node_attributes()
+        attrs["unexpected_field"] = "should not be accepted"
+        with pytest.raises(ValidationError):
+            NodeAttributes(**attrs)
 
     def test_outcome_cannot_be_used_as_bare_graph_node(self):
         """Garantie structurelle (§3.2) : AttackGraph.nodes exige des
@@ -318,6 +393,71 @@ class TestRejectedCases:
         inventory = SIInventory(
             assets=[Asset(asset_id="DC", critical=False, accessible=True)],
             locations=[],
+        )
+        with pytest.raises(ValidationError):
+            SystemInstance(graph=graph, si_inventory=inventory)
+
+    def test_system_instance_accessible_mismatch_rejected(self):
+        # make_occurrence() par défaut : critical_asset=False, accessible_asset=True
+        node = make_occurrence("T1003", "DC")
+        graph = AttackGraph(nodes=[node], edges=[])
+        inventory = SIInventory(
+            assets=[Asset(asset_id="DC", critical=False, accessible=False)],
+            locations=[],
+        )
+        with pytest.raises(ValidationError):
+            SystemInstance(graph=graph, si_inventory=inventory)
+
+    def test_system_instance_duplicate_asset_id_rejected(self):
+        node = make_occurrence("T1003", "DC")
+        graph = AttackGraph(nodes=[node], edges=[])
+        inventory = SIInventory(
+            assets=[
+                Asset(asset_id="DC", critical=False, accessible=True),
+                Asset(asset_id="DC", critical=True, accessible=False),
+            ],
+            locations=[],
+        )
+        with pytest.raises(ValidationError):
+            SystemInstance(graph=graph, si_inventory=inventory)
+
+    def test_system_instance_duplicate_location_id_rejected(self):
+        node = make_occurrence("T1003", "DC")
+        graph = AttackGraph(nodes=[node], edges=[])
+        inventory = SIInventory(
+            assets=[Asset(asset_id="DC", critical=False, accessible=True)],
+            locations=[
+                Location(location_id="loc1", asset_id="DC"),
+                Location(location_id="loc1", asset_id="DC"),
+            ],
+        )
+        with pytest.raises(ValidationError):
+            SystemInstance(graph=graph, si_inventory=inventory)
+
+    def test_system_instance_location_unknown_asset_rejected(self):
+        node = make_occurrence("T1003", "DC")
+        graph = AttackGraph(nodes=[node], edges=[])
+        inventory = SIInventory(
+            assets=[Asset(asset_id="DC", critical=False, accessible=True)],
+            locations=[Location(location_id="loc1", asset_id="GHOST")],
+        )
+        with pytest.raises(ValidationError):
+            SystemInstance(graph=graph, si_inventory=inventory)
+
+    def test_system_instance_topology_edge_unknown_asset_rejected(self):
+        node = make_occurrence("T1003", "DC")
+        graph = AttackGraph(nodes=[node], edges=[])
+        inventory = SIInventory(
+            assets=[Asset(asset_id="DC", critical=False, accessible=True)],
+            locations=[],
+            topology_edges=[
+                SITopologyEdge(
+                    source_asset_id="DC",
+                    target_asset_id="GHOST",
+                    relation_type="network_adjacency",
+                    bidirectional=True,
+                )
+            ],
         )
         with pytest.raises(ValidationError):
             SystemInstance(graph=graph, si_inventory=inventory)
