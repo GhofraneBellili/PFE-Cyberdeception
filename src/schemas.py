@@ -160,8 +160,8 @@ class AttackGraph(StrictModel):
 
     @model_validator(mode="after")
     def _validate_graph_integrity(self) -> AttackGraph:
-        """Vérifie l'unicité des occurrences et la validité des références
-        des arêtes.
+        """Vérifie l'unicité des occurrences, l'absence d'arêtes dupliquées
+        et la validité des références des arêtes.
 
         Le typage nodes: list[TechniqueOccurrence] est la garantie
         structurelle principale qu'un outcome (chaîne libre) ne peut jamais
@@ -173,11 +173,26 @@ class AttackGraph(StrictModel):
         if len(occurrence_ids) != len(set(occurrence_ids)):
             raise ValueError("Des occurrences T_{i,h} dupliquées ont été détectées dans V.")
         known_ids = set(occurrence_ids)
+
+        # Réf. architecture : "3.1 Graphe d'attaque" — E est un ensemble
+        # d'arêtes : un même couple (source_id, target_id) ne peut pas y
+        # apparaître deux fois. Une arête dupliquée fausserait sinon le
+        # calcul de l'out-degree utilisé pour détecter la divergence
+        # (§14.4) et l'application de π.
+        seen_pairs: set[tuple[str, str]] = set()
         for edge in self.edges:
             if edge.source_id not in known_ids:
                 raise ValueError(f"Arête invalide : source '{edge.source_id}' absente de V.")
             if edge.target_id not in known_ids:
                 raise ValueError(f"Arête invalide : cible '{edge.target_id}' absente de V.")
+            pair = (edge.source_id, edge.target_id)
+            if pair in seen_pairs:
+                raise ValueError(
+                    f"Arête dupliquée : le couple ('{edge.source_id}', "
+                    f"'{edge.target_id}') apparaît plusieurs fois dans E, qui "
+                    "doit être un ensemble (§3.1)."
+                )
+            seen_pairs.add(pair)
         return self
 
     @model_validator(mode="after")

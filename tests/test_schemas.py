@@ -321,6 +321,21 @@ class TestRejectedCases:
                 edges=[AttackGraphEdge(source_id="T1003@DC", target_id="T9999@GHOST")],
             )
 
+    def test_duplicate_attack_edge_rejected(self):
+        """Réf. architecture : "3.1 Graphe d'attaque" — E est un ensemble ;
+        un même couple (source_id, target_id) dupliqué fausserait le calcul
+        de l'out-degree utilisé pour détecter la divergence (§14.4)."""
+        parent = make_occurrence("T1078", "DC")
+        child = make_occurrence("T1059", "APP")
+        with pytest.raises(ValidationError):
+            AttackGraph(
+                nodes=[parent, child],
+                edges=[
+                    AttackGraphEdge(source_id="T1078@DC", target_id="T1059@APP"),
+                    AttackGraphEdge(source_id="T1078@DC", target_id="T1059@APP"),
+                ],
+            )
+
     def test_branch_probability_on_non_divergent_parent_rejected(self):
         parent = make_occurrence("T1078", "DC")
         child = make_occurrence("T1059", "DC")
