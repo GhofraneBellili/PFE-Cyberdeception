@@ -1,0 +1,16 @@
+[project]
+name = "pfe-cyberdeception"
+version = "0.1.0"
+description = "PFE - Cyberdeception pilotee par un modele explicable et optimisee sous contraintes"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
