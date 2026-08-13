@@ -113,13 +113,38 @@ _MITRE_SOURCE_NAME = "mitre-attack"
 _TECHNIQUE_ID_RE = re.compile(ATTACK_TECHNIQUE_ID_PATTERN)
 
 
+def _get_typed_optional(raw_object: dict, key: str, expected_type: type, default):
+    """Lit un champ ATT&CK optionnel en distinguant explicitement deux cas
+    (durcissement — ne jamais confondre un champ manquant avec un champ
+    malformé) :
+
+    - la clé est ABSENTE du JSON source -> `default` est retourné (défaut
+      structurel autorisé, réf. tâche §2/§7, §25.3) ;
+    - la clé est PRÉSENTE mais sa valeur n'est pas de type `expected_type`
+      -> AttackKnowledgeError explicite (champ concerné, type attendu,
+      objet STIX concerné si son id est disponible), au lieu d'être
+      silencieusement traitée comme absente.
+    """
+    if key not in raw_object:
+        return default
+    value = raw_object[key]
+    if not isinstance(value, expected_type):
+        object_id = raw_object.get("id")
+        id_part = f" (objet '{object_id}')" if isinstance(object_id, str) else ""
+        raise AttackKnowledgeError(
+            f"Champ '{key}' invalide{id_part} : type attendu "
+            f"{expected_type.__name__}, reçu {type(value).__name__}."
+        )
+    return value
+
+
 def _find_attack_reference(raw_object: dict) -> dict | None:
     """Cherche, dans external_references, la référence MITRE ATT&CK portant
     un external_id Txxxx / Txxxx.xxx exploitable. Retourne None si aucune
-    référence exploitable n'est trouvée (réf. tâche §1/§5)."""
-    references = raw_object.get("external_references")
-    if not isinstance(references, list):
-        return None
+    référence exploitable n'est trouvée (réf. tâche §1/§5). external_references
+    absent -> aucune référence (comportement inchangé) ; présent mais pas une
+    liste -> AttackKnowledgeError (durcissement)."""
+    references = _get_typed_optional(raw_object, "external_references", list, [])
     for reference in references:
         if not isinstance(reference, dict):
             continue
@@ -134,10 +159,10 @@ def _find_attack_reference(raw_object: dict) -> dict | None:
 def _extract_tactics(raw_object: dict) -> tuple[str, ...]:
     """Réf. tâche §10 : les tactiques proviennent des kill_chain_phases
     ATT&CK (phase_name), conservées telles quelles — libellés canoniques
-    ATT&CK (ex. "initial-access") — sans fuzzy matching ni reformulation."""
-    phases = raw_object.get("kill_chain_phases")
-    if not isinstance(phases, list):
-        return ()
+    ATT&CK (ex. "initial-access") — sans fuzzy matching ni reformulation.
+    kill_chain_phases absent -> tuple vide ; présent mais pas une liste ->
+    AttackKnowledgeError (durcissement)."""
+    phases = _get_typed_optional(raw_object, "kill_chain_phases", list, [])
     tactics: list[str] = []
     for phase in phases:
         if not isinstance(phase, dict):
@@ -151,33 +176,35 @@ def _extract_tactics(raw_object: dict) -> tuple[str, ...]:
 
 
 def _extract_platforms(raw_object: dict) -> tuple[str, ...]:
-    """platforms vient de x_mitre_platforms lorsqu'il existe, sinon tuple
-    vide (réf. tâche §2) — jamais une plateforme inventée."""
-    platforms = raw_object.get("x_mitre_platforms")
-    if not isinstance(platforms, list):
-        return ()
+    """platforms vient de x_mitre_platforms lorsqu'il existe et est une
+    liste, sinon tuple vide si absent (réf. tâche §2) — jamais une
+    plateforme inventée ; présent mais pas une liste -> AttackKnowledgeError
+    (durcissement)."""
+    platforms = _get_typed_optional(raw_object, "x_mitre_platforms", list, [])
     return tuple(platform for platform in platforms if isinstance(platform, str))
 
 
 def _extract_bool(raw_object: dict, key: str) -> bool:
-    """Lecture défensive d'un booléen MITRE optionnel : False si absent ou
-    de type incohérent, jamais d'invention (réf. tâche §2/§7)."""
-    value = raw_object.get(key)
-    return value if isinstance(value, bool) else False
+    """Champ booléen MITRE optionnel : False si absent (réf. tâche §2/§7) ;
+    présent mais de type différent de bool -> AttackKnowledgeError
+    (durcissement)."""
+    return _get_typed_optional(raw_object, key, bool, False)
 
 
 def _extract_str_or_none(raw_object: dict, key: str) -> str | None:
-    """Lecture défensive d'une chaîne MITRE optionnelle : None si absente ou
-    de type incohérent, jamais de texte inventé (réf. tâche §2/§13)."""
-    value = raw_object.get(key)
-    return value if isinstance(value, str) else None
+    """Champ texte MITRE optionnel : None si absent (réf. tâche §2/§13) ;
+    présent mais de type différent de str -> AttackKnowledgeError
+    (durcissement) — jamais de texte inventé."""
+    return _get_typed_optional(raw_object, key, str, None)
 
 
 def _parse_attack_pattern(raw_object: dict) -> AttackTechniqueRecord | None:
     """Construit un AttackTechniqueRecord à partir d'un objet STIX
     "attack-pattern", ou retourne None si l'objet n'est pas exploitable
     (pas d'external_id ATT&CK, ou champs structurels STIX manquants) — il
-    est alors ignoré par l'appelant (réf. tâche §5)."""
+    est alors ignoré par l'appelant (réf. tâche §5). Un champ ATT&CK
+    optionnel présent mais mal typé lève AttackKnowledgeError (durcissement)
+    plutôt que d'être traité silencieusement comme absent."""
     reference = _find_attack_reference(raw_object)
     if reference is None:
         return None
@@ -218,8 +245,11 @@ def load_attack_knowledge(
 
     Comportement (réf. tâche §4 à §7) :
     - un JSON syntaxiquement invalide lève json.JSONDecodeError ;
-    - une racine non-objet, ou un bundle sans liste "objects", lève
-      AttackKnowledgeError ;
+    - une racine non-objet, un "type" absent/différent de "bundle", ou un
+      bundle sans liste "objects", lève AttackKnowledgeError ;
+    - un champ ATT&CK optionnel présent mais mal typé (ex. "revoked": "false")
+      lève AttackKnowledgeError au lieu d'être traité silencieusement comme
+      absent (durcissement — absence ≠ malformation) ;
     - seuls les objets de type "attack-pattern" sont considérés ;
     - un attack-pattern sans external_id ATT&CK exploitable est ignoré
       (jamais de technique_id inventé, jamais stix_id en substitut) ;
@@ -239,6 +269,16 @@ def load_attack_knowledge(
     if not isinstance(raw_bundle, dict):
         raise AttackKnowledgeError(
             "La racine du fichier ATT&CK doit être un objet JSON (bundle STIX)."
+        )
+
+    # Durcissement : le module charge un bundle STIX, pas un objet JSON
+    # arbitraire portant simplement une clé "objects". "type" absent,
+    # non-string ou différent de "bundle" sont rejetés de façon identique.
+    bundle_type = raw_bundle.get("type")
+    if bundle_type != "bundle":
+        raise AttackKnowledgeError(
+            "Le bundle STIX doit avoir 'type' == 'bundle' "
+            f"(valeur reçue : {bundle_type!r})."
         )
 
     raw_objects = raw_bundle.get("objects")
@@ -269,7 +309,7 @@ def load_attack_knowledge(
     return AttackKnowledgeBase(
         source_path=file_path,
         techniques_by_id=MappingProxyType(techniques_by_id),
-        bundle_type=_extract_str_or_none(raw_bundle, "type"),
+        bundle_type=bundle_type,
         spec_version=_extract_str_or_none(raw_bundle, "spec_version"),
     )
 

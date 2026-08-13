@@ -73,6 +73,15 @@ def make_attack_pattern(
     }
 
 
+def make_attack_pattern_with_raw_override(technique_id="T8001", **raw_field_overrides):
+    """Comme make_attack_pattern, mais impose une valeur brute (potentiellement
+    mal typée) sur un champ précis — utilisé pour tester le durcissement
+    absent/mal typé (ex. revoked="false" au lieu d'un booléen)."""
+    pattern = make_attack_pattern(technique_id)
+    pattern.update(raw_field_overrides)
+    return pattern
+
+
 def write_bundle(tmp_path, objects, filename="bundle.json", bundle_type="bundle", spec_version="2.1"):
     payload = {
         "type": bundle_type,
@@ -145,6 +154,38 @@ class TestLoading:
         path.write_text(
             json.dumps({"type": "bundle", "objects": "not-a-list"}), encoding="utf-8"
         )
+        with pytest.raises(AttackKnowledgeError):
+            load_attack_knowledge(path)
+
+    def test_bundle_type_bundle_accepted(self, tmp_path):
+        """Durcissement : un bundle avec 'type' == 'bundle' est accepté."""
+        path = write_bundle(tmp_path, [make_attack_pattern("T8001")], bundle_type="bundle")
+        kb = load_attack_knowledge(path)
+        assert kb.bundle_type == "bundle"
+
+    def test_bundle_type_absent_rejected(self, tmp_path):
+        """Durcissement : 'type' absent du bundle est rejeté."""
+        payload = {
+            "id": "bundle--test-fixture",
+            "spec_version": "2.1",
+            "objects": [make_attack_pattern("T8001")],
+        }
+        path = tmp_path / "no_type.json"
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        with pytest.raises(AttackKnowledgeError):
+            load_attack_knowledge(path)
+
+    def test_bundle_type_wrong_value_rejected(self, tmp_path):
+        """Durcissement : 'type' présent mais différent de 'bundle' est
+        rejeté."""
+        path = write_bundle(tmp_path, [make_attack_pattern("T8001")], bundle_type="not-a-bundle")
+        with pytest.raises(AttackKnowledgeError):
+            load_attack_knowledge(path)
+
+    def test_bundle_type_wrong_python_type_rejected(self, tmp_path):
+        """Durcissement : 'type' présent mais de mauvais type Python (ici un
+        entier) est rejeté."""
+        path = write_bundle(tmp_path, [make_attack_pattern("T8001")], bundle_type=123)
         with pytest.raises(AttackKnowledgeError):
             load_attack_knowledge(path)
 
@@ -403,6 +444,67 @@ class TestGraphValidation:
         snapshot = graph.model_dump()
         validate_graph_techniques(graph, kb)
         assert graph.model_dump() == snapshot
+
+
+# ---------------------------------------------------------------------------
+# Durcissement — absence vs. mauvais type sur un champ ATT&CK optionnel
+# ---------------------------------------------------------------------------
+
+
+class TestFieldTypeHardening:
+    def test_revoked_wrong_type_rejected(self, tmp_path):
+        pattern = make_attack_pattern_with_raw_override("T8001", revoked="false")
+        path = write_bundle(tmp_path, [pattern])
+        with pytest.raises(AttackKnowledgeError):
+            load_attack_knowledge(path)
+
+    def test_deprecated_wrong_type_rejected(self, tmp_path):
+        pattern = make_attack_pattern_with_raw_override("T8001", x_mitre_deprecated="no")
+        path = write_bundle(tmp_path, [pattern])
+        with pytest.raises(AttackKnowledgeError):
+            load_attack_knowledge(path)
+
+    def test_platforms_wrong_type_rejected(self, tmp_path):
+        pattern = make_attack_pattern_with_raw_override("T8001", x_mitre_platforms="Windows")
+        path = write_bundle(tmp_path, [pattern])
+        with pytest.raises(AttackKnowledgeError):
+            load_attack_knowledge(path)
+
+    def test_kill_chain_phases_wrong_type_rejected(self, tmp_path):
+        pattern = make_attack_pattern_with_raw_override(
+            "T8001", kill_chain_phases="initial-access"
+        )
+        path = write_bundle(tmp_path, [pattern])
+        with pytest.raises(AttackKnowledgeError):
+            load_attack_knowledge(path)
+
+    def test_external_references_wrong_type_rejected(self, tmp_path):
+        pattern = make_attack_pattern_with_raw_override(
+            "T8001", external_references="not-a-list"
+        )
+        path = write_bundle(tmp_path, [pattern])
+        with pytest.raises(AttackKnowledgeError):
+            load_attack_knowledge(path)
+
+    def test_description_wrong_type_rejected(self, tmp_path):
+        pattern = make_attack_pattern_with_raw_override("T8001", description=12345)
+        path = write_bundle(tmp_path, [pattern])
+        with pytest.raises(AttackKnowledgeError):
+            load_attack_knowledge(path)
+
+    def test_absent_optional_fields_still_use_defaults(self, tmp_path):
+        """Contrôle négatif : un champ réellement ABSENT continue d'utiliser
+        le défaut autorisé — pas de régression du comportement existant, ce
+        durcissement ne rend aucune propriété ATT&CK optionnelle
+        obligatoire."""
+        pattern = make_attack_pattern("T8001")
+        del pattern["revoked"]
+        del pattern["x_mitre_platforms"]
+        path = write_bundle(tmp_path, [pattern])
+        kb = load_attack_knowledge(path)
+        record = get_technique(kb, "T8001")
+        assert record.revoked is False
+        assert record.platforms == ()
 
 
 # ---------------------------------------------------------------------------
