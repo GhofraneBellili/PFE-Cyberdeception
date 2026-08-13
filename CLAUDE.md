@@ -2206,7 +2206,7 @@ INTERDIT
 À mettre à jour uniquement lorsque le module existe et que ses tests sont verts.
 
 - [x] `schemas.py`
-- [ ] `graph_builder.py`
+- [x] `graph_builder.py`
 - [ ] `knowledge_attack.py`
 - [ ] `knowledge_deception.py`
 - [ ] `admissibility.py`

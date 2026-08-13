@@ -5,6 +5,7 @@ description = "PFE - Cyberdeception pilotee par un modele explicable et optimise
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2,<3",
+    "networkx>=3,<4",
 ]
 
 [project.optional-dependencies]
