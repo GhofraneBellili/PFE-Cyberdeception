@@ -1,31 +1,9 @@
 {
-  "schema": "deception_source_manifest",
+  "schema": "engage_seed_report",
   "schema_version": "1.0",
+  "engage_version": "1.0",
+  "source_revision": "5ae09f6f7511ebb6d35d70a9107490900380d3d8",
   "sources": [
-    {
-      "source_id": "d3fend-ontology-1.5.0",
-      "source_name": "D3FEND Ontology",
-      "provider": "MITRE",
-      "release_version": "1.5.0",
-      "official_url": "https://d3fend.mitre.org/ontologies/d3fend/1.5.0/d3fend.json",
-      "local_filename": "data/deception/raw/d3fend/1.5.0/d3fend.json",
-      "sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
-      "source_type": "json-ld",
-      "retrieval_date": "2026-08-22",
-      "role": "ontology"
-    },
-    {
-      "source_id": "d3fend-full-mappings-1.5.0",
-      "source_name": "D3FEND Full Mappings (inferred relationships)",
-      "provider": "MITRE",
-      "release_version": "1.5.0",
-      "official_url": "https://d3fend.mitre.org/ontologies/d3fend/1.5.0/d3fend-full-mappings.json",
-      "local_filename": "data/deception/raw/d3fend/1.5.0/d3fend-full-mappings.json",
-      "sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba",
-      "source_type": "sparql-results-json",
-      "retrieval_date": "2026-08-22",
-      "role": "inferred_mappings"
-    },
     {
       "source_id": "engage-activities-1.0",
       "source_name": "MITRE Engage Activities",
@@ -124,5 +102,15 @@
       "framework": "MITRE Engage",
       "source_revision": "5ae09f6f7511ebb6d35d70a9107490900380d3d8"
     }
-  ]
+  ],
+  "activity_count": 31,
+  "engagement_activity_count": 23,
+  "support_activity_count": 8,
+  "approach_count": 9,
+  "raw_attack_mapping_count": 793,
+  "unique_attack_mapping_count": 792,
+  "unique_attack_activity_pair_count": 596,
+  "number_of_attack_ids": 175,
+  "number_of_adversary_vulnerabilities": 29,
+  "warnings": []
 }

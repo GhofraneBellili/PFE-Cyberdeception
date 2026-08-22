@@ -629,11 +629,22 @@ def build_manifest_entry(
     source_type: str,
     retrieval_date: str,
     role: str,
+    framework: str | None = None,
+    source_revision: str | None = None,
+    git_blob_sha: str | None = None,
 ) -> dict:
-    """Réf. tâche §5 (phase initiale) / §10 (durcissement) : une entrée de
-    manifest de provenance, construite uniquement à partir de paramètres
-    explicites — aucune URL ni date n'est devinée ou codée en dur ici."""
-    return {
+    """Réf. tâche §5 (phase initiale) / §10 (durcissement D3FEND) / §7
+    (phase Engage) : une entrée de manifest de provenance, construite
+    uniquement à partir de paramètres explicites — aucune URL ni date n'est
+    devinée ou codée en dur ici.
+
+    framework/source_revision/git_blob_sha sont optionnels (omis du
+    résultat si None) : ils servent aux sources versionnées par commit Git
+    précis (ex. MITRE Engage) en plus d'une release_version déclarée, sans
+    changer la forme des entrées existantes (ex. D3FEND) qui ne les
+    fournissent pas.
+    """
+    entry: dict = {
         "source_id": source_id,
         "source_name": source_name,
         "provider": "MITRE",
@@ -645,6 +656,13 @@ def build_manifest_entry(
         "retrieval_date": retrieval_date,
         "role": role,
     }
+    if framework is not None:
+        entry["framework"] = framework
+    if source_revision is not None:
+        entry["source_revision"] = source_revision
+    if git_blob_sha is not None:
+        entry["git_blob_sha"] = git_blob_sha
+    return entry
 
 
 def build_source_manifest(entries: list[dict]) -> dict:

@@ -579,36 +579,219 @@ moment de la validation. CI verte.
 - Commit de validation initiale (extraction du staging) :
   `94ff9c72fbe5cab9f26d470b8e25da13b2e836dd`.
 - Commit de durcissement (déduplication documentaire + reproductibilité de
-  la CLI) : *à renseigner lors de la prochaine mise à jour naturelle de ce
-  README* (hash communiqué dans le rapport de session correspondant, pour
-  éviter une boucle de commits d'auto-référencement).
+  la CLI) : `3205fa82ff09fb99013af0147a562308ae4eb339`.
 
 #### Limites actuelles
 
-Seul D3FEND est traité (MITRE Engage, littérature scientifique, agents
-LLM/RAG explicitement non commencés). Aucune décision sur quels concepts
-D3FEND deviennent des mécanismes déployables. Les mappings ATT&CK ne sont
+D3FEND et MITRE Engage (étape 6) sont désormais traités ; la littérature
+scientifique et les agents LLM/RAG restent explicitement non commencés.
+Aucune décision sur quels concepts D3FEND (ni quelles activités/approches
+Engage) deviennent des mécanismes déployables. Les mappings ATT&CK ne sont
 pas encore validés comme \(M_{i,d}\). Ce staging n'est consommé par aucun
 autre module à ce stade.
 
 #### Lien avec l'étape suivante
 
-Un futur enrichissement (MITRE Engage, littérature scientifique
-sélectionnée, transformation contrôlée) consommera ce staging pour produire
-`data/deception/deception_catalog.json`, chargé par `knowledge_deception.py`
-(étape 4).
+Un futur enrichissement (littérature scientifique sélectionnée,
+normalisation D3FEND↔Engage, transformation contrôlée) consommera ces
+staging pour produire `data/deception/deception_catalog.json`, chargé par
+`knowledge_deception.py` (étape 4).
+
+---
+
+### Étape 6 — Construction offline MITRE Engage (staging documentaire)
+
+#### Objectif
+
+Construire une chaîne **offline, déterministe et traçable** transformant
+les données officielles MITRE Engage v1.0 en un staging documentaire —
+**deuxième source structurée** de la future KB cyberdéception, en
+complément de D3FEND (étape 5). Cette étape ne construit **pas** le
+catalogue final, n'implémente aucune règle SP1, et n'utilise aucun LLM/RAG.
+
+#### Position dans l'architecture
+
+```text
+MITRE Engage v1.0 (fichiers officiels, hors runtime SP1/SP2/SP3)
+  → tools/deception_kb/engage_seed_builder.py
+  → staging documentaire (activités + approches) + mappings ATT&CK
+    + rapport d'extraction
+```
+
+Ce module vit dans `tools/`, explicitement hors du runtime chargé par
+`src/knowledge_deception.py`. Il ne fusionne à aucun moment ses résultats
+avec le staging D3FEND (OPEN_DECISION 2).
+
+#### Entrées
+
+Sept fichiers officiels MITRE Engage v1.0, téléchargés depuis le dépôt
+officiel `https://github.com/mitre/engage`, **pinné** au commit
+`5ae09f6f7511ebb6d35d70a9107490900380d3d8` (jamais `main`/`latest`) :
+`activities.json`, `activity_details.json`, `approaches.json`,
+`approach_details.json`, `approach_activity_mappings.json`,
+`attack_mapping.json`, `references.json`. `framework_version = "1.0"`
+(version déclarée du jeu de données) et `source_revision` (le commit exact)
+sont conservés comme deux notions distinctes, jamais conflées.
+
+#### Traitement réalisé
+
+- Acquisition versionnée : téléchargement depuis les URLs officielles
+  dérivées mécaniquement du dépôt pinné, calcul du SHA-256 sur les octets
+  réellement téléchargés, enregistrement dans
+  `data/deception/source_manifest.json` (étendu, pas remplacé — les
+  entrées D3FEND existantes sont préservées à l'identique).
+- Conservation de la sémantique native d'Engage : les activités
+  (EACxxxx/SACxxxx) et approches (EAPxxxx/SAPxxxx) restent des entités
+  documentaires sources, jamais présentées comme des mécanismes finaux
+  `d \in \mathcal D`. La famille (`activity_family`/`approach_family`) est
+  dérivée du préfixe d'identifiant réellement observé (jamais d'une liste
+  codée en dur) ; un préfixe non reconnu lève une erreur explicite.
+- Jointure activité ↔ approche à partir de la table de correspondance
+  canonique `approach_activity_mappings.json` (pas des copies dénormalisées
+  embarquées dans `activity_details.json`/`approach_details.json`).
+- Distinction explicite, à l'intérieur d'une activité, entre les libellés
+  de tactique kebab-case nichés par technique ATT&CK
+  (`attack_tactic_labels`, ex. `"discovery"`) et la liste d'objets
+  `{id: TAxxxx, name}` au niveau racine de l'activité (`attack_tactics`) —
+  deux champs distincts jamais fusionnés, malgré un nom de clé source
+  identique aux deux niveaux.
+- Traitement du champ `activity_id` de `references.json`, constaté par
+  inspection comme pouvant désigner soit une activité, soit une approche
+  (4 références sur 67 pointent vers `SAP0001`/`SAP0002`) — aucune
+  hypothèse a priori, résolution par correspondance directe des deux cas.
+- Extraction séparée des mappings Engage↔ATT&CK (`attack_mapping.json`),
+  filtrés au format ATT&CK `Txxxx`/`Txxxx.xxx` (réutilisation de
+  `ATTACK_TECHNIQUE_ID_PATTERN` de `src/schemas.py`, sans duplication du
+  motif) ; **aucune de ces relations n'est `M_{i,d}`** — une relation
+  `(attack_id, EAV, EAC)` documente une vulnérabilité adverse potentielle,
+  pas une décision d'admissibilité SP1.
+- Déduplication documentaire : trois métriques distinctes (bindings bruts,
+  relations uniques après déduplication exacte, couples `(attack_id,
+  engage_activity_id)` uniques), clé de déduplication `(attack_id,
+  adversary_vulnerability_id, engage_activity_id)` confirmée suffisante par
+  inspection réelle du jeu de données (le seul doublon exact constaté
+  partage aussi tout le contenu de la relation).
+- Validation déterministe : pas d'identifiant d'activité/approche dupliqué,
+  pas de référence croisée orpheline (activité ↔ approche, mapping ↔
+  activité), format ATT&CK conservé, provenance obligatoire sur chaque
+  entité, rejet de toute relation strictement dupliquée.
+- La CLI régénère `data/deception/staging/engage_activity_seed_1.0.json`,
+  `data/deception/staging/engage_attack_mapping_seed_1.0.json`,
+  `data/deception/staging/engage_seed_report_1.0.json`, et étend
+  `data/deception/source_manifest.json` par fusion idempotente (remplace
+  uniquement les entrées `engage-*`, préserve les entrées `d3fend-*`).
+
+#### Sorties
+
+- `data/deception/staging/engage_activity_seed_1.0.json` — **31 activités**
+  (**23 EAC** / **8 SAC**) et **9 approches** ;
+- `data/deception/staging/engage_attack_mapping_seed_1.0.json` — **793
+  bindings bruts**, **792 relations documentaires uniques** après
+  déduplication exacte (1 doublon exact retiré), **596 couples
+  `(attack_id, engage_activity_id)` uniques** (145 de ces couples sont
+  justifiés par plusieurs vulnérabilités adverses (EAV) distinctes,
+  totalisant 196 relations supplémentaires, toutes conservées séparément),
+  **175 identifiants ATT&CK distincts**, **29 vulnérabilités adverses
+  (EAV) distinctes** ;
+- `data/deception/staging/engage_seed_report_1.0.json` ;
+- `data/deception/source_manifest.json` (étendu : 9 sources au total, 2
+  D3FEND + 7 Engage).
+
+#### Fichiers concernés
+
+- `tools/deception_kb/engage_seed_builder.py`
+- `tools/deception_kb/README.md`
+- `tests/test_engage_seed_builder.py`
+- `data/deception/source_manifest.json`
+- `data/deception/staging/engage_*.json`
+- `data/deception/raw/engage/1.0/` (fichiers officiels bruts, non versionnés — voir `.gitignore`)
+
+#### Fonctions principales
+
+`build_engage_activity_seed`, `build_engage_attack_mapping_seed`
+(dédupliqué), `validate_engage_activity_seed`,
+`validate_engage_attack_mapping_seed` (rejette les doublons exacts),
+`build_engage_seed_report`, `merge_source_manifest` (fusion idempotente,
+réutilise `build_manifest_entry`/`build_source_manifest` de
+`d3fend_seed_builder.py` sans duplication).
+
+#### Invariants et règles respectées
+
+- aucune convention de préfixe codée en dur sans être démontrée par
+  inspection réelle des deux familles d'entités (activités et approches) ;
+- une activité/approche Engage n'est jamais assimilée à un mécanisme final
+  `d \in \mathcal D` ;
+- un mapping Engage↔ATT&CK n'est jamais assimilé à \(M_{i,d}\) ;
+- le staging n'est pas chargé par `src/knowledge_deception.py` ;
+- 100 % déterministe, aucun appel LLM, aucun appel réseau pendant les tests ;
+- SHA-256 calculé sur les octets réellement téléchargés, jamais inventé ;
+- le staging D3FEND existant n'est ni modifié ni fusionné avec le staging
+  Engage.
+
+#### Tests et validation
+
+`tests/test_engage_seed_builder.py` — construction du seed
+activités/approches, conservation verbatim des champs, jointure via la
+table canonique, activité à approches multiples, distinction EAC/SAC et
+EAP/SAP, rejets (référence croisée orpheline, identifiant ATT&CK mal
+formé, préfixe non reconnu), mapping Engage↔ATT&CK valide, EAV conservée,
+déduplication exacte, cas `attack_id`+activité identiques mais EAV
+différente (comportement explicite de la clé), ordre déterministe,
+provenance SHA-256, `source_revision` conservé, CLI de bout en bout
+(staging + rapport + fusion de manifest), même entrée → même sortie,
+absence de toute logique spécifique au cas de référence PFE (T1003/T1078/
+etc., vérifiée par inspection statique du module). **33 tests** ajoutés,
+**228 tests** au total au moment de la validation. CI verte.
+
+#### Traçabilité
+
+- Source : MITRE Engage, dépôt officiel `https://github.com/mitre/engage`,
+  version déclarée **1.0**, commit pinné
+  `5ae09f6f7511ebb6d35d70a9107490900380d3d8`.
+- `activities.json` — SHA-256 `19c8788bdd8615a0d5dddf8046c902c00b453c1b0247e35c9ca610a99ad98e07`.
+- `activity_details.json` — SHA-256 `4e47d11af0428ad1d3b1782c367a3e4a0abf850e6809fd838e350d31886a1abf`.
+- `approaches.json` — SHA-256 `da2e09ad8c93f4aa463afaa9c5b1ef27eae91b444b580c4af432ae4ba05dadb7`.
+- `approach_details.json` — SHA-256 `cff1b915f0fbba99373bb2322a1b1c4abccb300bada6cd8eefb482caec97d5db`.
+- `approach_activity_mappings.json` — SHA-256 `604f9e9e38431ec83a0fdcaa0c7d2f88c4b5d20a4f2ff4c94e497a78c6ccbe06`.
+- `attack_mapping.json` — SHA-256 `8004901aa219813a4b7105665aa5e9cd2128beeccc818b2c3e42324f1ad609bf`.
+- `references.json` — SHA-256 `6598c1c3cad875b33586b88732ac1c27faa9d376529db8730e56889ccd1e316a`.
+- Toutes les URLs officielles sont dérivées de
+  `https://raw.githubusercontent.com/mitre/engage/5ae09f6f7511ebb6d35d70a9107490900380d3d8/Data/json/<fichier>`.
+- Le champ optionnel `git_blob_sha` de `build_manifest_entry` n'est pas
+  peuplé automatiquement par la CLI (aucun argument dédié demandé) —
+  documenté dans `tools/deception_kb/README.md`.
+
+#### Limites actuelles
+
+Les activités et approches Engage sont conservées comme entités
+documentaires sources, sans normalisation vers le catalogue final ni
+rapprochement avec D3FEND. Les mappings Engage↔ATT&CK ne sont pas encore
+validés comme \(M_{i,d}\). Ce staging n'est consommé par aucun autre module
+à ce stade.
+
+#### Lien avec l'étape suivante
+
+Un futur enrichissement (littérature scientifique sélectionnée,
+normalisation contrôlée D3FEND↔Engage, transformation vers les champs
+finaux de `DeceptionMechanism`) consommera conjointement les deux staging
+(D3FEND et Engage) pour produire `data/deception/deception_catalog.json`,
+chargé par `knowledge_deception.py` (étape 4).
 
 ## OPEN_DECISION en cours
 
 Ces points sont volontairement non résolus et ne doivent pas l'être
 implicitement par une étape future sans décision explicite :
 
-1. Quels niveaux de la hiérarchie D3FEND « Deceive » deviennent des
-   mécanismes déployables \(d \in \mathcal D\) ?
-2. Comment transformer les informations D3FEND/Engage/littérature vers les
+1. Quels concepts D3FEND (et quelles activités/approches Engage)
+   deviennent les mécanismes déployables \(d \in \mathcal D\) ?
+2. Comment relier précisément D3FEND ↔ Engage sans fusion arbitraire ?
+   (Les deux staging restent strictement séparés dans cette phase — aucun
+   rapprochement automatique, même sémantiquement évident, ex. D3FEND
+   « Decoy File » vs Engage « Lures ».)
+3. Comment transformer les informations D3FEND/Engage/littérature vers les
    champs finaux `interaction_mechanism`, `realism_factors`,
    `progression_effects`, `admissibility_profile` ?
-3. Quelle sémantique SP1 donner aux listes vides de
+4. Quelle sémantique SP1 donner aux listes vides de
    `DeceptionAdmissibilityProfile` ?
-4. Comment valider les mappings ATT&CK↔déception inférés par D3FEND avant
+5. Comment valider les mappings ATT&CK↔déception (D3FEND et Engage) avant
    de les utiliser comme \(M_{i,d}\) ?
