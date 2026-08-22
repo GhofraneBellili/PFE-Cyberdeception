@@ -1,0 +1,49 @@
+{
+  "schema": "d3fend_seed_report",
+  "schema_version": "1.0",
+  "release_version": "1.5.0",
+  "sources": [
+    {
+      "source_id": "d3fend-ontology-1.5.0",
+      "source_name": "D3FEND Ontology",
+      "provider": "MITRE",
+      "release_version": "1.5.0",
+      "official_url": "https://d3fend.mitre.org/ontologies/d3fend/1.5.0/d3fend.json",
+      "local_filename": "data/deception/raw/d3fend/1.5.0/d3fend.json",
+      "sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+      "source_type": "json-ld",
+      "retrieval_date": "2026-08-22",
+      "role": "ontology"
+    },
+    {
+      "source_id": "d3fend-full-mappings-1.5.0",
+      "source_name": "D3FEND Full Mappings (inferred relationships)",
+      "provider": "MITRE",
+      "release_version": "1.5.0",
+      "official_url": "https://d3fend.mitre.org/ontologies/d3fend/1.5.0/d3fend-full-mappings.json",
+      "local_filename": "data/deception/raw/d3fend/1.5.0/d3fend-full-mappings.json",
+      "sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba",
+      "source_type": "sparql-results-json",
+      "retrieval_date": "2026-08-22",
+      "role": "inferred_mappings"
+    }
+  ],
+  "concept_count": 11,
+  "leaf_count": 9,
+  "parent_count": 2,
+  "attack_mapping_count": 406,
+  "extracted_ids": [
+    "D3-CHN",
+    "D3-DE",
+    "D3-DF",
+    "D3-DNR",
+    "D3-DO",
+    "D3-DP",
+    "D3-DPR",
+    "D3-DST",
+    "D3-DUC",
+    "D3-IHN",
+    "D3-SHN"
+  ],
+  "warnings": []
+}

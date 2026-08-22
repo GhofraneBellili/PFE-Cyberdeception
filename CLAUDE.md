@@ -2278,3 +2278,9 @@ Exemples :
 - `feat(sp1): implement admissibility candidate generation`
 - `test(risk): add reference propagation tests`
 - `fix(sp1): correct placement relevance validation`
+
+# Documentation technique — README.md
+
+Après validation de chaque étape technique, README.md doit être mis à jour
+avec l'implémentation réellement réalisée, les entrées/sorties, tests,
+provenance, limites et commit de validation.

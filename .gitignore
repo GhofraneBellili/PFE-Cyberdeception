@@ -7,3 +7,8 @@ __pycache__/
 .env.*
 .coverage
 htmlcov/
+
+# Fichiers bruts officiels volumineux (D3FEND, ...) : reproductibles depuis
+# data/deception/source_manifest.json, non versionnés. Le staging dérivé
+# (data/deception/staging/) et le manifest restent, eux, versionnés.
+data/deception/raw/

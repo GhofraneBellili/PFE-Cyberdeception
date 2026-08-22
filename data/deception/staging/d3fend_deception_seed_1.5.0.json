@@ -1,0 +1,651 @@
+{
+  "schema": "d3fend_deception_seed",
+  "schema_version": "1.0",
+  "release_version": "1.5.0",
+  "root_concept": "d3f:Deceive",
+  "source_file": "d3fend.json",
+  "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+  "concepts": [
+    {
+      "source_technique_id": "D3-DO",
+      "source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyObject",
+      "name": "Decoy Object",
+      "definition": "A Decoy Object is created and deployed for the purposes of deceiving attackers.",
+      "synonyms": [
+        "Lure"
+      ],
+      "parent_ids": [],
+      "child_ids": [
+        "D3-DP",
+        "D3-DF",
+        "D3-DST",
+        "D3-DUC",
+        "D3-DNR",
+        "D3-DPR"
+      ],
+      "is_leaf": false,
+      "artifacts": [],
+      "kb_article": "## Technique Overview\nDecoy objects are typically configured with detectable means of communication but do not have any legitimate business purpose. Any communication via or to these objects should be logged and analyzed to find potential indicators of compromise for a possible past or future attack against other systems.",
+      "references": [],
+      "source_evidence": [
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyObject",
+          "source_property": "rdfs:label",
+          "evidence_text": "Decoy Object"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyObject",
+          "source_property": "d3f:definition",
+          "evidence_text": "A Decoy Object is created and deployed for the purposes of deceiving attackers."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyObject",
+          "source_property": "d3f:kb-article",
+          "evidence_text": "## Technique Overview\nDecoy objects are typically configured with detectable means of communication but do not have any legitimate business purpose. Any communication via or to these objects should be logged and analyzed to find potential indicators of compromise for a possible past or future attack against other systems."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyObject",
+          "source_property": "d3f:synonym",
+          "evidence_text": "Lure"
+        }
+      ]
+    },
+    {
+      "source_technique_id": "D3-DP",
+      "source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyPersona",
+      "name": "Decoy Persona",
+      "definition": "Establishing a fake online identity to misdirect, deceive, and or interact with adversaries.",
+      "synonyms": [],
+      "parent_ids": [
+        "D3-DO"
+      ],
+      "child_ids": [],
+      "is_leaf": true,
+      "artifacts": [
+        "d3f:User"
+      ],
+      "kb_article": "## How it works\nA false online identity is created for the purposes of interacting with adversaries in a direct or indirect manner. This includes the associated email addresses, social media accounts, and other online communication profiles.\n\n## Considerations\n* Include phone numbers and online social profiles as well as automatically or manually responding to contact made to the persona to improve realism.\n* Continuous updating and managing the decoy personas and online activity streams to ensure personas do not become stale and outdated.",
+      "references": [
+        {
+          "title": "Decoy Personas for Safeguarding Online Identity Using Deception",
+          "url": "https://web.archive.org/web/20180407204216/https://isc.sans.edu/diary/Decoy+Personas+for+Safeguarding+Online+Identity+Using+Deception/16159",
+          "author": "Lenny Zeltser",
+          "organization": "SANS"
+        },
+        {
+          "title": "Decoy and deceptive data object technology",
+          "url": "https://patents.google.com/patent/US20170134423A1",
+          "author": "Dean Sysman, Gadi Evron, Imri Goldberg, Itamar Sher, Shmuel Ur",
+          "organization": "Cymmetria, Inc."
+        }
+      ],
+      "source_evidence": [
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyPersona",
+          "source_property": "rdfs:label",
+          "evidence_text": "Decoy Persona"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyPersona",
+          "source_property": "d3f:definition",
+          "evidence_text": "Establishing a fake online identity to misdirect, deceive, and or interact with adversaries."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyPersona",
+          "source_property": "d3f:kb-article",
+          "evidence_text": "## How it works\nA false online identity is created for the purposes of interacting with adversaries in a direct or indirect manner. This includes the associated email addresses, social media accounts, and other online communication profiles.\n\n## Considerations\n* Include phone numbers and online social profiles as well as automatically or manually responding to contact made to the persona to improve realism.\n* Continuous updating and managing the decoy personas and online activity streams to ensure personas do not become stale and outdated."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyPersona",
+          "source_property": "d3f:spoofs",
+          "evidence_text": "d3f:User"
+        }
+      ]
+    },
+    {
+      "source_technique_id": "D3-DF",
+      "source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyFile",
+      "name": "Decoy File",
+      "definition": "A file created for the purposes of deceiving an adversary.",
+      "synonyms": [],
+      "parent_ids": [
+        "D3-DO"
+      ],
+      "child_ids": [],
+      "is_leaf": true,
+      "artifacts": [
+        "d3f:File"
+      ],
+      "kb_article": "## How it works\nThe decoy file is made available as a local or network resource. Accesses to the file may be monitored. The files may be configurations, documents, executables, or other file types.\n\n\n## Considerations\nProperties of the file such as cryptographic checksums, file creation date, file modified date, file size, file owner etc may be modified to improve the credibility of the file.\n\n## Example\n* A CSV file with decoy user credentials is placed on a system. The system or network is then monitored to detect any accesses to the decoy files.",
+      "references": [
+        {
+          "title": "Open source intelligence deceptions",
+          "url": "https://patents.google.com/patent/US10333976B1/en?assignee=Illusive+Networks+Ltd&oq=Illusive+Networks+Ltd+",
+          "author": "Hadar Yudovich; Nimrod Lavi; Sharon Bittan; Tom Kahana; Tom Sela",
+          "organization": "Illusive Networks Ltd"
+        },
+        {
+          "title": "System and a method for identifying the presence of malware and ransomware using mini-traps set at network endpoints",
+          "url": "https://patents.google.com/patent/US9807115B2/en?oq=US-9807115-B2",
+          "author": "Doron Kolton; Rami Mizrahi; Omer Zohar; Benny Ben-Rabi; Alex Barbalat; Shlomi Gabai",
+          "organization": "Fidelis Cybersecurity Solutions Inc"
+        },
+        {
+          "title": "System and methods thereof for preventing ransomware from encrypting data elements stored in a memory of a computer-based system",
+          "url": "https://patents.google.com/patent/US20170308711A1/en?oq=US-2017308711-A1",
+          "author": "Gil BARAK",
+          "organization": "Palo Alto Networks Inc"
+        },
+        {
+          "title": "Supply chain cyber-deception",
+          "url": "https://patents.google.com/patent/WO2017187379A1",
+          "author": "Gadi EVRON; Dean SYSMAN; Imri Goldberg; Shmuel Ur",
+          "organization": "Cymmetria, Inc."
+        }
+      ],
+      "source_evidence": [
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyFile",
+          "source_property": "rdfs:label",
+          "evidence_text": "Decoy File"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyFile",
+          "source_property": "d3f:definition",
+          "evidence_text": "A file created for the purposes of deceiving an adversary."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyFile",
+          "source_property": "d3f:kb-article",
+          "evidence_text": "## How it works\nThe decoy file is made available as a local or network resource. Accesses to the file may be monitored. The files may be configurations, documents, executables, or other file types.\n\n\n## Considerations\nProperties of the file such as cryptographic checksums, file creation date, file modified date, file size, file owner etc may be modified to improve the credibility of the file.\n\n## Example\n* A CSV file with decoy user credentials is placed on a system. The system or network is then monitored to detect any accesses to the decoy files."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyFile",
+          "source_property": "d3f:spoofs",
+          "evidence_text": "d3f:File"
+        }
+      ]
+    },
+    {
+      "source_technique_id": "D3-DST",
+      "source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoySessionToken",
+      "name": "Decoy Session Token",
+      "definition": "An authentication token created for the purposes of deceiving an adversary.",
+      "synonyms": [],
+      "parent_ids": [
+        "D3-DO"
+      ],
+      "child_ids": [],
+      "is_leaf": true,
+      "artifacts": [
+        "d3f:SessionToken"
+      ],
+      "kb_article": "## How it works\nUsage of decoy session tokens may be monitored to track attacker behavior or otherwise control the beliefs of the attacker.\n\n## Considerations\n* Interaction and activity with the decoy session token must be constantly monitored and analyzed to detect unauthorized activity.\n* Session tokens are typically short-lived and therefore the decoy must be continuously updated to provide the appearance of it being used in the production environment.\n* Automated tools can assist with maintenance and updates by automatically adjusting the decoy session token and environment to mimic the production environment.",
+      "references": [
+        {
+          "title": "Decoy and deceptive data object technology",
+          "url": "https://patents.google.com/patent/US20170134423A1",
+          "author": "Dean Sysman; Gadi Evron; Imri Goldberg; Itamar Sher; Shmuel Ur",
+          "organization": "Cymmetria Inc"
+        }
+      ],
+      "source_evidence": [
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoySessionToken",
+          "source_property": "rdfs:label",
+          "evidence_text": "Decoy Session Token"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoySessionToken",
+          "source_property": "d3f:definition",
+          "evidence_text": "An authentication token created for the purposes of deceiving an adversary."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoySessionToken",
+          "source_property": "d3f:kb-article",
+          "evidence_text": "## How it works\nUsage of decoy session tokens may be monitored to track attacker behavior or otherwise control the beliefs of the attacker.\n\n## Considerations\n* Interaction and activity with the decoy session token must be constantly monitored and analyzed to detect unauthorized activity.\n* Session tokens are typically short-lived and therefore the decoy must be continuously updated to provide the appearance of it being used in the production environment.\n* Automated tools can assist with maintenance and updates by automatically adjusting the decoy session token and environment to mimic the production environment."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoySessionToken",
+          "source_property": "d3f:spoofs",
+          "evidence_text": "d3f:SessionToken"
+        }
+      ]
+    },
+    {
+      "source_technique_id": "D3-DUC",
+      "source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyUserCredential",
+      "name": "Decoy User Credential",
+      "definition": "A Credential created for the purpose of deceiving an adversary.",
+      "synonyms": [],
+      "parent_ids": [
+        "D3-DO"
+      ],
+      "child_ids": [],
+      "is_leaf": true,
+      "artifacts": [
+        "d3f:Credential"
+      ],
+      "kb_article": "## How it works\nA detection analytic is developed to determine when a user uses decoy credentials. Subsequent actions by that user may be monitored or controlled by the defender.\n\nA credential may be:\n * Domain username and password\n * Local system username and password\n\n## Considerations\n* Decoy credentials should be integrated with a larger decoy environment to ensure that when decoy credentials are compromised, the credentials are used to interact with a decoy asset that is being monitored.\n* Continuous maintenance and updates are needed to ensure the legitimacy of the larger decoy environment and specifically the assets that utilize the decoy credentials.",
+      "references": [
+        {
+          "title": "Decoy and deceptive data object technology",
+          "url": "https://patents.google.com/patent/US20170134423A1",
+          "author": "Dean Sysman; Gadi Evron; Imri Goldberg; Itamar Sher; Shmuel Ur",
+          "organization": "Cymmetria Inc"
+        },
+        {
+          "title": "Decoy network-based service for deceiving attackers",
+          "url": "https://patents.google.com/patent/US10873601B1",
+          "author": "Thomas Stickle",
+          "organization": "Amazon Technologies"
+        },
+        {
+          "title": "System and method for identifying the presence of malware using mini-traps set at network endpoints",
+          "url": "https://patents.google.com/patent/US9807114B2/en?oq=US-9807114-B2",
+          "author": "Doron Kolton; Rami Mizrahi; Omer Zohar; Benny Ben-Rabi; Alex Barbalat; Shlomi Gabai",
+          "organization": "Fidelis Cybersecurity Solutions Inc"
+        }
+      ],
+      "source_evidence": [
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyUserCredential",
+          "source_property": "rdfs:label",
+          "evidence_text": "Decoy User Credential"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyUserCredential",
+          "source_property": "d3f:definition",
+          "evidence_text": "A Credential created for the purpose of deceiving an adversary."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyUserCredential",
+          "source_property": "d3f:kb-article",
+          "evidence_text": "## How it works\nA detection analytic is developed to determine when a user uses decoy credentials. Subsequent actions by that user may be monitored or controlled by the defender.\n\nA credential may be:\n * Domain username and password\n * Local system username and password\n\n## Considerations\n* Decoy credentials should be integrated with a larger decoy environment to ensure that when decoy credentials are compromised, the credentials are used to interact with a decoy asset that is being monitored.\n* Continuous maintenance and updates are needed to ensure the legitimacy of the larger decoy environment and specifically the assets that utilize the decoy credentials."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyUserCredential",
+          "source_property": "d3f:spoofs",
+          "evidence_text": "d3f:Credential"
+        }
+      ]
+    },
+    {
+      "source_technique_id": "D3-DNR",
+      "source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyNetworkResource",
+      "name": "Decoy Network Resource",
+      "definition": "Deploying a network resource for the purposes of deceiving an adversary.",
+      "synonyms": [],
+      "parent_ids": [
+        "D3-DO"
+      ],
+      "child_ids": [],
+      "is_leaf": true,
+      "artifacts": [
+        "d3f:NetworkResource"
+      ],
+      "kb_article": "## How it works\nDecoy network resources are deployed to web application servers, network file shares, or other network based sharing services.\n\nA \"honeypot\" may serve a variety of decoy network resources.\n\n## Considerations\n\n* Developing a deployment and placement strategy for the decoy network resource.\n* Personnel responsible for creation of decoy networks should consider the potential for resource exhaustion through denial of service attacks.\n\n## Examples\n* Honeypots are typically used to mimic a known system with fake vulnerabilities. This may attract attackers to the honeypot.\n* Decoy accounts are also used to scan for attempted logins. The decoy accounts can provide security analysts with the attacker's potential intents and strategies.\n* Tarpits are used to monitor unallocated IP space for unauthorized network activity.",
+      "references": [
+        {
+          "title": "Automatically generating network resource groups and assigning customized decoy policies thereto",
+          "url": "https://patents.google.com/patent/US20170310689A1",
+          "author": "Shlomo Touboul; Hanan Levin; Stephane Roubach; Assaf Mischari; Itai Ben David; Itay Avraham; Adi Ozer; Chen Kazaz; Ofer Israeli; Olga Vingurt; Liad Gareh; Israel Grimberg; Cobby Cohen; Sharon Sultan; Matan Kubovsky",
+          "organization": "Illusive Networks Ltd"
+        },
+        {
+          "title": "Deception-Based Responses to Security Attacks",
+          "url": "https://patents.google.com/patent/US20140250524A1/en?oq=US-2014250524-A1",
+          "author": "Adam S. Meyers; Dmitri Alperovitch; George Robert Kurtz; David F. Diehl; Sven Krasser",
+          "organization": "Crowdstrike Inc"
+        },
+        {
+          "title": "Dynamic selection and generation of a virtual clone for detonation of suspicious content within a honey network",
+          "url": "https://patents.google.com/patent/US9882929B1/en?oq=US-9882929-B1",
+          "author": "Taylor Ettema; Huagang Xie",
+          "organization": "Palo Alto Networks Inc"
+        },
+        {
+          "title": "System and method for identifying the presence of malware using mini-traps set at network endpoints",
+          "url": "https://patents.google.com/patent/US9807114B2/en?oq=US-9807114-B2",
+          "author": "Doron Kolton; Rami Mizrahi; Omer Zohar; Benny Ben-Rabi; Alex Barbalat; Shlomi Gabai",
+          "organization": "Fidelis Cybersecurity Solutions Inc"
+        }
+      ],
+      "source_evidence": [
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyNetworkResource",
+          "source_property": "rdfs:label",
+          "evidence_text": "Decoy Network Resource"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyNetworkResource",
+          "source_property": "d3f:definition",
+          "evidence_text": "Deploying a network resource for the purposes of deceiving an adversary."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyNetworkResource",
+          "source_property": "d3f:kb-article",
+          "evidence_text": "## How it works\nDecoy network resources are deployed to web application servers, network file shares, or other network based sharing services.\n\nA \"honeypot\" may serve a variety of decoy network resources.\n\n## Considerations\n\n* Developing a deployment and placement strategy for the decoy network resource.\n* Personnel responsible for creation of decoy networks should consider the potential for resource exhaustion through denial of service attacks.\n\n## Examples\n* Honeypots are typically used to mimic a known system with fake vulnerabilities. This may attract attackers to the honeypot.\n* Decoy accounts are also used to scan for attempted logins. The decoy accounts can provide security analysts with the attacker's potential intents and strategies.\n* Tarpits are used to monitor unallocated IP space for unauthorized network activity."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyNetworkResource",
+          "source_property": "d3f:spoofs",
+          "evidence_text": "d3f:NetworkResource"
+        }
+      ]
+    },
+    {
+      "source_technique_id": "D3-DPR",
+      "source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyPublicRelease",
+      "name": "Decoy Public Release",
+      "definition": "Issuing publicly released media to deceive adversaries.",
+      "synonyms": [],
+      "parent_ids": [
+        "D3-DO"
+      ],
+      "child_ids": [],
+      "is_leaf": true,
+      "artifacts": [],
+      "kb_article": "## How it works\nPublicly released media includes press release, videos, or other marketing collateral. The media may include URLs, points of contact, or other identifiers to entice interaction from adversaries.\n\n## Considerations\n* Information used in decoy public released media must contain enough realism to deceive and provide interaction from adversaries.\n* Continuous development, creation, and distribution of media and identifiers are needed to ensure adversary interaction continues over time.\n* Decoy public releases could be placed on platforms with different degrees of ownership, including entirely enterprise-owned infrastructure, IaaS, and SaaS (including social applications). Platforms that are not entirely enterprise-owned may be more likely to gather information",
+      "references": [
+        {
+          "title": "Mock attack cybersecurity training system and methods",
+          "url": "https://patents.google.com/patent/US9558677B2/",
+          "author": "Norman Sadeh-Koniecpol, Kurt Wescoe, Jason Brubaker, Jason Hong",
+          "organization": "WOMBAT SECURITY TECHNOLOGIES Inc"
+        }
+      ],
+      "source_evidence": [
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyPublicRelease",
+          "source_property": "rdfs:label",
+          "evidence_text": "Decoy Public Release"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyPublicRelease",
+          "source_property": "d3f:definition",
+          "evidence_text": "Issuing publicly released media to deceive adversaries."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyPublicRelease",
+          "source_property": "d3f:kb-article",
+          "evidence_text": "## How it works\nPublicly released media includes press release, videos, or other marketing collateral. The media may include URLs, points of contact, or other identifiers to entice interaction from adversaries.\n\n## Considerations\n* Information used in decoy public released media must contain enough realism to deceive and provide interaction from adversaries.\n* Continuous development, creation, and distribution of media and identifiers are needed to ensure adversary interaction continues over time.\n* Decoy public releases could be placed on platforms with different degrees of ownership, including entirely enterprise-owned infrastructure, IaaS, and SaaS (including social applications). Platforms that are not entirely enterprise-owned may be more likely to gather information"
+        }
+      ]
+    },
+    {
+      "source_technique_id": "D3-DE",
+      "source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyEnvironment",
+      "name": "Decoy Environment",
+      "definition": "A Decoy Environment comprises hosts and networks for the purposes of deceiving an attacker.",
+      "synonyms": [
+        "Honeypot"
+      ],
+      "parent_ids": [],
+      "child_ids": [
+        "D3-CHN",
+        "D3-SHN",
+        "D3-IHN"
+      ],
+      "is_leaf": false,
+      "artifacts": [
+        "d3f:DecoyArtifact"
+      ],
+      "kb_article": "## Technique Overview\n\nSystems in a decoy environment are typically configured so that some detectable means of communication does not have any legitimate business purpose.  Any communication via these means should be logged and analyzed to find potential indicators of compromise for a possible past or future attack against other systems.",
+      "references": [],
+      "source_evidence": [
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyEnvironment",
+          "source_property": "rdfs:label",
+          "evidence_text": "Decoy Environment"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyEnvironment",
+          "source_property": "d3f:definition",
+          "evidence_text": "A Decoy Environment comprises hosts and networks for the purposes of deceiving an attacker."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyEnvironment",
+          "source_property": "d3f:kb-article",
+          "evidence_text": "## Technique Overview\n\nSystems in a decoy environment are typically configured so that some detectable means of communication does not have any legitimate business purpose.  Any communication via these means should be logged and analyzed to find potential indicators of compromise for a possible past or future attack against other systems."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyEnvironment",
+          "source_property": "d3f:synonym",
+          "evidence_text": "Honeypot"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:DecoyEnvironment",
+          "source_property": "d3f:manages",
+          "evidence_text": "d3f:DecoyArtifact"
+        }
+      ]
+    },
+    {
+      "source_technique_id": "D3-CHN",
+      "source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#ConnectedHoneynet",
+      "name": "Connected Honeynet",
+      "definition": "A decoy service, system, or environment, that is connected to the enterprise network, and simulates or emulates certain functionality to the network, without exposing full access to a production system.",
+      "synonyms": [],
+      "parent_ids": [
+        "D3-DE"
+      ],
+      "child_ids": [],
+      "is_leaf": true,
+      "artifacts": [
+        "d3f:LocalAreaNetwork"
+      ],
+      "kb_article": "## How it works\nDecoy honeypots are deployed within the enterprise environment that emulate certain services or portions of an OS to attract attackers.\n\n## Considerations\nA connected honeynet provides a tradeoff between emulating certain functionality but not being as sophisticated as an integrated honeynet. The connected honeynet may not provide enough functionality to detect new attack patterns or zero day exploits but could provide enough functionality for specific known vulnerabilities.",
+      "references": [
+        {
+          "title": "Modification of a Server to Mimic a Deception Mechanism",
+          "url": "https://patents.google.com/patent/US20170149825A1",
+          "author": "Sreenivas Gukal, Rammohan Varadarajan",
+          "organization": "Acalvio Technologies Inc"
+        }
+      ],
+      "source_evidence": [
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:ConnectedHoneynet",
+          "source_property": "rdfs:label",
+          "evidence_text": "Connected Honeynet"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:ConnectedHoneynet",
+          "source_property": "d3f:definition",
+          "evidence_text": "A decoy service, system, or environment, that is connected to the enterprise network, and simulates or emulates certain functionality to the network, without exposing full access to a production system."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:ConnectedHoneynet",
+          "source_property": "d3f:kb-article",
+          "evidence_text": "## How it works\nDecoy honeypots are deployed within the enterprise environment that emulate certain services or portions of an OS to attract attackers.\n\n## Considerations\nA connected honeynet provides a tradeoff between emulating certain functionality but not being as sophisticated as an integrated honeynet. The connected honeynet may not provide enough functionality to detect new attack patterns or zero day exploits but could provide enough functionality for specific known vulnerabilities."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:ConnectedHoneynet",
+          "source_property": "d3f:spoofs",
+          "evidence_text": "d3f:LocalAreaNetwork"
+        }
+      ]
+    },
+    {
+      "source_technique_id": "D3-SHN",
+      "source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#StandaloneHoneynet",
+      "name": "Standalone Honeynet",
+      "definition": "An environment created for the purpose of attracting attackers and eliciting their behaviors that is not connected to any production enterprise systems.",
+      "synonyms": [],
+      "parent_ids": [
+        "D3-DE"
+      ],
+      "child_ids": [],
+      "is_leaf": true,
+      "artifacts": [
+        "d3f:IntranetNetwork"
+      ],
+      "kb_article": "## How it works\nA standalone honeynet does not directly interact with the real enterprise environment. It may be located near or in some portion of the enterprise address space, but it does not interact with enterprise resources.\n\n## Considerations\nA standalone honeynet is a lower risk to deploy compared to connected or integrated honeynets due to its isolation from the enterprise network. However, this comes at cost in loss of fidelity and realism. Significant extra effort must be made in order to make the environment look realistic.",
+      "references": [
+        {
+          "title": "Dynamic selection and generation of a virtual clone for detonation of suspicious content within a honey network",
+          "url": "https://patents.google.com/patent/US9882929B1/en?oq=US-9882929-B1",
+          "author": "Taylor Ettema; Huagang Xie",
+          "organization": "Palo Alto Networks Inc"
+        }
+      ],
+      "source_evidence": [
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:StandaloneHoneynet",
+          "source_property": "rdfs:label",
+          "evidence_text": "Standalone Honeynet"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:StandaloneHoneynet",
+          "source_property": "d3f:definition",
+          "evidence_text": "An environment created for the purpose of attracting attackers and eliciting their behaviors that is not connected to any production enterprise systems."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:StandaloneHoneynet",
+          "source_property": "d3f:kb-article",
+          "evidence_text": "## How it works\nA standalone honeynet does not directly interact with the real enterprise environment. It may be located near or in some portion of the enterprise address space, but it does not interact with enterprise resources.\n\n## Considerations\nA standalone honeynet is a lower risk to deploy compared to connected or integrated honeynets due to its isolation from the enterprise network. However, this comes at cost in loss of fidelity and realism. Significant extra effort must be made in order to make the environment look realistic."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:StandaloneHoneynet",
+          "source_property": "d3f:spoofs",
+          "evidence_text": "d3f:IntranetNetwork"
+        }
+      ]
+    },
+    {
+      "source_technique_id": "D3-IHN",
+      "source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#IntegratedHoneynet",
+      "name": "Integrated Honeynet",
+      "definition": "The practice of setting decoys in a production environment to entice interaction from attackers.",
+      "synonyms": [],
+      "parent_ids": [
+        "D3-DE"
+      ],
+      "child_ids": [],
+      "is_leaf": true,
+      "artifacts": [
+        "d3f:IntranetNetwork"
+      ],
+      "kb_article": "## How it works\nIntegrated honeynets use full production environments connected to the enterprise network, that utilize computing resources or software that attract attackers, and allow full interaction and access that provides a complete view of an attack.\n\n## Considerations\nAn attacker with control of a system on an Integrated Honeynet could:\n* try to attack other connected hosts on the network, its IP range of internal hosts not properly configured to react to connections from machines on the integrated honeynet, or position behind the firewall.\n* exploit its position by eavesdropping on network traffic\nIf an attacker manages to stop the processes used to log an attack without setting off any alarms. [1]\n\n1. Honeypots for Windows, Roger Grimes, 2005",
+      "references": [
+        {
+          "title": "Synchronizing a honey network configuration to reflect a target network environment",
+          "url": "https://patents.google.com/patent/US20170019425A1",
+          "author": "Taylor Ettema, Huagang Xie",
+          "organization": "Palo Alto Networks Inc"
+        }
+      ],
+      "source_evidence": [
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:IntegratedHoneynet",
+          "source_property": "rdfs:label",
+          "evidence_text": "Integrated Honeynet"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:IntegratedHoneynet",
+          "source_property": "d3f:definition",
+          "evidence_text": "The practice of setting decoys in a production environment to entice interaction from attackers."
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:IntegratedHoneynet",
+          "source_property": "d3f:kb-article",
+          "evidence_text": "## How it works\nIntegrated honeynets use full production environments connected to the enterprise network, that utilize computing resources or software that attract attackers, and allow full interaction and access that provides a complete view of an attack.\n\n## Considerations\nAn attacker with control of a system on an Integrated Honeynet could:\n* try to attack other connected hosts on the network, its IP range of internal hosts not properly configured to react to connections from machines on the integrated honeynet, or position behind the firewall.\n* exploit its position by eavesdropping on network traffic\nIf an attacker manages to stop the processes used to log an attack without setting off any alarms. [1]\n\n1. Honeypots for Windows, Roger Grimes, 2005"
+        },
+        {
+          "source_file": "d3fend.json",
+          "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9",
+          "source_entity": "d3f:IntegratedHoneynet",
+          "source_property": "d3f:spoofs",
+          "evidence_text": "d3f:IntranetNetwork"
+        }
+      ]
+    }
+  ]
+}
