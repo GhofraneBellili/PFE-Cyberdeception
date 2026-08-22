@@ -92,6 +92,44 @@ Sur D3FEND 1.5.0, cela identifie exactement 2 racines (`Decoy Object`,
 la page officielle `https://d3fend.mitre.org/tactic/d3f:Deceive/`
 (« The Deceive tactic contains 11 techniques »).
 
+## Bindings bruts, relations uniques, couples uniques (durcissement)
+
+`d3fend-full-mappings.json` contient des lignes (« bindings ») SPARQL qui
+peuvent représenter **exactement** la même relation plusieurs fois. Trois
+notions distinctes sont donc explicitement séparées, dans `mapping_seed`
+comme dans le rapport :
+
+| Métrique | Dans `mapping_seed` | Dans le rapport | Signification |
+|---|---|---|---|
+| Bindings bruts retenus | `raw_binding_count` | `raw_attack_binding_count` | nombre de bindings SPARQL après filtrage branche Deceive + `framework_key == "enterprise"`, **avant** déduplication |
+| Relations documentaires uniques | `unique_relation_count` | `unique_attack_relation_count` | nombre d'entrées après déduplication **exacte** ; c'est la taille de `mapping_seed["mappings"]` |
+| Couples D3FEND↔ATT&CK uniques | `unique_d3fend_attack_pair_count` | `unique_d3fend_attack_pair_count` | nombre de couples `(d3fend_id, attack_id)` distincts, tous chemins d'artefacts confondus |
+
+**Clé de déduplication** (`_mapping_dedup_key`, voir
+`d3fend_seed_builder.py`) — deux relations ne sont fusionnées que si elles
+coïncident **exactement** sur les sept champs :
+
+```text
+(d3fend_id, attack_id,
+ relation_path.def_artifact_relation,
+ relation_path.shared_artifact,
+ relation_path.off_artifact_relation,
+ framework, origin)
+```
+
+La déduplication ne supprime donc que les bindings strictement identiques.
+Un même couple D3FEND↔ATT&CK justifié par **plusieurs chemins d'artefacts
+différents** (`relation_path` différent) est conservé comme autant de
+preuves documentaires distinctes — jamais fusionné, jamais pondéré, jamais
+associé à une confiance inventée. La première occurrence est conservée,
+dans l'ordre déterministe du fichier source.
+
+`validate_attack_mapping_seed` rejette explicitement (`D3fendSeedBuilderError`)
+toute relation strictement dupliquée qui subsisterait dans un
+`mapping_seed` chargé ou corrompu, mais n'a jamais rejeté deux relations ne
+partageant qu'un même `(d3fend_id, attack_id)` avec un `relation_path`
+différent.
+
 ## OPEN_DECISION préservées (non résolues par cette phase)
 
 1. Quels niveaux de la hiérarchie D3FEND Deceive deviennent des mécanismes
@@ -107,13 +145,43 @@ la page officielle `https://d3fend.mitre.org/tactic/d3f:Deceive/`
 
 ## Utilisation
 
+La CLI régénère de façon cohérente et reproductible le staging, le rapport
+**et** le manifest de provenance (`source_manifest.json`) :
+
 ```bash
 python -m tools.deception_kb.d3fend_seed_builder \
   --ontology data/deception/raw/d3fend/1.5.0/d3fend.json \
   --mappings data/deception/raw/d3fend/1.5.0/d3fend-full-mappings.json \
   --release-version 1.5.0 \
-  --out-dir data/deception/staging
+  --ontology-url https://d3fend.mitre.org/ontologies/d3fend/1.5.0/d3fend.json \
+  --mappings-url https://d3fend.mitre.org/ontologies/d3fend/1.5.0/d3fend-full-mappings.json \
+  --retrieval-date 2026-08-22 \
+  --out-dir data/deception/staging \
+  --manifest-out data/deception/source_manifest.json
 ```
 
-Tous les chemins sont fournis explicitement en argument ; aucun chemin
-absolu local n'est codé en dur dans le module.
+(Les URLs ci-dessus sont documentées ici comme exemples — la CLI ne les
+utilise jamais comme valeur par défaut silencieuse : `--ontology-url` et
+`--mappings-url` sont obligatoires.)
+
+Arguments de provenance requis (aucune valeur devinée ou codée en dur) :
+
+| Argument | Rôle |
+|---|---|
+| `--ontology` / `--mappings` | chemins locaux vers les fichiers officiels déjà téléchargés |
+| `--release-version` | version D3FEND pinnée (ex. `1.5.0`) |
+| `--ontology-url` / `--mappings-url` | URL officielle MITRE de chaque fichier (provenance) |
+| `--retrieval-date` | date d'acquisition, format `YYYY-MM-DD`, validée par la CLI |
+| `--out-dir` | répertoire de sortie du seed/mapping seed/rapport |
+| `--manifest-out` | chemin de sortie de `source_manifest.json` |
+| `--d3fend-iri-base` | (optionnel) préfixe IRI `d3f:` pour résoudre les identifiants du fichier de mappings |
+
+Les SHA-256 inscrits dans le manifest sont **réutilisés** depuis ceux déjà
+calculés par `build_d3fend_deception_seed`/`build_d3fend_attack_mapping_seed`
+(pas de seconde lecture des fichiers), avec une vérification de cohérence
+explicite (`D3fendSeedBuilderError` en cas de divergence). Le rapport
+généré porte donc toujours `report["sources"] == manifest["sources"]` —
+jamais une liste vide.
+
+Tous les chemins, URLs et dates sont fournis explicitement en argument ;
+rien n'est codé en dur ni deviné dans le module.

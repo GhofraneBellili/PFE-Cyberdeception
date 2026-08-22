@@ -496,15 +496,33 @@ officiel `d3fend.mitre.org` :
   MITRE SPARTA, dont les identifiants ne suivent pas le format `Txxxx` —
   constat fait par inspection réelle du fichier) ; aucune confiance n'est
   inventée, seule la provenance (`origin: "d3fend_inferred"`) est conservée.
+- **Déduplication documentaire (durcissement)** : un « binding » SPARQL
+  brut n'est pas une relation unique, qui n'est pas non plus un couple
+  D3FEND↔ATT&CK unique — trois métriques explicites sont donc distinguées
+  (`raw_attack_binding_count`, `unique_attack_relation_count`,
+  `unique_d3fend_attack_pair_count`). La déduplication ne supprime que les
+  bindings **strictement identiques** (même `d3fend_id`, `attack_id`,
+  chemin d'artefacts `relation_path`, `framework` et `origin`) ; deux
+  chemins d'artefacts différents entre un même couple D3FEND↔ATT&CK sont
+  conservés comme preuves distinctes, jamais fusionnés.
 - Validation déterministe : pas de `source_technique_id` dupliqué, pas de
   parent/enfant orphelin, pas de mapping référençant une technique absente
-  du seed, format `Txxxx`/`Txxxx.xxx` des identifiants ATT&CK conservés.
+  du seed, format `Txxxx`/`Txxxx.xxx` des identifiants ATT&CK conservés, et
+  désormais pas de relation strictement dupliquée.
+- La CLI régénère également `data/deception/source_manifest.json` à partir
+  de paramètres de provenance explicites (URLs officielles, date
+  d'acquisition) et injecte exactement ses sources dans le rapport
+  (`report["sources"] == manifest["sources"]`, jamais une liste vide).
 
 #### Sorties
 
 - `data/deception/staging/d3fend_deception_seed_1.5.0.json` (11 concepts) ;
-- `data/deception/staging/d3fend_attack_mapping_seed_1.5.0.json` (406
-  relations inférées, périmètre ATT&CK Enterprise) ;
+- `data/deception/staging/d3fend_attack_mapping_seed_1.5.0.json` — sur
+  D3FEND 1.5.0 (périmètre ATT&CK Enterprise) : **406 bindings SPARQL
+  bruts** retenus après filtrage, **140 relations documentaires uniques**
+  après déduplication exacte (c'est la taille de `mappings[]`), et **128
+  couples D3FEND↔ATT&CK uniques** (12 couples sont donc justifiés par
+  plusieurs chemins d'artefacts distincts, conservés séparément) ;
 - `data/deception/staging/d3fend_seed_report_1.5.0.json` ;
 - `data/deception/source_manifest.json`.
 
@@ -521,9 +539,9 @@ officiel `d3fend.mitre.org` :
 
 `build_d3fend_deception_seed`, `find_deceive_root_ids`,
 `collect_branch_ids`, `build_concept_entry`,
-`build_d3fend_attack_mapping_seed`, `validate_deception_seed`,
-`validate_attack_mapping_seed`, `build_seed_report`,
-`build_source_manifest`.
+`build_d3fend_attack_mapping_seed` (dédupliqué), `validate_deception_seed`,
+`validate_attack_mapping_seed` (rejette les doublons exacts),
+`build_seed_report`, `build_manifest_entry`, `build_source_manifest`.
 
 #### Invariants et règles respectées
 
@@ -538,10 +556,13 @@ officiel `d3fend.mitre.org` :
 #### Tests et validation
 
 `tests/test_d3fend_seed_builder.py` — construction du seed, hiérarchie,
-mappings ATT&CK, filtrage hors branche/hors périmètre, validation,
-déterminisme, rapport/manifest, généralité (fixtures STIX synthétiques
-uniquement, aucune dépendance réseau en CI). 22 tests au moment de la
-validation. CI verte.
+mappings ATT&CK, filtrage hors branche/hors périmètre, **déduplication
+documentaire** (bindings strictement identiques, chemins d'artefacts
+distincts conservés, rejet de doublon exact par validation), validation,
+déterminisme, rapport/manifest **reproductible** (cohérence des hashes
+manifest ↔ seed), CLI offline de bout en bout, généralité (fixtures STIX
+synthétiques uniquement, aucune dépendance réseau en CI). 31 tests au
+moment de la validation. CI verte.
 
 #### Traçabilité
 
@@ -553,11 +574,14 @@ validation. CI verte.
   — SHA-256 `684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba`.
 - Nombre de concepts extraits (11) vérifié identique à la page officielle
   `https://d3fend.mitre.org/tactic/d3f:Deceive/` (« The Deceive tactic
-  contains 11 techniques »).
-- Commit de validation : *à renseigner lors de la prochaine mise à jour
-  naturelle de ce README* (hash communiqué dans le rapport de session
-  ayant validé cette étape, pour éviter une boucle de commits
-  d'auto-référencement).
+  contains 11 techniques ») — inchangé par ce durcissement (fichier de seed
+  regénéré strictement identique, octet pour octet).
+- Commit de validation initiale (extraction du staging) :
+  `94ff9c72fbe5cab9f26d470b8e25da13b2e836dd`.
+- Commit de durcissement (déduplication documentaire + reproductibilité de
+  la CLI) : *à renseigner lors de la prochaine mise à jour naturelle de ce
+  README* (hash communiqué dans le rapport de session correspondant, pour
+  éviter une boucle de commits d'auto-référencement).
 
 #### Limites actuelles
 

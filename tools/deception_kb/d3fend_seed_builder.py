@@ -374,6 +374,42 @@ def _local_name_from_iri(context_iri_base: str, full_iri: str) -> str | None:
     return None
 
 
+def _mapping_dedup_key(mapping: dict) -> tuple:
+    """Réf. durcissement §3 : clé déterministe de déduplication d'une
+    relation D3FEND -> ATT&CK. Deux relations ne sont considérées comme le
+    même binding QUE si elles coïncident exactement sur ces sept champs —
+    un relation_path différent (chemin d'artefacts différent) reste une
+    preuve documentaire distincte, jamais fusionnée. Accès défensif
+    (`.get`) : utilisable aussi bien sur des mappings construits en interne
+    que sur un mapping_seed chargé/corrompu passé à la validation."""
+    relation_path = mapping.get("relation_path") or {}
+    return (
+        mapping.get("d3fend_id"),
+        mapping.get("attack_id"),
+        relation_path.get("def_artifact_relation"),
+        relation_path.get("shared_artifact"),
+        relation_path.get("off_artifact_relation"),
+        mapping.get("framework"),
+        mapping.get("origin"),
+    )
+
+
+def _deduplicate_mappings(mappings: list[dict]) -> list[dict]:
+    """Réf. durcissement §4 : supprime les doublons EXACTS (même clé de
+    relation), en conservant la première occurrence et l'ordre déterministe
+    du fichier source. Ne fusionne jamais deux relation_path différents,
+    n'invente aucune relation, n'attribue ni poids ni confidence."""
+    seen: set[tuple] = set()
+    deduplicated: list[dict] = []
+    for mapping in mappings:
+        key = _mapping_dedup_key(mapping)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduplicated.append(mapping)
+    return deduplicated
+
+
 def build_d3fend_attack_mapping_seed(
     mappings_path: str | Path,
     deception_seed: dict,
@@ -390,6 +426,16 @@ def build_d3fend_attack_mapping_seed(
     officiel mélange aussi ATT&CK ICS et MITRE SPARTA, dont les identifiants
     ne suivent pas le format Txxxx).
 
+    Réf. durcissement §2/§3/§4 : un binding SPARQL brut n'est pas une
+    relation documentaire unique, qui n'est pas non plus un couple
+    D3FEND<->ATT&CK unique (plusieurs chemins d'artefacts peuvent justifier
+    le même couple). Trois métriques explicites sont donc conservées :
+    raw_binding_count (bindings retenus après filtrage branche/framework),
+    unique_relation_count (après déduplication EXACTE, clé
+    _mapping_dedup_key), unique_d3fend_attack_pair_count (couples
+    (d3fend_id, attack_id) distincts). `mappings` ne contient que les
+    relations dédupliquées ; len(mappings) == unique_relation_count.
+
     Ces relations restent du STAGING ("origin": "d3fend_inferred") : elles
     ne deviennent pas M_{i,d} ici (OPEN_DECISION 4, non résolue).
     """
@@ -402,14 +448,9 @@ def build_d3fend_attack_mapping_seed(
             "Le fichier de mappings D3FEND doit être un résultat SPARQL avec results.bindings."
         )
 
-    known_source_ids = {
-        entry["source_technique_id"]
-        for entry in deception_seed["concepts"]
-        if entry.get("source_technique_id")
-    }
     known_local_names = {entry["source_uri"].split("#")[-1] for entry in deception_seed["concepts"]}
 
-    mappings = []
+    filtered_mappings = []
     for binding in bindings:
         def_tech_iri = binding.get("def_tech", {}).get("value", "")
         local_name = _local_name_from_iri(d3fend_iri_base, def_tech_iri)
@@ -428,7 +469,7 @@ def build_d3fend_attack_mapping_seed(
             None,
         )
 
-        mappings.append(
+        filtered_mappings.append(
             {
                 "d3fend_id": d3fend_short_id,
                 "d3fend_local_name": local_name,
@@ -446,6 +487,10 @@ def build_d3fend_attack_mapping_seed(
             }
         )
 
+    raw_binding_count = len(filtered_mappings)
+    deduplicated_mappings = _deduplicate_mappings(filtered_mappings)
+    unique_pairs = {(m["d3fend_id"], m["attack_id"]) for m in deduplicated_mappings}
+
     return {
         "schema": "d3fend_attack_mapping_seed",
         "schema_version": "1.0",
@@ -453,7 +498,10 @@ def build_d3fend_attack_mapping_seed(
         "attack_framework_scope": _ATTACK_FRAMEWORK_KEY,
         "source_file": source_file_label,
         "source_sha256": source_sha256,
-        "mappings": mappings,
+        "raw_binding_count": raw_binding_count,
+        "unique_relation_count": len(deduplicated_mappings),
+        "unique_d3fend_attack_pair_count": len(unique_pairs),
+        "mappings": deduplicated_mappings,
     }
 
 
@@ -493,10 +541,15 @@ def validate_deception_seed(seed: dict) -> None:
 
 
 def validate_attack_mapping_seed(mapping_seed: dict, deception_seed: dict) -> None:
-    """Réf. tâche §16 : un mapping ne doit jamais référencer une technique
-    D3FEND absente du seed de concepts, et chaque attack_id doit respecter
-    le format ATT&CK Txxxx / Txxxx.xxx."""
+    """Réf. tâche §16 (phase initiale) / §5 (durcissement) : un mapping ne
+    doit jamais référencer une technique D3FEND absente du seed de
+    concepts, chaque attack_id doit respecter le format ATT&CK
+    Txxxx / Txxxx.xxx, et aucune relation strictement dupliquée (même clé
+    _mapping_dedup_key) ne doit subsister — deux relations partageant
+    seulement (d3fend_id, attack_id) mais un relation_path différent ne
+    sont jamais rejetées."""
     known_ids = {c["source_technique_id"] for c in deception_seed["concepts"]}
+    seen_relation_keys: set[tuple] = set()
 
     for mapping in mapping_seed["mappings"]:
         d3fend_id = mapping.get("d3fend_id")
@@ -514,6 +567,14 @@ def validate_attack_mapping_seed(mapping_seed: dict, deception_seed: dict) -> No
         if not mapping.get("source_sha256"):
             raise D3fendSeedBuilderError("Un mapping D3FEND doit conserver source_sha256.")
 
+        relation_key = _mapping_dedup_key(mapping)
+        if relation_key in seen_relation_keys:
+            raise D3fendSeedBuilderError(
+                f"Relation D3FEND<->ATT&CK strictement dupliquée dans le mapping seed : "
+                f"d3fend_id='{d3fend_id}', attack_id='{attack_id}'."
+            )
+        seen_relation_keys.add(relation_key)
+
 
 # ---------------------------------------------------------------------------
 # Rapport d'extraction (réf. tâche §17)
@@ -521,8 +582,18 @@ def validate_attack_mapping_seed(mapping_seed: dict, deception_seed: dict) -> No
 
 
 def build_seed_report(deception_seed: dict, mapping_seed: dict, manifest_entries: list[dict]) -> dict:
-    """Réf. tâche §17 : petit rapport local sur l'extraction réalisée, pour
-    comparaison ultérieure avec la taxonomie officielle MITRE."""
+    """Réf. tâche §17 (phase initiale) / §6 (durcissement) : petit rapport
+    local sur l'extraction réalisée, pour comparaison ultérieure avec la
+    taxonomie officielle MITRE.
+
+    Expose explicitement trois métriques distinctes plutôt qu'un
+    "attack_mapping_count" ambigu : un binding SPARQL brut retenu
+    (raw_attack_binding_count) n'est pas une relation documentaire unique
+    (unique_attack_relation_count), qui n'est pas non plus un couple
+    D3FEND<->ATT&CK unique (unique_d3fend_attack_pair_count) — un même
+    couple peut être justifié par plusieurs chemins d'artefacts différents,
+    donc par plusieurs relations uniques distinctes.
+    """
     concepts = deception_seed["concepts"]
     leaves = [c for c in concepts if c["is_leaf"]]
     parents = [c for c in concepts if not c["is_leaf"]]
@@ -534,7 +605,9 @@ def build_seed_report(deception_seed: dict, mapping_seed: dict, manifest_entries
         "concept_count": len(concepts),
         "leaf_count": len(leaves),
         "parent_count": len(parents),
-        "attack_mapping_count": len(mapping_seed["mappings"]),
+        "raw_attack_binding_count": mapping_seed["raw_binding_count"],
+        "unique_attack_relation_count": mapping_seed["unique_relation_count"],
+        "unique_d3fend_attack_pair_count": mapping_seed["unique_d3fend_attack_pair_count"],
         "extracted_ids": sorted(c["source_technique_id"] for c in concepts),
         "warnings": [],
     }
@@ -545,6 +618,35 @@ def build_seed_report(deception_seed: dict, mapping_seed: dict, manifest_entries
 # ---------------------------------------------------------------------------
 
 
+def build_manifest_entry(
+    *,
+    source_id: str,
+    source_name: str,
+    release_version: str,
+    official_url: str,
+    local_filename: str,
+    sha256: str,
+    source_type: str,
+    retrieval_date: str,
+    role: str,
+) -> dict:
+    """Réf. tâche §5 (phase initiale) / §10 (durcissement) : une entrée de
+    manifest de provenance, construite uniquement à partir de paramètres
+    explicites — aucune URL ni date n'est devinée ou codée en dur ici."""
+    return {
+        "source_id": source_id,
+        "source_name": source_name,
+        "provider": "MITRE",
+        "release_version": release_version,
+        "official_url": official_url,
+        "local_filename": local_filename,
+        "sha256": sha256,
+        "source_type": source_type,
+        "retrieval_date": retrieval_date,
+        "role": role,
+    }
+
+
 def build_source_manifest(entries: list[dict]) -> dict:
     """Réf. tâche §5 : assemble le manifest versionné des sources
     officielles réellement utilisées."""
@@ -552,18 +654,35 @@ def build_source_manifest(entries: list[dict]) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# CLI offline (réf. tâche §15) — aucun chemin absolu codé en dur
+# CLI offline (réf. tâche §15 phase initiale / §7-§12 durcissement) —
+# aucun chemin, URL ou date codé en dur
 # ---------------------------------------------------------------------------
 
 
 def _run_cli(argv: list[str] | None = None) -> None:
     """Point d'entrée `python -m tools.deception_kb.d3fend_seed_builder`.
-    Tous les chemins (source et sortie) sont fournis explicitement en
-    argument ; aucun n'est codé en dur."""
+
+    Régénère de façon cohérente et reproductible, à partir de paramètres
+    explicites uniquement (aucune URL ni date codée en dur, réf. durcissement
+    §7-§12) :
+    - le seed de concepts et le seed de mappings (déjà dédupliqué) ;
+    - le manifest de provenance `source_manifest.json` ;
+    - le rapport d'extraction, dont `sources` provient exactement du
+      manifest généré (jamais une liste vide).
+
+    Les SHA-256 du manifest sont réutilisés depuis ceux déjà calculés par
+    `build_d3fend_deception_seed`/`build_d3fend_attack_mapping_seed` (pas de
+    seconde lecture des fichiers), avec une vérification de cohérence
+    explicite.
+    """
     import argparse
+    from datetime import date
 
     parser = argparse.ArgumentParser(
-        description="Construit le staging D3FEND (branche Deceive) à partir des fichiers officiels."
+        description=(
+            "Construit le staging D3FEND (branche Deceive) et le manifest de "
+            "provenance à partir des fichiers officiels."
+        )
     )
     parser.add_argument("--ontology", required=True, help="Chemin vers d3fend.json (officiel).")
     parser.add_argument(
@@ -571,12 +690,37 @@ def _run_cli(argv: list[str] | None = None) -> None:
     )
     parser.add_argument("--release-version", required=True, help="Version D3FEND pinnée (ex. 1.5.0).")
     parser.add_argument(
+        "--ontology-url",
+        required=True,
+        help="URL officielle MITRE de l'ontologie (provenance ; jamais devinée).",
+    )
+    parser.add_argument(
+        "--mappings-url",
+        required=True,
+        help="URL officielle MITRE du fichier de mappings (provenance ; jamais devinée).",
+    )
+    parser.add_argument(
+        "--retrieval-date",
+        required=True,
+        help="Date d'acquisition des fichiers officiels, format YYYY-MM-DD.",
+    )
+    parser.add_argument(
         "--d3fend-iri-base",
         default="http://d3fend.mitre.org/ontologies/d3fend.owl#",
         help="Préfixe IRI d3f: utilisé pour résoudre les identifiants du fichier de mappings.",
     )
     parser.add_argument("--out-dir", required=True, help="Répertoire de sortie du staging.")
+    parser.add_argument(
+        "--manifest-out", required=True, help="Chemin de sortie de source_manifest.json."
+    )
     args = parser.parse_args(argv)
+
+    try:
+        date.fromisoformat(args.retrieval_date)
+    except ValueError as exc:
+        raise D3fendSeedBuilderError(
+            f"--retrieval-date doit être au format YYYY-MM-DD (reçu : '{args.retrieval_date}')."
+        ) from exc
 
     deception_seed = build_d3fend_deception_seed(
         args.ontology, release_version=args.release_version
@@ -591,23 +735,64 @@ def _run_cli(argv: list[str] | None = None) -> None:
     )
     validate_attack_mapping_seed(mapping_seed, deception_seed)
 
+    version = args.release_version
+
+    ontology_entry = build_manifest_entry(
+        source_id=f"d3fend-ontology-{version}",
+        source_name="D3FEND Ontology",
+        release_version=version,
+        official_url=args.ontology_url,
+        local_filename=str(args.ontology),
+        sha256=deception_seed["source_sha256"],
+        source_type="json-ld",
+        retrieval_date=args.retrieval_date,
+        role="ontology",
+    )
+    mappings_entry = build_manifest_entry(
+        source_id=f"d3fend-full-mappings-{version}",
+        source_name="D3FEND Full Mappings (inferred relationships)",
+        release_version=version,
+        official_url=args.mappings_url,
+        local_filename=str(args.mappings),
+        sha256=mapping_seed["source_sha256"],
+        source_type="sparql-results-json",
+        retrieval_date=args.retrieval_date,
+        role="inferred_mappings",
+    )
+
+    # Réf. durcissement §11 : les hashes du manifest doivent provenir des
+    # mêmes lectures que le seed/mapping_seed (jamais d'un recalcul séparé),
+    # vérifié explicitement pour se prémunir d'une régression future.
+    if ontology_entry["sha256"] != deception_seed["source_sha256"]:
+        raise D3fendSeedBuilderError(
+            "Incohérence de hash entre le manifest et le seed de concepts."
+        )
+    if mappings_entry["sha256"] != mapping_seed["source_sha256"]:
+        raise D3fendSeedBuilderError(
+            "Incohérence de hash entre le manifest et le seed de mappings."
+        )
+
+    manifest = build_source_manifest([ontology_entry, mappings_entry])
+    report = build_seed_report(deception_seed, mapping_seed, manifest_entries=manifest["sources"])
+
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    version = args.release_version
 
     seed_path = out_dir / f"d3fend_deception_seed_{version}.json"
     mapping_path = out_dir / f"d3fend_attack_mapping_seed_{version}.json"
     report_path = out_dir / f"d3fend_seed_report_{version}.json"
+    manifest_path = Path(args.manifest_out)
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
     seed_path.write_text(json.dumps(deception_seed, indent=2, ensure_ascii=False), encoding="utf-8")
     mapping_path.write_text(json.dumps(mapping_seed, indent=2, ensure_ascii=False), encoding="utf-8")
-
-    report = build_seed_report(deception_seed, mapping_seed, manifest_entries=[])
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print(f"Seed: {seed_path}")
     print(f"Mapping seed: {mapping_path}")
     print(f"Report: {report_path}")
+    print(f"Manifest: {manifest_path}")
 
 
 if __name__ == "__main__":

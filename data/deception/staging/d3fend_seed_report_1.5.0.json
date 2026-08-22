@@ -31,7 +31,9 @@
   "concept_count": 11,
   "leaf_count": 9,
   "parent_count": 2,
-  "attack_mapping_count": 406,
+  "raw_attack_binding_count": 406,
+  "unique_attack_relation_count": 140,
+  "unique_d3fend_attack_pair_count": 128,
   "extracted_ids": [
     "D3-CHN",
     "D3-DE",

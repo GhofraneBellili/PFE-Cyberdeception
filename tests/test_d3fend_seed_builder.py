@@ -21,8 +21,10 @@ import pytest
 
 from tools.deception_kb.d3fend_seed_builder import (
     D3fendSeedBuilderError,
+    _run_cli,
     build_d3fend_attack_mapping_seed,
     build_d3fend_deception_seed,
+    build_manifest_entry,
     build_seed_report,
     build_source_manifest,
     validate_attack_mapping_seed,
@@ -349,6 +351,140 @@ class TestAttackMappingSeed:
 
 
 # ---------------------------------------------------------------------------
+# B (durcissement). Déduplication documentaire des mappings
+# ---------------------------------------------------------------------------
+
+
+class TestDeduplication:
+    def _deception_seed(self, tmp_path):
+        return build_d3fend_deception_seed(write_ontology(tmp_path), release_version="9.9.9-fixture")
+
+    def test_exact_duplicate_bindings_deduplicated(self, tmp_path):
+        deception_seed = self._deception_seed(tmp_path)
+        bindings = [
+            make_binding("ExampleLureChildA", "T9001"),
+            make_binding("ExampleLureChildA", "T9001"),  # strictement identique
+        ]
+        path = write_mappings(tmp_path, bindings)
+        mapping_seed = build_d3fend_attack_mapping_seed(
+            path, deception_seed, release_version="9.9.9-fixture", d3fend_iri_base=D3F_BASE
+        )
+        assert mapping_seed["raw_binding_count"] == 2
+        assert mapping_seed["unique_relation_count"] == 1
+        assert len(mapping_seed["mappings"]) == 1
+
+    def test_different_relation_path_both_kept(self, tmp_path):
+        """Même d3fend_id + même attack_id, mais un chemin d'artefacts
+        différent : ce sont deux preuves documentaires distinctes, jamais
+        fusionnées."""
+        deception_seed = self._deception_seed(tmp_path)
+        bindings = [
+            make_binding(
+                "ExampleLureChildA",
+                "T9001",
+                def_artifact_rel_label={"type": "literal", "value": "relation-A"},
+            ),
+            make_binding(
+                "ExampleLureChildA",
+                "T9001",
+                def_artifact_rel_label={"type": "literal", "value": "relation-B"},
+            ),
+        ]
+        path = write_mappings(tmp_path, bindings)
+        mapping_seed = build_d3fend_attack_mapping_seed(
+            path, deception_seed, release_version="9.9.9-fixture", d3fend_iri_base=D3F_BASE
+        )
+        assert mapping_seed["raw_binding_count"] == 2
+        assert mapping_seed["unique_relation_count"] == 2
+        assert len(mapping_seed["mappings"]) == 2
+
+    def test_multiple_relations_same_pair_counted_once(self, tmp_path):
+        deception_seed = self._deception_seed(tmp_path)
+        bindings = [
+            make_binding(
+                "ExampleLureChildA",
+                "T9001",
+                def_artifact_rel_label={"type": "literal", "value": "relation-A"},
+            ),
+            make_binding(
+                "ExampleLureChildA",
+                "T9001",
+                def_artifact_rel_label={"type": "literal", "value": "relation-B"},
+            ),
+        ]
+        path = write_mappings(tmp_path, bindings)
+        mapping_seed = build_d3fend_attack_mapping_seed(
+            path, deception_seed, release_version="9.9.9-fixture", d3fend_iri_base=D3F_BASE
+        )
+        assert mapping_seed["unique_relation_count"] == 2
+        assert mapping_seed["unique_d3fend_attack_pair_count"] == 1
+
+    def test_order_preserved_first_occurrence_kept(self, tmp_path):
+        deception_seed = self._deception_seed(tmp_path)
+        bindings = [
+            make_binding("ExampleLureChildA", "T9001"),
+            make_binding("ExampleLureChildA", "T9002"),
+            make_binding("ExampleLureChildA", "T9001"),  # doublon du premier
+        ]
+        path = write_mappings(tmp_path, bindings)
+        mapping_seed = build_d3fend_attack_mapping_seed(
+            path, deception_seed, release_version="9.9.9-fixture", d3fend_iri_base=D3F_BASE
+        )
+        assert [m["attack_id"] for m in mapping_seed["mappings"]] == ["T9001", "T9002"]
+
+    def test_validate_rejects_exact_duplicate_relation(self, tmp_path):
+        deception_seed = self._deception_seed(tmp_path)
+        relation_path = {
+            "def_artifact_relation": "relation-A",
+            "shared_artifact": "Fixture Artifact",
+            "off_artifact_relation": "fixture-off-relation",
+        }
+        duplicated_entry = {
+            "d3fend_id": "D3-ELCA",
+            "attack_id": "T9001",
+            "relation_path": relation_path,
+            "framework": "enterprise",
+            "source": "fixture",
+            "source_sha256": "a" * 64,
+            "origin": "d3fend_inferred",
+        }
+        corrupted_mapping_seed = {"mappings": [duplicated_entry, dict(duplicated_entry)]}
+        with pytest.raises(D3fendSeedBuilderError):
+            validate_attack_mapping_seed(corrupted_mapping_seed, deception_seed)
+
+    def test_validate_accepts_same_pair_different_relation_path(self, tmp_path):
+        """Ne rejette jamais deux relations qui partagent seulement
+        (d3fend_id, attack_id) si leur relation_path diffère."""
+        deception_seed = self._deception_seed(tmp_path)
+        base_entry = {
+            "d3fend_id": "D3-ELCA",
+            "attack_id": "T9001",
+            "framework": "enterprise",
+            "source": "fixture",
+            "source_sha256": "a" * 64,
+            "origin": "d3fend_inferred",
+        }
+        entry_a = {
+            **base_entry,
+            "relation_path": {
+                "def_artifact_relation": "relation-A",
+                "shared_artifact": "Artifact",
+                "off_artifact_relation": "off-relation",
+            },
+        }
+        entry_b = {
+            **base_entry,
+            "relation_path": {
+                "def_artifact_relation": "relation-B",
+                "shared_artifact": "Artifact",
+                "off_artifact_relation": "off-relation",
+            },
+        }
+        mapping_seed = {"mappings": [entry_a, entry_b]}
+        validate_attack_mapping_seed(mapping_seed, deception_seed)  # ne doit pas lever
+
+
+# ---------------------------------------------------------------------------
 # C. Déterminisme
 # ---------------------------------------------------------------------------
 
@@ -388,7 +524,9 @@ class TestReportAndManifest:
         assert report["concept_count"] == 3
         assert report["leaf_count"] == 1
         assert report["parent_count"] == 2
-        assert report["attack_mapping_count"] == 1
+        assert report["raw_attack_binding_count"] == 1
+        assert report["unique_attack_relation_count"] == 1
+        assert report["unique_d3fend_attack_pair_count"] == 1
         assert report["extracted_ids"] == ["D3-ELCA", "D3-ELG", "D3-ELR"]
 
     def test_source_manifest_structure(self):
@@ -403,6 +541,125 @@ class TestReportAndManifest:
         )
         assert manifest["schema"] == "deception_source_manifest"
         assert manifest["sources"][0]["provider"] == "MITRE"
+
+    def test_manifest_entry_hashes_match_seed_hashes(self, tmp_path):
+        """§13.C : construit le manifest avec des URLs et une date
+        synthétiques, mais les hashes réels des fixtures — vérifie la
+        cohérence manifest <-> seed/mapping_seed exigée par le durcissement
+        §11."""
+        ontology_path = write_ontology(tmp_path)
+        deception_seed = build_d3fend_deception_seed(ontology_path, release_version="9.9.9-fixture")
+        mappings_path = write_mappings(tmp_path, [make_binding("ExampleLureChildA", "T9001")])
+        mapping_seed = build_d3fend_attack_mapping_seed(
+            mappings_path, deception_seed, release_version="9.9.9-fixture", d3fend_iri_base=D3F_BASE
+        )
+
+        ontology_entry = build_manifest_entry(
+            source_id="fixture-ontology",
+            source_name="Fixture Ontology",
+            release_version="9.9.9-fixture",
+            official_url="https://example.org/fixture/d3fend.json",
+            local_filename=str(ontology_path),
+            sha256=deception_seed["source_sha256"],
+            source_type="json-ld",
+            retrieval_date="2026-01-15",
+            role="ontology",
+        )
+        mappings_entry = build_manifest_entry(
+            source_id="fixture-mappings",
+            source_name="Fixture Mappings",
+            release_version="9.9.9-fixture",
+            official_url="https://example.org/fixture/mappings.json",
+            local_filename=str(mappings_path),
+            sha256=mapping_seed["source_sha256"],
+            source_type="sparql-results-json",
+            retrieval_date="2026-01-15",
+            role="inferred_mappings",
+        )
+        manifest = build_source_manifest([ontology_entry, mappings_entry])
+
+        assert manifest["sources"][0]["sha256"] == deception_seed["source_sha256"]
+        assert manifest["sources"][0]["sha256"] == hashlib.sha256(ontology_path.read_bytes()).hexdigest()
+        assert manifest["sources"][1]["sha256"] == mapping_seed["source_sha256"]
+        assert manifest["sources"][1]["sha256"] == hashlib.sha256(mappings_path.read_bytes()).hexdigest()
+        assert manifest["sources"][0]["provider"] == "MITRE"
+        assert manifest["sources"][0]["retrieval_date"] == "2026-01-15"
+
+
+# ---------------------------------------------------------------------------
+# D. CLI offline — manifest et rapport reproductibles
+# ---------------------------------------------------------------------------
+
+
+class TestCli:
+    def test_cli_produces_seed_mapping_report_and_manifest(self, tmp_path, capsys):
+        ontology_path = write_ontology(tmp_path)
+        mappings_path = write_mappings(tmp_path, [make_binding("ExampleLureChildA", "T9001")])
+        out_dir = tmp_path / "staging"
+        manifest_path = tmp_path / "manifest" / "source_manifest.json"
+
+        _run_cli(
+            [
+                "--ontology",
+                str(ontology_path),
+                "--mappings",
+                str(mappings_path),
+                "--release-version",
+                "9.9.9-fixture",
+                "--ontology-url",
+                "https://example.org/fixture/d3fend.json",
+                "--mappings-url",
+                "https://example.org/fixture/mappings.json",
+                "--retrieval-date",
+                "2026-01-15",
+                "--out-dir",
+                str(out_dir),
+                "--manifest-out",
+                str(manifest_path),
+            ]
+        )
+
+        seed_path = out_dir / "d3fend_deception_seed_9.9.9-fixture.json"
+        mapping_path = out_dir / "d3fend_attack_mapping_seed_9.9.9-fixture.json"
+        report_path = out_dir / "d3fend_seed_report_9.9.9-fixture.json"
+
+        assert seed_path.exists()
+        assert mapping_path.exists()
+        assert report_path.exists()
+        assert manifest_path.exists()
+
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+
+        assert report["sources"] == manifest["sources"]
+        assert report["sources"] != []
+        assert len(manifest["sources"]) == 2
+        assert {s["role"] for s in manifest["sources"]} == {"ontology", "inferred_mappings"}
+
+    def test_cli_rejects_malformed_retrieval_date(self, tmp_path):
+        ontology_path = write_ontology(tmp_path)
+        mappings_path = write_mappings(tmp_path, [make_binding("ExampleLureChildA", "T9001")])
+        with pytest.raises(D3fendSeedBuilderError):
+            _run_cli(
+                [
+                    "--ontology",
+                    str(ontology_path),
+                    "--mappings",
+                    str(mappings_path),
+                    "--release-version",
+                    "9.9.9-fixture",
+                    "--ontology-url",
+                    "https://example.org/fixture/d3fend.json",
+                    "--mappings-url",
+                    "https://example.org/fixture/mappings.json",
+                    "--retrieval-date",
+                    "not-a-date",
+                    "--out-dir",
+                    str(tmp_path / "staging"),
+                    "--manifest-out",
+                    str(tmp_path / "source_manifest.json"),
+                ]
+            )
 
 
 # ---------------------------------------------------------------------------
