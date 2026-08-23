@@ -279,49 +279,99 @@ localement (`data/deception/raw/literature/`, non versionnés — voir
 `.gitignore`), et leur extraction texte déjà produite hors ligne par
 `pdftotext` (aucune dépendance Python supplémentaire, aucun OCR).
 
-### Champs du registre réellement utilisés
+### Champs du registre réellement utilisés (schéma 1.1, durci)
 
 Chaque entrée de `literature_sources.json` porte au minimum :
-`source_id`, `title`, `authors`, `year`, `publication_type`, `venue`,
-`doi`, `official_url`, `open_access_url`, `retrieval_date`,
-`access_status` (`open_fulltext` / `metadata_only` / `abstract_only` /
-`unavailable`), `relevance_summary`, `search_queries`,
-`inclusion_reasons`, `exclusion_notes`, `themes`, `raw_file`, `sha256`.
-Aucun champ non vérifiable n'est renseigné par une valeur inventée : un
-champ inconnu reste `null`.
+`source_id`, `title`, `authors`, `bibliographic_year`,
+`published_online_year`, `published_print_year`, `publication_type`,
+`venue`, `publication_doi`, `repository_doi`, `repository_identifier`,
+`official_url`, `open_access_url`, `retrieval_date`, `access_status`
+(`open_fulltext` / `metadata_only` / `abstract_only` / `unavailable`),
+`peer_review_status` (`peer_reviewed` / `not_peer_reviewed` / `unknown`),
+`peer_review_basis`, `relevance_summary`, `search_queries`,
+`inclusion_reasons`, `exclusion_notes`, `metadata_notes`,
+`metadata_provenance`, `themes`, `raw_file`, `sha256`. Aucun champ non
+vérifiable n'est renseigné par une valeur inventée : un champ inconnu
+reste `null`.
+
+**Distinction `publication_doi` / `repository_doi` (durcissement, réf.
+`search_protocol.md` §8.1) :** un DOI de publication finale (enregistré
+auprès de Crossref) n'est jamais confondu avec un DOI de dépôt/preprint
+(enregistré auprès de DataCite pour arXiv, ex. `10.48550/arXiv.1804.06196`).
+`validate_literature_sources_registry` rejette explicitement toute entrée
+où `publication_doi == repository_doi`, et dérive `source_id`
+exclusivement de `publication_doi` (jamais de `repository_doi`).
+
+**Dates explicites (durcissement, réf. `search_protocol.md` §8.2) :** le
+champ unique historique `year` est remplacé par trois champs —
+`bibliographic_year` (obligatoire, année de citation formelle),
+`published_online_year` et `published_print_year` (nullable). La règle
+n'est jamais « recopier Crossref `issued` sans examen » : voir le cas
+Beltrán-López et al. (Early Access 2025 vs. volume final 2026) et le cas
+Spitzner/Yuill (champ Crossref `issued` vide, `created` non fiable)
+documentés en détail dans `search_protocol.md`.
+
+**`peer_review_status` explicite (durcissement, réf. `search_protocol.md`
+§11bis) :** jamais déduit de `publication_type`. `build_literature_seed_report`
+calcule `peer_reviewed_count`/`not_peer_reviewed_count`/`unknown_peer_review_count`
+uniquement à partir de ce champ.
+
+**`metadata_provenance` (durcissement, réf. tâche §7) :** liste
+d'objets `{provider, url, retrieval_date, verified_fields}` — un seul
+fournisseur par entrée suffit, mais la liste ne doit jamais être vide
+(`validate_literature_sources_registry` le rejette). Seuls les
+fournisseurs réellement interrogés apparaissent (Crossref, DataCite,
+DBLP, ou une page officielle de venue) — jamais une affirmation
+« vérifié par Crossref » sans requête HTTP réelle correspondante.
 
 ### Identifiants stables
 
-Réf. `search_protocol.md` §11 : `source_id = "doi_" + doi.lower().replace("/", "_")`
-lorsqu'un DOI existe (`compute_doi_based_source_id`, vérifié
+Réf. `search_protocol.md` §11 : `source_id = "doi_" + publication_doi.lower().replace("/", "_")`
+lorsqu'un `publication_doi` existe (`compute_doi_based_source_id`, vérifié
 automatiquement contre chaque entrée par `validate_literature_sources_registry` —
-toute incohérence est rejetée) ; à défaut, une convention documentée
-`<venue><année>_<auteur>_<mots_du_titre>` est appliquée manuellement et
-seulement contrôlée structurellement (`is_valid_fallback_source_id`,
-qui rejette notamment tout identifiant du type `PAPER1`/`PAPER2`).
+toute incohérence est rejetée) ; à défaut (y compris lorsqu'un
+`repository_doi` existe — un preprint arXiv garde son `source_id`
+`arxiv_...`, jamais dérivé du `repository_doi`, réf. tâche §6), une
+convention documentée `<venue><année>_<auteur>_<mots_du_titre>` est
+appliquée manuellement et seulement contrôlée structurellement
+(`is_valid_fallback_source_id`, qui rejette notamment tout identifiant du
+type `PAPER1`/`PAPER2`). Aucun des 12 `source_id` du corpus initial n'a
+été modifié lors du durcissement.
 
-### Passages courts (evidence) : preuve vérifiée, jamais recopiée en confiance
+### Passages courts (evidence) : preuve vérifiée page par page
 
-`literature_evidence_seed_1.0.json` ne contient que des passages courts
+`literature_evidence_seed_1.1.json` ne contient que des passages courts
 (≤ 500 caractères, `_MAX_EVIDENCE_TEXT_LENGTH`) associés à une source, une
 page et un `locator`. **Chaque passage est revérifié par le builder** —
 pas seulement par la personne qui l'a proposé — comme substring littéral
-(après normalisation des espaces/retours à la ligne) du texte réellement
-extrait localement (`.txt` à côté du `.pdf`) : un passage qui n'existe pas
-mot pour mot dans le texte extrait est rejeté avec
-`LiteratureSeedBuilderError`, jamais silencieusement accepté. Cette
-vérification est ce qui garantit concrètement l'invariant du rapport de
-tâche §29 : « avant de stocker un passage, vérifier qu'il existe
-réellement dans le document ».
+(après normalisation des espaces/retours à la ligne) **sur la page
+précisément déclarée**, pas seulement quelque part dans le document
+entier (durcissement, réf. `search_protocol.md` §11ter).
+`split_extracted_text_pages` découpe le texte extrait sur les
+séparateurs de page (`\f`) natifs de `pdftotext` ; un passage présent
+ailleurs dans le document mais absent de la page déclarée est rejeté
+(message distinct d'un passage introuvable partout) ; une page
+au-delà du nombre de pages reconstruites est rejetée ; un texte sans
+séparateur de page est traité comme une unique page 1, jamais une page
+inventée. Tout passage conservé porte `page_verified: true` — aucun
+passage à page non vérifiée n'atteint le staging final. Cette
+vérification garantit concrètement l'invariant du rapport de tâche §29 :
+« avant de stocker un passage, vérifier qu'il existe réellement dans le
+document [à la page indiquée] ».
 
 ### Rapport de couverture — lacunes rapportées, jamais comblées
 
-`literature_seed_report_1.0.json` calcule `theme_coverage` sur la
+`literature_seed_report_1.1.json` calcule `theme_coverage` sur la
 taxonomie documentaire (`DOCUMENTARY_THEMES`, §12 de la tâche — jamais les
 métriques SP2) et expose `coverage_gaps` : la liste des thèmes à zéro
 source dans le corpus actuel. Ce champ n'est **jamais** comblé
 artificiellement par une source ajoutée uniquement pour couvrir un thème
-manquant (réf. tâche §17).
+manquant (réf. tâche §17). Le rapport distingue également, indépendamment
+de `publication_type` : `open_fulltext_count`/`metadata_only_count`/
+`abstract_only_count`/`unavailable_count` (+ `access_status_counts`
+complet), `sources_with_publication_doi`/`sources_with_repository_doi`,
+et `verified_page_evidence_count` (toujours égal à `evidence_count`, par
+construction — aucun passage non vérifié n'atteint jamais le staging).
 
 ## OPEN_DECISION préservées (non résolues par cette phase)
 
@@ -429,19 +479,19 @@ python -m tools.deception_kb.literature_seed_builder \
   --registry data/deception/literature/literature_sources.json \
   --evidence-candidates data/deception/literature/evidence_candidates.json \
   --out-dir data/deception/staging \
-  --version 1.0
+  --version 1.1
 ```
 
 | Argument | Rôle |
 |---|---|
 | `--registry` | chemin vers `literature_sources.json` (registre déjà curé et vérifié) |
-| `--evidence-candidates` | chemin vers le fichier JSON des passages candidats (chaque passage est revérifié contre le texte extrait, jamais accepté sur confiance) |
+| `--evidence-candidates` | chemin vers le fichier JSON des passages candidats (chaque passage est revérifié contre le texte extrait de la page déclarée, jamais accepté sur confiance) |
 | `--out-dir` | répertoire de sortie du staging document/evidence/rapport |
-| `--version` | version du staging littérature (défaut `1.0`), suffixe des fichiers de sortie |
+| `--version` | version du staging littérature (défaut `1.1`), suffixe des fichiers de sortie — passée de `1.0` à `1.1` lors du durcissement (schéma bibliographique étendu), les anciens fichiers `literature_*_1.0.json` ayant été retirés pour éviter qu'un nom de fichier `1.0` contienne silencieusement un schéma `1.1` |
 
 Contrairement à D3FEND/Engage, cette CLI ne télécharge et n'écrit aucun
 manifest de provenance partagé : chaque source du registre porte déjà ses
-propres `doi`/`official_url`/`open_access_url`/`sha256`, et
-`data/deception/source_manifest.json` reste réservé aux sources
+propres `publication_doi`/`repository_doi`/`official_url`/`open_access_url`/`sha256`,
+et `data/deception/source_manifest.json` reste réservé aux sources
 structurées fondamentales (D3FEND, Engage) pour ne pas mélanger deux
 formats de provenance incompatibles (réf. tâche §21).

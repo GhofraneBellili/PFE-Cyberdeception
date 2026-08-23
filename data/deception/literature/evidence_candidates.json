@@ -83,6 +83,30 @@
       "page": 1,
       "locator": "abstract",
       "text": "This article aims to fill these gaps through a detailed review of the main features that comprise CYDEC, developing a comprehensive classification taxonomy."
+    },
+    {
+      "source_id": "doi_10.1145_3678890.3678897",
+      "page": 1,
+      "locator": "abstract",
+      "text": "Fooling adversaries with traps such as honeytokens can slow down cyber attacks and create strong indicators of compromise."
+    },
+    {
+      "source_id": "doi_10.1145_3678890.3678897",
+      "page": 1,
+      "locator": "abstract",
+      "text": "the presence of cyber deception can significantly reduce the risk that adversaries will find a true security risk by about 22% on average."
+    },
+    {
+      "source_id": "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy",
+      "page": 2,
+      "locator": "abstract",
+      "text": "Over 130 professional red teamers participated in a network penetration test in which both the presence and explicit mention of deceptive defensive techniques were controlled."
+    },
+    {
+      "source_id": "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy",
+      "page": 10,
+      "locator": "body_text_results",
+      "text": "Participants in the Present-Informed condition were less likely than those in the Present-Uninformed condition to attempt an interactive logon manually, or with an exploit, to a decoy."
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "schema": "literature_evidence_seed",
-  "schema_version": "1.0",
-  "selection_method_version": "1.0",
+  "schema_version": "1.1",
+  "selection_method_version": "1.1",
   "evidence": [
     {
       "evidence_id": "doi_10.1145_3214305__ev001",
@@ -9,7 +9,8 @@
       "page": 5,
       "locator": "body_text_deployment_discussion",
       "text": "To be effective, deception elements need to be generated to achieve perfect realism with regard to real data and system integration.",
-      "source_sha256": "9e482fefbed52fa438aa93f35c3ad0aacfef4fea8894618863b7e29c6f73a03e"
+      "source_sha256": "9e482fefbed52fa438aa93f35c3ad0aacfef4fea8894618863b7e29c6f73a03e",
+      "page_verified": true
     },
     {
       "evidence_id": "doi_10.1145_3214305__ev002",
@@ -17,7 +18,8 @@
       "page": 2,
       "locator": "body_text",
       "text": "a digital or information system resource whose value lies in the unauthorized use of that resource",
-      "source_sha256": "9e482fefbed52fa438aa93f35c3ad0aacfef4fea8894618863b7e29c6f73a03e"
+      "source_sha256": "9e482fefbed52fa438aa93f35c3ad0aacfef4fea8894618863b7e29c6f73a03e",
+      "page_verified": true
     },
     {
       "evidence_id": "doi_10.1145_3337772__ev001",
@@ -25,7 +27,8 @@
       "page": 1,
       "locator": "abstract",
       "text": "we propose a taxonomy that defines six types of deception: perturbation, moving target defense, obfuscation, mixing, honey-x, and attacker engagement.",
-      "source_sha256": "f2365ef9effd23a50067da02cab2b659719e3a769ffa154337625f2e4911e085"
+      "source_sha256": "f2365ef9effd23a50067da02cab2b659719e3a769ffa154337625f2e4911e085",
+      "page_verified": true
     },
     {
       "evidence_id": "doi_10.1145_2683467.2683482__ev001",
@@ -33,7 +36,8 @@
       "page": 5,
       "locator": "body_text_section_3.3",
       "text": "Deception always involves two basic steps, hiding the real and showing the false, as we discussed earlier.",
-      "source_sha256": "662e03e3c792cfc6dd6dd38a620aed7d30f7a7c8549336b50623a7f54f956e2c"
+      "source_sha256": "662e03e3c792cfc6dd6dd38a620aed7d30f7a7c8549336b50623a7f54f956e2c",
+      "page_verified": true
     },
     {
       "evidence_id": "arxiv_1804.06196__ev001",
@@ -41,7 +45,8 @@
       "page": 1,
       "locator": "abstract",
       "text": "Deception boosts security for systems and components by denial, deceit, misinformation, camouflage and obfuscation.",
-      "source_sha256": "31279a8a340397f964fbb222361be4d7f72b61c8da204cea2d63769d0c1c281b"
+      "source_sha256": "31279a8a340397f964fbb222361be4d7f72b61c8da204cea2d63769d0c1c281b",
+      "page_verified": true
     },
     {
       "evidence_id": "arxiv_1804.06196__ev002",
@@ -49,7 +54,8 @@
       "page": 1,
       "locator": "abstract",
       "text": "Taxonomies, theoretical backgrounds, psychological aspects as well as concepts, implementations, legal aspects and ethics are discussed and compared.",
-      "source_sha256": "31279a8a340397f964fbb222361be4d7f72b61c8da204cea2d63769d0c1c281b"
+      "source_sha256": "31279a8a340397f964fbb222361be4d7f72b61c8da204cea2d63769d0c1c281b",
+      "page_verified": true
     },
     {
       "evidence_id": "doi_10.1007_978-3-642-05284-2_4__ev001",
@@ -57,7 +63,8 @@
       "page": 1,
       "locator": "abstract",
       "text": "\"Decoy Documents\" are automatically generated and stored on a file system by the D3 System with the aim of enticing a malicious user.",
-      "source_sha256": "8d1ee3cf3369956075a29ef2832f3497b254b23390784de6b153f081301e0971"
+      "source_sha256": "8d1ee3cf3369956075a29ef2832f3497b254b23390784de6b153f081301e0971",
+      "page_verified": true
     },
     {
       "evidence_id": "doi_10.1016_j.cose.2021.102288__ev001",
@@ -65,7 +72,8 @@
       "page": 1,
       "locator": "body_text_introduction",
       "text": "Instead of focusing on attackers' actions, defensive deception works on their perception by obfuscating the attack surface.",
-      "source_sha256": "e4e4d2b9eebaeb8988c1a2a94a0a5bccb441257be1930ce78856157645f8fa2e"
+      "source_sha256": "e4e4d2b9eebaeb8988c1a2a94a0a5bccb441257be1930ce78856157645f8fa2e",
+      "page_verified": true
     },
     {
       "evidence_id": "usenixsec2004_provos_virtual_honeypot_framework__ev001",
@@ -73,7 +81,8 @@
       "page": 2,
       "locator": "abstract",
       "text": "A honeypot is a closely monitored network decoy serving several purposes: it can distract adversaries from more valuable machines on a network, provide early warning about new attack and exploitation trends, or allow in-depth examination of adversaries during and after exploitation of a honeypot.",
-      "source_sha256": "3fe8b4662bbbe2488fbcc7dece4ab64ebaca47cf511de119e8db7137c380c923"
+      "source_sha256": "3fe8b4662bbbe2488fbcc7dece4ab64ebaca47cf511de119e8db7137c380c923",
+      "page_verified": true
     },
     {
       "evidence_id": "doi_10.1109_csac.2003.1254322__ev001",
@@ -81,7 +90,8 @@
       "page": 1,
       "locator": "abstract",
       "text": "This presentation discusses how honeypot technologies can be used to detect, identify, and gather information on these specific threats.",
-      "source_sha256": "1d34799d9ded9435b666afd8548eb3ca49b3b0cd92113581561279f985d6ea70"
+      "source_sha256": "1d34799d9ded9435b666afd8548eb3ca49b3b0cd92113581561279f985d6ea70",
+      "page_verified": true
     },
     {
       "evidence_id": "doi_10.1109_iaw.2004.1437806__ev001",
@@ -89,7 +99,8 @@
       "page": 1,
       "locator": "abstract",
       "text": "Honeyfiles are bait files intended for hackers to access. The files reside on a file server, and the server sends an alarm when a honeyfile is accessed.",
-      "source_sha256": "7df766dd523cb1701b95beede6970ab01546b41719004a6f1d2401afe4fd1145"
+      "source_sha256": "7df766dd523cb1701b95beede6970ab01546b41719004a6f1d2401afe4fd1145",
+      "page_verified": true
     },
     {
       "evidence_id": "doi_10.1007_978-3-030-64793-3_8__ev001",
@@ -97,7 +108,8 @@
       "page": 1,
       "locator": "abstract",
       "text": "We study the use of deception in attack graph-based Stackelberg security games.",
-      "source_sha256": "e89feffcf70e01e239c3b4bec27ca84519e26d8a1e7a89f99ecd4ed94f4995b1"
+      "source_sha256": "e89feffcf70e01e239c3b4bec27ca84519e26d8a1e7a89f99ecd4ed94f4995b1",
+      "page_verified": true
     },
     {
       "evidence_id": "doi_10.1007_978-3-030-64793-3_8__ev002",
@@ -105,7 +117,8 @@
       "page": 1,
       "locator": "abstract",
       "text": "the defender can strategically manipulate the attack graph through three main types of deceptive actions.",
-      "source_sha256": "e89feffcf70e01e239c3b4bec27ca84519e26d8a1e7a89f99ecd4ed94f4995b1"
+      "source_sha256": "e89feffcf70e01e239c3b4bec27ca84519e26d8a1e7a89f99ecd4ed94f4995b1",
+      "page_verified": true
     },
     {
       "evidence_id": "doi_10.1109_comst.2025.3594788__ev001",
@@ -113,7 +126,44 @@
       "page": 1,
       "locator": "abstract",
       "text": "This article aims to fill these gaps through a detailed review of the main features that comprise CYDEC, developing a comprehensive classification taxonomy.",
-      "source_sha256": "4f4b7e172ded71740c811845628be3175b98aee0a98d970ec034a8ec74d2cca5"
+      "source_sha256": "4f4b7e172ded71740c811845628be3175b98aee0a98d970ec034a8ec74d2cca5",
+      "page_verified": true
+    },
+    {
+      "evidence_id": "doi_10.1145_3678890.3678897__ev001",
+      "source_id": "doi_10.1145_3678890.3678897",
+      "page": 1,
+      "locator": "abstract",
+      "text": "Fooling adversaries with traps such as honeytokens can slow down cyber attacks and create strong indicators of compromise.",
+      "source_sha256": "ce113dda461b76de127020291c2391b6dc227b20193c4a9e5304ef057c365308",
+      "page_verified": true
+    },
+    {
+      "evidence_id": "doi_10.1145_3678890.3678897__ev002",
+      "source_id": "doi_10.1145_3678890.3678897",
+      "page": 1,
+      "locator": "abstract",
+      "text": "the presence of cyber deception can significantly reduce the risk that adversaries will find a true security risk by about 22% on average.",
+      "source_sha256": "ce113dda461b76de127020291c2391b6dc227b20193c4a9e5304ef057c365308",
+      "page_verified": true
+    },
+    {
+      "evidence_id": "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy__ev001",
+      "source_id": "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy",
+      "page": 2,
+      "locator": "abstract",
+      "text": "Over 130 professional red teamers participated in a network penetration test in which both the presence and explicit mention of deceptive defensive techniques were controlled.",
+      "source_sha256": "c56c4e21ddc838adf0c8ef6169535e6ab9b89f008880cea981df79873d780f10",
+      "page_verified": true
+    },
+    {
+      "evidence_id": "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy__ev002",
+      "source_id": "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy",
+      "page": 10,
+      "locator": "body_text_results",
+      "text": "Participants in the Present-Informed condition were less likely than those in the Present-Uninformed condition to attempt an interactive logon manually, or with an exploit, to a decoy.",
+      "source_sha256": "c56c4e21ddc838adf0c8ef6169535e6ab9b89f008880cea981df79873d780f10",
+      "page_verified": true
     }
   ]
 }

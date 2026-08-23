@@ -1,8 +1,8 @@
 {
-  "schema": "deception_literature_sources",
+  "schema": "literature_document_seed",
   "schema_version": "1.1",
   "selection_method_version": "1.1",
-  "sources": [
+  "documents": [
     {
       "source_id": "doi_10.1145_3214305",
       "title": "Deception Techniques in Computer Security: A Research Perspective",
@@ -21,9 +21,21 @@
       "repository_identifier": null,
       "official_url": "https://doi.org/10.1145/3214305",
       "open_access_url": "https://www.s3.eurecom.fr/docs/csur18_deception.pdf",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "9e482fefbed52fa438aa93f35c3ad0aacfef4fea8894618863b7e29c6f73a03e",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "ACM Computing Surveys : revue a comite de lecture reconnue (venue confirmee via Crossref container-title et ACM Digital Library).",
+      "themes": [
+        "deception_mechanism",
+        "honeypot",
+        "honeytoken",
+        "realism",
+        "attacker_interaction",
+        "detection",
+        "deployment",
+        "evaluation"
+      ],
       "relevance_summary": "Survey general de la deception en securite informatique : classification des techniques existantes, historique (honeypots, honeytokens), et discussion des limites methodologiques (mesure d'efficacite, realisme du deploiement).",
       "search_queries": [
         "\"Deception Techniques in Computer Security: A Research Perspective\" ACM Computing Surveys Han Kheir Balzarotti DOI"
@@ -49,19 +61,14 @@
           ]
         }
       ],
-      "themes": [
-        "deception_mechanism",
-        "honeypot",
-        "honeytoken",
-        "realism",
-        "attacker_interaction",
-        "detection",
-        "deployment",
-        "evaluation"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/doi_10.1145_3214305.pdf",
-      "sha256": "9e482fefbed52fa438aa93f35c3ad0aacfef4fea8894618863b7e29c6f73a03e"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1145_3214305.txt",
+        "extracted_text_sha256": "353782b5f650bb77ceac78c4f5ab6463c3cb6d9f6ba18179ed116e95101c5bfb",
+        "character_count": 149898,
+        "word_count": 22166,
+        "page_count": 37,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "doi_10.1145_3337772",
@@ -81,9 +88,18 @@
       "repository_identifier": null,
       "official_url": "https://doi.org/10.1145/3337772",
       "open_access_url": "https://arxiv.org/pdf/1712.05441",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "f2365ef9effd23a50067da02cab2b659719e3a769ffa154337625f2e4911e085",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "ACM Computing Surveys : revue a comite de lecture reconnue (idem source precedente).",
+      "themes": [
+        "deception_mechanism",
+        "engagement",
+        "attacker_interaction",
+        "honeytoken",
+        "evaluation"
+      ],
       "relevance_summary": "Taxonomie de six types de deception defensive (perturbation, moving target defense, obfuscation, mixing, honey-x, attacker engagement) fondee sur la theorie des jeux, avec revue de 24 articles 2008-2018.",
       "search_queries": [
         "\"A Game-Theoretic Taxonomy and Survey of Defensive Deception\" Pawlick Colbert Zhu ACM Computing Surveys DOI"
@@ -109,16 +125,14 @@
           ]
         }
       ],
-      "themes": [
-        "deception_mechanism",
-        "engagement",
-        "attacker_interaction",
-        "honeytoken",
-        "evaluation"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/doi_10.1145_3337772.pdf",
-      "sha256": "f2365ef9effd23a50067da02cab2b659719e3a769ffa154337625f2e4911e085"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1145_3337772.txt",
+        "extracted_text_sha256": "8b1935381cb7ec0d9567f2f4f2f3481e3cdec838f19da9d711e42639400c54ea",
+        "character_count": 101136,
+        "word_count": 15404,
+        "page_count": 30,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "doi_10.1145_2683467.2683482",
@@ -137,9 +151,17 @@
       "repository_identifier": null,
       "official_url": "https://doi.org/10.1145/2683467.2683482",
       "open_access_url": "https://www.cerias.purdue.edu/assets/pdf/bibtex_archive/2014-7.pdf",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "662e03e3c792cfc6dd6dd38a620aed7d30f7a7c8549336b50623a7f54f956e2c",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "NSPW (New Security Paradigms Workshop) : atelier scientifique avec comite de programme, actes publies par l'ACM (venue confirmee via Crossref et ACM DL).",
+      "themes": [
+        "deception_mechanism",
+        "realism",
+        "attacker_interaction",
+        "deployment"
+      ],
       "relevance_summary": "Modele de planification et d'integration de la deception dans les defenses de securite informatique ; principes fondamentaux (dissimulation du vrai, presentation du faux) et biais cognitifs de l'attaquant exploites.",
       "search_queries": [
         "\"Planning and Integrating Deception into Computer Security Defenses\" Almeshekah Spafford NSPW DOI"
@@ -165,15 +187,14 @@
           ]
         }
       ],
-      "themes": [
-        "deception_mechanism",
-        "realism",
-        "attacker_interaction",
-        "deployment"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/doi_10.1145_2683467.2683482.pdf",
-      "sha256": "662e03e3c792cfc6dd6dd38a620aed7d30f7a7c8549336b50623a7f54f956e2c"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1145_2683467.2683482.txt",
+        "extracted_text_sha256": "3231095e3526415c803c2bd0327a6023413a67f63d29708a435e4aeb2486f81d",
+        "character_count": 57153,
+        "word_count": 9031,
+        "page_count": 13,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "arxiv_1804.06196",
@@ -198,9 +219,19 @@
       "repository_identifier": "arXiv:1804.06196",
       "official_url": "https://arxiv.org/abs/1804.06196",
       "open_access_url": "https://arxiv.org/pdf/1804.06196",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "31279a8a340397f964fbb222361be4d7f72b61c8da204cea2d63769d0c1c281b",
       "peer_review_status": "not_peer_reviewed",
       "peer_review_basis": "Preprint arXiv uniquement ; aucune publication en revue ou conference evaluee par les pairs identifiee malgre une recherche dediee (requete du 23/08/2026 ci-dessous).",
+      "themes": [
+        "deception_mechanism",
+        "honeypot",
+        "honeytoken",
+        "realism",
+        "deployment",
+        "maintenance"
+      ],
       "relevance_summary": "Vue d'ensemble etendue de l'environnement de la deception technology : taxonomies, fondements theoriques, aspects psychologiques, implementations, aspects legaux et ethiques.",
       "search_queries": [
         "\"Demystifying Deception Technology: A Survey\" Fraunholz arxiv",
@@ -227,17 +258,14 @@
           ]
         }
       ],
-      "themes": [
-        "deception_mechanism",
-        "honeypot",
-        "honeytoken",
-        "realism",
-        "deployment",
-        "maintenance"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/arxiv_1804.06196.pdf",
-      "sha256": "31279a8a340397f964fbb222361be4d7f72b61c8da204cea2d63769d0c1c281b"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\arxiv_1804.06196.txt",
+        "extracted_text_sha256": "5bfa2981b84875cfbcc7e4809959e089fb2449323d244c1d90a661c7e7cc69f3",
+        "character_count": 72871,
+        "word_count": 11154,
+        "page_count": 26,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "doi_10.1007_978-3-642-05284-2_4",
@@ -258,9 +286,17 @@
       "repository_identifier": null,
       "official_url": "https://doi.org/10.1007/978-3-642-05284-2_4",
       "open_access_url": "https://www.sos-vo.org/system/files/sos_files/Baiting_Inside_Attackers_Using_Decoy_Documents.pdf",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "8d1ee3cf3369956075a29ef2832f3497b254b23390784de6b153f081301e0971",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "SecureComm : conference scientifique avec comite de programme, actes Springer LNICST (venue confirmee via Crossref et Springer).",
+      "themes": [
+        "decoy_document",
+        "decoy_credential",
+        "detection",
+        "intelligence_collection"
+      ],
       "relevance_summary": "Mecanismes de defense a base de leurres (decoy documents) et plateforme de deploiement pour detecter l'exfiltration de donnees par des attaquants internes ; formalisation de proprietes des leurres pour concevoir des defenses trap-based.",
       "search_queries": [
         "\"Baiting Inside Attackers Using Decoy Documents\" Bowen Hershkop Keromytis Stolfo SecureComm DOI"
@@ -285,15 +321,14 @@
           ]
         }
       ],
-      "themes": [
-        "decoy_document",
-        "decoy_credential",
-        "detection",
-        "intelligence_collection"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/doi_10.1007_978-3-642-05284-2_4.pdf",
-      "sha256": "8d1ee3cf3369956075a29ef2832f3497b254b23390784de6b153f081301e0971"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1007_978-3-642-05284-2_4.txt",
+        "extracted_text_sha256": "d51f9b3fe7c1fcbc5d3e8e3e40d2cb235251d3a987fd0a70ca2c62b6ba541cb2",
+        "character_count": 56180,
+        "word_count": 9003,
+        "page_count": 21,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "doi_10.1016_j.cose.2021.102288",
@@ -312,9 +347,20 @@
       "repository_identifier": null,
       "official_url": "https://doi.org/10.1016/j.cose.2021.102288",
       "open_access_url": "https://arxiv.org/pdf/2104.03594",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "e4e4d2b9eebaeb8988c1a2a94a0a5bccb441257be1930ce78856157645f8fa2e",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "Computers & Security (Elsevier) : revue a comite de lecture reconnue (venue confirmee via Crossref).",
+      "themes": [
+        "deception_mechanism",
+        "honeypot",
+        "honeytoken",
+        "redirection",
+        "delay",
+        "containment",
+        "detection"
+      ],
       "relevance_summary": "Revue systematique de trois decennies de techniques de deception active (honeypots, honeytokens, moving target defense) organisee selon un modele de cyber kill chain et une pile de deception a quatre couches.",
       "search_queries": [
         "\"Three decades of deception techniques in active cyber defense\" Zhang Thing Computers Security DOI"
@@ -339,18 +385,14 @@
           ]
         }
       ],
-      "themes": [
-        "deception_mechanism",
-        "honeypot",
-        "honeytoken",
-        "redirection",
-        "delay",
-        "containment",
-        "detection"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/doi_10.1016_j.cose.2021.102288.pdf",
-      "sha256": "e4e4d2b9eebaeb8988c1a2a94a0a5bccb441257be1930ce78856157645f8fa2e"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1016_j.cose.2021.102288.txt",
+        "extracted_text_sha256": "9b00abf9d7ca8b4c9af6183115bb63b83f6fa0217ba02ffd39f7d66935b54619",
+        "character_count": 116669,
+        "word_count": 17315,
+        "page_count": 20,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "usenixsec2004_provos_virtual_honeypot_framework",
@@ -368,9 +410,17 @@
       "repository_identifier": null,
       "official_url": "https://www.usenix.org/conference/13th-usenix-security-symposium/virtual-honeypot-framework",
       "open_access_url": "https://www.usenix.org/legacy/event/sec04/tech/full_papers/provos/provos.pdf",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "3fe8b4662bbbe2488fbcc7dece4ab64ebaca47cf511de119e8db7137c380c923",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "USENIX Security Symposium : conference scientifique de premier plan avec comite de programme (page officielle usenix.org verifiee).",
+      "themes": [
+        "honeypot",
+        "honeynet",
+        "deployment",
+        "resource_requirements"
+      ],
       "relevance_summary": "Presente Honeyd, un cadriciel de honeypots virtuels simulant des systemes informatiques au niveau reseau sur des adresses IP non allouees, pour tromper les outils de prise d'empreinte reseau (fingerprinting).",
       "search_queries": [
         "Provos \"A Virtual Honeypot Framework\" USENIX Security 2004"
@@ -395,15 +445,14 @@
           ]
         }
       ],
-      "themes": [
-        "honeypot",
-        "honeynet",
-        "deployment",
-        "resource_requirements"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/usenixsec2004_provos_virtual_honeypot_framework.pdf",
-      "sha256": "3fe8b4662bbbe2488fbcc7dece4ab64ebaca47cf511de119e8db7137c380c923"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\usenixsec2004_provos_virtual_honeypot_framework.txt",
+        "extracted_text_sha256": "1b6af525ab464f5c82b2a2b9aa823a30e2ebc49500b3ef3e188bc07e291d5165",
+        "character_count": 55723,
+        "word_count": 8701,
+        "page_count": 16,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "doi_10.1109_csac.2003.1254322",
@@ -421,9 +470,16 @@
       "repository_identifier": null,
       "official_url": "https://doi.org/10.1109/CSAC.2003.1254322",
       "open_access_url": "https://www.acsac.org/2003/papers/spitzner.pdf",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "1d34799d9ded9435b666afd8548eb3ca49b3b0cd92113581561279f985d6ea70",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "ACSAC (Annual Computer Security Applications Conference) : conference scientifique IEEE avec comite de programme (actes officiels verifies via acsac.org).",
+      "themes": [
+        "honeypot",
+        "intelligence_collection",
+        "detection"
+      ],
       "relevance_summary": "Discute comment les technologies de honeypots peuvent etre utilisees pour detecter, identifier et recueillir de l'information sur les menaces internes avancees (insider threat).",
       "search_queries": [
         "Spitzner \"Honeypots: Catching the Insider Threat\" ACSAC 2003 IEEE DOI"
@@ -457,14 +513,14 @@
           ]
         }
       ],
-      "themes": [
-        "honeypot",
-        "intelligence_collection",
-        "detection"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/doi_10.1109_csac.2003.1254322.pdf",
-      "sha256": "1d34799d9ded9435b666afd8548eb3ca49b3b0cd92113581561279f985d6ea70"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1109_csac.2003.1254322.txt",
+        "extracted_text_sha256": "cfd5480d51fa187c343d2e8875ebe5c943f2fe638070146ad2843814bab523d0",
+        "character_count": 41131,
+        "word_count": 6498,
+        "page_count": 11,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "doi_10.1109_iaw.2004.1437806",
@@ -485,9 +541,16 @@
       "repository_identifier": null,
       "official_url": "https://doi.org/10.1109/IAW.2004.1437806",
       "open_access_url": "https://faculty.nps.edu/dedennin/publications/honeyfiles.pdf",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "7df766dd523cb1701b95beede6970ab01546b41719004a6f1d2401afe4fd1145",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "IEEE SMC Information Assurance Workshop : atelier scientifique IEEE avec comite de programme (container-title officiel verifie via Crossref).",
+      "themes": [
+        "decoy_document",
+        "honeytoken",
+        "detection"
+      ],
       "relevance_summary": "Introduit les honeyfiles, fichiers appats resident sur un serveur de fichiers declenchant une alerte lorsqu'ils sont acceves ; evaluation par deploiement sur un honeynet.",
       "search_queries": [
         "Yuill Zappe Denning \"Honeyfiles: deceptive files for intrusion detection\" IEEE DOI"
@@ -521,14 +584,14 @@
           ]
         }
       ],
-      "themes": [
-        "decoy_document",
-        "honeytoken",
-        "detection"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/doi_10.1109_iaw.2004.1437806.pdf",
-      "sha256": "7df766dd523cb1701b95beede6970ab01546b41719004a6f1d2401afe4fd1145"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1109_iaw.2004.1437806.txt",
+        "extracted_text_sha256": "3faf868545f84faff4686019b47cbdb87ae7a9a8791417a45093c832373f7719",
+        "character_count": 27328,
+        "word_count": 4227,
+        "page_count": 8,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "doi_10.1007_978-3-030-64793-3_8",
@@ -552,9 +615,18 @@
       "repository_identifier": null,
       "official_url": "https://doi.org/10.1007/978-3-030-64793-3_8",
       "open_access_url": "https://www.weiran-shen.info/page_files/harnessing_the_power_of_deception_in_attack_graph-based_security_games.pdf",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "e89feffcf70e01e239c3b4bec27ca84519e26d8a1e7a89f99ecd4ed94f4995b1",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "GameSec (Conference on Decision and Game Theory for Security) : conference scientifique avec comite de programme, actes Springer LNCS (venue confirmee via Crossref et Springer).",
+      "themes": [
+        "deception_mechanism",
+        "redirection",
+        "containment",
+        "deployment",
+        "evaluation"
+      ],
       "relevance_summary": "Etudie l'usage de la deception dans des jeux de securite de Stackelberg fondes sur un graphe d'attaque, ou le defenseur peut manipuler strategiquement le graphe via trois types d'actions deceptives ; formulation d'optimisation.",
       "search_queries": [
         "\"Harnessing the Power of Deception in Attack Graph-Based Security Games\" authors Springer DOI",
@@ -581,16 +653,14 @@
           ]
         }
       ],
-      "themes": [
-        "deception_mechanism",
-        "redirection",
-        "containment",
-        "deployment",
-        "evaluation"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/doi_10.1007_978-3-030-64793-3_8.pdf",
-      "sha256": "e89feffcf70e01e239c3b4bec27ca84519e26d8a1e7a89f99ecd4ed94f4995b1"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1007_978-3-030-64793-3_8.txt",
+        "extracted_text_sha256": "bef8e935259ca7312312cf64953e7a415d415e558dd51b8afbcb66ed640306b2",
+        "character_count": 55547,
+        "word_count": 9221,
+        "page_count": 21,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "doi_10.1109_comst.2025.3594788",
@@ -610,9 +680,21 @@
       "repository_identifier": null,
       "official_url": "https://doi.org/10.1109/COMST.2025.3594788",
       "open_access_url": "https://arxiv.org/pdf/2409.07194",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "4f4b7e172ded71740c811845628be3175b98aee0a98d970ec034a8ec74d2cca5",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "IEEE Communications Surveys & Tutorials : revue a comite de lecture de premier plan (venue confirmee via Crossref et DBLP).",
+      "themes": [
+        "deception_mechanism",
+        "honeypot",
+        "honeytoken",
+        "realism",
+        "attacker_interaction",
+        "deployment",
+        "evaluation",
+        "detection"
+      ],
       "relevance_summary": "Revue recente et etendue des mecanismes de Cyber Deception (CYDEC) : analyse des composants principaux, classification generique couvrant tous les types de solutions, comparaison des approches avec et sans intelligence artificielle.",
       "search_queries": [
         "\"Cyber Deception: State of the art, Trends, and Open challenges\" arxiv 2409.07194 authors",
@@ -651,19 +733,14 @@
           ]
         }
       ],
-      "themes": [
-        "deception_mechanism",
-        "honeypot",
-        "honeytoken",
-        "realism",
-        "attacker_interaction",
-        "deployment",
-        "evaluation",
-        "detection"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/doi_10.1109_comst.2025.3594788.pdf",
-      "sha256": "4f4b7e172ded71740c811845628be3175b98aee0a98d970ec034a8ec74d2cca5"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1109_comst.2025.3594788.txt",
+        "extracted_text_sha256": "c96db3799656b2b12c422f6c13df04d641c11b42799de24ad95d0d3165114a80",
+        "character_count": 197442,
+        "word_count": 28760,
+        "page_count": 39,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "doi_10.1109_ccst.2017.8167793",
@@ -686,9 +763,16 @@
       "repository_identifier": null,
       "official_url": "https://doi.org/10.1109/CCST.2017.8167793",
       "open_access_url": null,
+      "retrieval_date": "2026-08-23",
       "access_status": "metadata_only",
+      "sha256": null,
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "ICCST (International Carnahan Conference on Security Technology) : conference scientifique IEEE avec comite de programme (venue confirmee via Crossref).",
+      "themes": [
+        "deployment",
+        "resource_requirements",
+        "maintenance"
+      ],
       "relevance_summary": "Discute des technologies permettant le deploiement operationnel de la cyberdeception (exigences techniques, integration, maintenance).",
       "search_queries": [
         "\"Urias\" \"Technologies to Enable Cyber Deception\" ICCST 2017 DOI"
@@ -713,14 +797,7 @@
           ]
         }
       ],
-      "themes": [
-        "deployment",
-        "resource_requirements",
-        "maintenance"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": null,
-      "sha256": null
+      "extraction": null
     },
     {
       "source_id": "doi_10.1145_3678890.3678897",
@@ -741,9 +818,19 @@
       "repository_identifier": null,
       "official_url": "https://doi.org/10.1145/3678890.3678897",
       "open_access_url": "https://arxiv.org/pdf/2408.10796",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "ce113dda461b76de127020291c2391b6dc227b20193c4a9e5304ef057c365308",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "RAID (International Symposium on Research in Attacks, Intrusions and Defenses) : conference scientifique avec comite de programme, actes ACM (venue confirmee via Crossref).",
+      "themes": [
+        "honeytoken",
+        "realism",
+        "attacker_interaction",
+        "engagement",
+        "evaluation",
+        "deployment"
+      ],
       "relevance_summary": "Etude empirique mesurant l'attractivite (enticingness) de 25 techniques de cyberdeception et 19 vrais risques de securite aupres de 47 participants humains, via un outil de questionnaires bases sur du code (Honeyquest) plutot qu'une implementation complete ; montre une reduction moyenne de 22% du risque qu'un attaquant trouve un vrai risque de securite en presence de deception.",
       "search_queries": [
         "\"Honeyquest\" \"Enticingness\" Cyber Deception Techniques Code-based Questionnaires authors venue DOI",
@@ -770,17 +857,14 @@
           ]
         }
       ],
-      "themes": [
-        "honeytoken",
-        "realism",
-        "attacker_interaction",
-        "engagement",
-        "evaluation",
-        "deployment"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/doi_10.1145_3678890.3678897.pdf",
-      "sha256": "ce113dda461b76de127020291c2391b6dc227b20193c4a9e5304ef057c365308"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1145_3678890.3678897.txt",
+        "extracted_text_sha256": "70d82251797ec98baca68cb8398146f63a26ee26a857edd79c1798b700f4a601",
+        "character_count": 128227,
+        "word_count": 19185,
+        "page_count": 21,
+        "page_separators_found": true
+      }
     },
     {
       "source_id": "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy",
@@ -801,9 +885,19 @@
       "repository_identifier": null,
       "official_url": "https://www.usenix.org/conference/usenixsecurity21/presentation/ferguson-walter",
       "open_access_url": "https://www.usenix.org/system/files/sec21-ferguson-walter.pdf",
+      "retrieval_date": "2026-08-23",
       "access_status": "open_fulltext",
+      "sha256": "c56c4e21ddc838adf0c8ef6169535e6ab9b89f008880cea981df79873d780f10",
       "peer_review_status": "peer_reviewed",
       "peer_review_basis": "USENIX Security Symposium : conference scientifique de premier plan avec comite de programme (page de presentation officielle usenix.org verifiee).",
+      "themes": [
+        "attacker_interaction",
+        "engagement",
+        "detection",
+        "evaluation",
+        "realism",
+        "decoy_credential"
+      ],
       "relevance_summary": "Analyse des donnees de l''etude Tularosa' : plus de 130 red teamers professionnels ont participe a un test d'intrusion controle mesurant l'effet de la deception cyber et psychologique (presence/mention explicite de leurres) sur le comportement des attaquants — reduction mesuree des tentatives de connexion interactive sur les leurres selon la condition.",
       "search_queries": [
         "\"Examining the Efficacy of Decoy-based and Psychological Cyber Deception\" authors venue DOI",
@@ -830,17 +924,14 @@
           ]
         }
       ],
-      "themes": [
-        "attacker_interaction",
-        "engagement",
-        "detection",
-        "evaluation",
-        "realism",
-        "decoy_credential"
-      ],
-      "retrieval_date": "2026-08-23",
-      "raw_file": "data/deception/raw/literature/usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy.pdf",
-      "sha256": "c56c4e21ddc838adf0c8ef6169535e6ab9b89f008880cea981df79873d780f10"
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy.txt",
+        "extracted_text_sha256": "07ee3021a209ffbdda34917e8fd6d03aeb26166042ff3b8a532e48b1c5f26189",
+        "character_count": 94056,
+        "word_count": 13769,
+        "page_count": 20,
+        "page_separators_found": true
+      }
     }
   ]
 }

@@ -3,13 +3,13 @@ Réf. architecture : "9. Base de connaissances cyberdéception" / "9.1
 Pipeline de construction de la KB déception" — contrat technique du PFE
 Cyberdéception (CLAUDE.md).
 
-Couche OFFLINE de construction de données (phase 4B.3) : transforme un
-registre bibliographique versionné (data/deception/literature/
-literature_sources.json), vérifié manuellement contre des sources stables
-(DOI/Crossref, dépôts institutionnels, pages officielles d'éditeur), en un
-STAGING documentaire — TROISIÈME source structurée de la future KB
-cyberdéception, en complément de D3FEND (d3fend_seed_builder.py) et MITRE
-Engage (engage_seed_builder.py).
+Couche OFFLINE de construction de données (phase 4B.3, durcie en 4B.3-H) :
+transforme un registre bibliographique versionné (data/deception/
+literature/literature_sources.json), vérifié manuellement contre des
+sources stables (Crossref, DataCite, DBLP, dépôts institutionnels, pages
+officielles d'éditeur/conférence), en un STAGING documentaire —
+TROISIÈME source structurée de la future KB cyberdéception, en complément
+de D3FEND (d3fend_seed_builder.py) et MITRE Engage (engage_seed_builder.py).
 
 Ce module NE fait PAS partie du runtime SP1/SP2/SP3 : il ne construit PAS
 le catalogue final data/deception/deception_catalog.json, ne calcule ni
@@ -25,13 +25,26 @@ Différence structurelle avec D3FEND/Engage : il n'existe pas d'API/dump
 officiel unique fournissant toutes les publications scientifiques sur la
 cyberdéception. Le registre bibliographique (literature_sources.json) est
 donc une entrée CURÉE : chaque champ a été vérifié individuellement avant
-d'être écrit (DOI vérifié via l'API Crossref, URL d'accès ouvert vérifiée
-par requête HTTP réelle) — voir data/deception/literature/
-search_protocol.md pour la méthode complète, reproductible. Ce module ne
-télécharge rien lui-même : il consomme des fichiers déjà acquis
-localement (PDF + extraction texte .txt produite hors-ligne par
-`pdftotext`, sans dépendance Python supplémentaire) et le registre, de
-façon purement déterministe.
+d'être écrit — voir data/deception/literature/search_protocol.md pour la
+méthode complète, reproductible. Ce module ne télécharge rien lui-même :
+il consomme des fichiers déjà acquis localement (PDF + extraction texte
+.txt produite hors-ligne par `pdftotext`, séparateurs de page `\\f`
+conservés, sans dépendance Python supplémentaire) et le registre, de façon
+purement déterministe.
+
+Durcissement (phase 4B.3-H) — réf. tâche :
+- distinction explicite publication_doi (DOI de la publication finale) /
+  repository_doi (DOI attribué au dépôt/preprint, ex. DataCite arXiv) /
+  repository_identifier (ex. "arXiv:1804.06196") — jamais confondus ;
+- dates de publication explicites : bibliographic_year (année de
+  citation), published_online_year, published_print_year — jamais réduites
+  silencieusement à une seule valeur `year` ;
+- peer_review_status explicite (peer_reviewed/not_peer_reviewed/unknown),
+  jamais déduit implicitement de publication_type ;
+- vérification de la PAGE déclarée d'un passage : le texte extrait est
+  découpé par page (séparateurs `\\f` de pdftotext) et un passage n'est
+  accepté que s'il apparaît sur la page précisément déclarée, pas
+  seulement quelque part dans le document.
 
 Convention : identifiants de code en anglais, commentaires et docstrings en
 français (§25.1).
@@ -59,14 +72,20 @@ DOCUMENTARY_THEMES = (
 
 _ACCESS_STATUS_VALUES = ("open_fulltext", "metadata_only", "abstract_only", "unavailable")
 _PUBLICATION_TYPE_VALUES = ("journal-article", "conference-paper", "preprint", "thesis")
+_PEER_REVIEW_STATUS_VALUES = ("peer_reviewed", "not_peer_reviewed", "unknown")
 _MAX_EVIDENCE_TEXT_LENGTH = 500
 
 _REQUIRED_SOURCE_FIELDS = (
-    "source_id", "title", "authors", "year", "publication_type", "venue",
-    "doi", "official_url", "open_access_url", "retrieval_date",
-    "access_status", "relevance_summary", "search_queries",
-    "inclusion_reasons", "exclusion_notes", "themes", "raw_file", "sha256",
+    "source_id", "title", "authors", "bibliographic_year",
+    "published_online_year", "published_print_year", "publication_type",
+    "venue", "publication_doi", "repository_doi", "repository_identifier",
+    "official_url", "open_access_url", "retrieval_date", "access_status",
+    "peer_review_status", "peer_review_basis", "relevance_summary",
+    "search_queries", "inclusion_reasons", "exclusion_notes",
+    "metadata_notes", "metadata_provenance", "themes", "raw_file", "sha256",
 )
+
+_REQUIRED_PROVENANCE_FIELDS = ("provider", "url", "retrieval_date", "verified_fields")
 
 
 class LiteratureSeedBuilderError(Exception):
@@ -74,14 +93,14 @@ class LiteratureSeedBuilderError(Exception):
 
 
 # ---------------------------------------------------------------------------
-# Identifiants stables — réf. tâche §11
+# Identifiants stables — réf. tâche §6/§11 (phase initiale) durci en §6 (4B.3-H)
 # ---------------------------------------------------------------------------
 
 
 def compute_doi_based_source_id(doi: str) -> str:
-    """Réf. tâche §11 : règle déterministe préférée — dérivée du DOI, stable
-    tant que le DOI ne change pas. Ne dépend d'aucun métadonnée mutable
-    (titre, auteurs)."""
+    """Réf. tâche §6/§11 : règle déterministe préférée — dérivée du
+    **publication_doi** (jamais du repository_doi), stable tant que ce DOI
+    ne change pas."""
     return "doi_" + doi.strip().lower().replace("/", "_")
 
 
@@ -89,11 +108,12 @@ _FALLBACK_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_.]*$")
 
 
 def is_valid_fallback_source_id(source_id: str) -> bool:
-    """Réf. tâche §11 : à défaut de DOI, aucune règle de recomposition
-    stricte n'est imposée (les métadonnées disponibles varient trop d'une
-    source à l'autre), mais la convention documentée est vérifiée :
-    identifiant ASCII, minuscules, sans espace ni caractère spécial —
-    jamais un identifiant arbitraire du type PAPER1/PAPER2 (§11)."""
+    """Réf. tâche §11 : à défaut de publication_doi (y compris lorsqu'un
+    repository_doi existe — réf. tâche §6, un preprint garde son
+    source_id `arxiv_...`, jamais dérivé du repository_doi), la convention
+    documentée est vérifiée : identifiant ASCII, minuscules, sans espace ni
+    caractère spécial — jamais un identifiant arbitraire du type
+    PAPER1/PAPER2 (§11)."""
     return bool(_FALLBACK_ID_RE.match(source_id)) and not re.match(r"^paper\d+$", source_id)
 
 
@@ -108,6 +128,16 @@ def _sha256_of_file(path: str | Path) -> str:
 
 def _normalize_whitespace(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
+
+
+def split_extracted_text_pages(text: str) -> list[str]:
+    """Réf. tâche §13 : reconstruit les pages d'un texte extrait par
+    `pdftotext` à partir des séparateurs de page `\\f` (form feed) qu'il
+    insère nativement entre chaque page. Si aucun séparateur n'est présent
+    (extraction sans page connue), le texte entier est traité comme une
+    unique page 1 — jamais une page inventée au-delà de ce qui est
+    structurellement observable."""
+    return text.split("\x0c")
 
 
 def read_literature_sources_registry(path: str | Path) -> dict:
@@ -125,9 +155,9 @@ def read_literature_sources_registry(path: str | Path) -> dict:
 
 def read_evidence_candidates(path: str | Path) -> list[dict]:
     """Réf. tâche §15 : charge les passages candidats (courts, vérifiés
-    manuellement comme réellement présents dans le texte extrait avant
-    d'être proposés au builder — la validation finale est refaite ici,
-    déterministiquement, par `build_literature_evidence_seed`)."""
+    manuellement comme réellement présents sur la page déclarée du texte
+    extrait avant d'être proposés au builder — la validation finale est
+    refaite ici, déterministiquement, par `build_literature_evidence_seed`)."""
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     candidates = data.get("evidence_candidates")
     if not isinstance(candidates, list):
@@ -136,18 +166,49 @@ def read_evidence_candidates(path: str | Path) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# Validation du registre — réf. tâche §9/§10/§19
+# Validation du registre — réf. tâche §9/§10/§19/§28
 # ---------------------------------------------------------------------------
 
 
+def _validate_year_field(value: Any, field_name: str, source_id: str) -> None:
+    if value is not None and not isinstance(value, int):
+        raise LiteratureSeedBuilderError(
+            f"Source '{source_id}' : '{field_name}' doit être un entier ou null (reçu : {value!r})."
+        )
+
+
+def _validate_metadata_provenance(entries: Any, source_id: str) -> None:
+    if not isinstance(entries, list) or not entries:
+        raise LiteratureSeedBuilderError(
+            f"Source '{source_id}' : 'metadata_provenance' doit être une liste non vide "
+            "(au moins un fournisseur réellement consulté, réf. tâche §7)."
+        )
+    for prov in entries:
+        missing = [f for f in _REQUIRED_PROVENANCE_FIELDS if f not in prov]
+        if missing:
+            raise LiteratureSeedBuilderError(
+                f"Source '{source_id}' : entrée metadata_provenance incomplète, champs "
+                f"manquants : {missing}."
+            )
+        if not isinstance(prov["verified_fields"], list) or not prov["verified_fields"]:
+            raise LiteratureSeedBuilderError(
+                f"Source '{source_id}' : 'verified_fields' de metadata_provenance doit être "
+                "une liste non vide."
+            )
+
+
 def validate_literature_sources_registry(registry: dict) -> None:
-    """Réf. tâche §9/§19 : vérifie l'intégrité minimale du registre —
-    champs obligatoires présents, source_id/DOI uniques et cohérents,
-    access_status/publication_type dans les valeurs documentées, aucune
-    donnée de fichier local incohérente avec access_status."""
+    """Réf. tâche §9/§19/§28 : vérifie l'intégrité minimale du registre
+    durci — champs obligatoires présents, source_id stable et cohérent
+    avec publication_doi, aucun publication_doi ni repository_doi dupliqué
+    (chacun dans sa propre catégorie), access_status/publication_type/
+    peer_review_status dans les valeurs documentées, provenance des
+    métadonnées structurée et non vide, aucune donnée de fichier local
+    incohérente avec access_status."""
     sources = registry["sources"]
     seen_ids: set[str] = set()
-    seen_dois: set[str] = set()
+    seen_publication_dois: set[str] = set()
+    seen_repository_dois: set[str] = set()
 
     for entry in sources:
         missing = [f for f in _REQUIRED_SOURCE_FIELDS if f not in entry]
@@ -163,29 +224,69 @@ def validate_literature_sources_registry(registry: dict) -> None:
             raise LiteratureSeedBuilderError(f"source_id dupliqué : '{source_id}'.")
         seen_ids.add(source_id)
 
-        doi = entry.get("doi")
-        if doi is not None:
-            doi_norm = doi.strip().lower()
-            if doi_norm in seen_dois:
+        publication_doi = entry.get("publication_doi")
+        repository_doi = entry.get("repository_doi")
+
+        if publication_doi is not None and repository_doi is not None:
+            if publication_doi.strip().lower() == repository_doi.strip().lower():
                 raise LiteratureSeedBuilderError(
-                    f"DOI dupliqué dans le registre : '{doi}' — deux entrées distinctes ne "
-                    "doivent jamais partager le même DOI (fusionner manuellement si c'est la "
-                    "même publication, réf. tâche §19)."
+                    f"Source '{source_id}' : publication_doi et repository_doi identiques — "
+                    "un DOI de dépôt/preprint ne doit jamais être assimilé à un DOI de "
+                    "publication finale sans preuve explicite (réf. tâche §4/§5)."
                 )
-            seen_dois.add(doi_norm)
-            expected_id = compute_doi_based_source_id(doi)
+
+        if publication_doi is not None:
+            doi_norm = publication_doi.strip().lower()
+            if doi_norm in seen_publication_dois:
+                raise LiteratureSeedBuilderError(
+                    f"publication_doi dupliqué dans le registre : '{publication_doi}' — deux "
+                    "entrées distinctes ne doivent jamais partager le même publication_doi."
+                )
+            seen_publication_dois.add(doi_norm)
+            expected_id = compute_doi_based_source_id(publication_doi)
             if source_id != expected_id:
                 raise LiteratureSeedBuilderError(
-                    f"source_id '{source_id}' incohérent avec la règle dérivée du DOI "
-                    f"'{doi}' (attendu '{expected_id}', réf. tâche §11)."
+                    f"source_id '{source_id}' incohérent avec la règle dérivée du "
+                    f"publication_doi '{publication_doi}' (attendu '{expected_id}', réf. "
+                    "tâche §6/§11)."
                 )
         else:
             if not is_valid_fallback_source_id(source_id):
                 raise LiteratureSeedBuilderError(
-                    f"source_id de repli invalide (pas de DOI) : '{source_id}' — doit être "
-                    "ASCII minuscule, sans espace, et ne jamais suivre le motif interdit "
-                    "PAPER<n> (réf. tâche §11)."
+                    f"source_id de repli invalide (pas de publication_doi) : '{source_id}' — "
+                    "doit être ASCII minuscule, sans espace, et ne jamais suivre le motif "
+                    "interdit PAPER<n> (réf. tâche §11)."
                 )
+
+        if repository_doi is not None:
+            repo_doi_norm = repository_doi.strip().lower()
+            if repo_doi_norm in seen_repository_dois:
+                raise LiteratureSeedBuilderError(
+                    f"repository_doi dupliqué dans le registre : '{repository_doi}'."
+                )
+            seen_repository_dois.add(repo_doi_norm)
+
+        for field_name in ("bibliographic_year", "published_online_year", "published_print_year"):
+            _validate_year_field(entry.get(field_name), field_name, source_id)
+        if entry.get("bibliographic_year") is None:
+            raise LiteratureSeedBuilderError(
+                f"Source '{source_id}' : 'bibliographic_year' est obligatoire (jamais null, "
+                "réf. tâche §9)."
+            )
+
+        peer_review_status = entry["peer_review_status"]
+        if peer_review_status not in _PEER_REVIEW_STATUS_VALUES:
+            raise LiteratureSeedBuilderError(
+                f"Source '{source_id}' : peer_review_status invalide '{peer_review_status}' "
+                f"(attendu parmi {_PEER_REVIEW_STATUS_VALUES})."
+            )
+        if not entry.get("peer_review_basis"):
+            raise LiteratureSeedBuilderError(
+                f"Source '{source_id}' : 'peer_review_basis' est obligatoire et ne doit pas "
+                "être vide (réf. tâche §19)."
+            )
+
+        _validate_metadata_provenance(entry.get("metadata_provenance"), source_id)
 
         access_status = entry["access_status"]
         if access_status not in _ACCESS_STATUS_VALUES:
@@ -233,7 +334,9 @@ def build_literature_document_seed(registry: dict) -> dict:
     """Réf. tâche §14 : transforme le registre validé en staging documentaire,
     en vérifiant pour chaque source à texte ouvert que le fichier local
     déclaré existe réellement et que son SHA-256 correspond exactement à
-    celui déclaré dans le registre (aucune substitution silencieuse)."""
+    celui déclaré dans le registre (aucune substitution silencieuse). Le
+    texte extrait est également découpé par page (réf. §13) pour permettre
+    la vérification page par page des passages courts."""
     documents = []
     for entry in registry["sources"]:
         source_id = entry["source_id"]
@@ -262,11 +365,14 @@ def build_literature_document_seed(registry: dict) -> dict:
                     "requise pour toute source déclarée 'open_fulltext'."
                 )
             extracted_text = text_path.read_text(encoding="utf-8", errors="replace")
+            pages = split_extracted_text_pages(extracted_text)
             extraction = {
                 "extracted_text_file": str(text_path),
                 "extracted_text_sha256": hashlib.sha256(extracted_text.encode("utf-8")).hexdigest(),
                 "character_count": len(extracted_text),
                 "word_count": len(extracted_text.split()),
+                "page_count": len(pages),
+                "page_separators_found": "\x0c" in extracted_text,
             }
 
         documents.append(
@@ -274,27 +380,35 @@ def build_literature_document_seed(registry: dict) -> dict:
                 "source_id": source_id,
                 "title": entry["title"],
                 "authors": entry["authors"],
-                "year": entry["year"],
+                "bibliographic_year": entry["bibliographic_year"],
+                "published_online_year": entry["published_online_year"],
+                "published_print_year": entry["published_print_year"],
                 "publication_type": entry["publication_type"],
                 "venue": entry["venue"],
-                "doi": entry["doi"],
+                "publication_doi": entry["publication_doi"],
+                "repository_doi": entry["repository_doi"],
+                "repository_identifier": entry["repository_identifier"],
                 "official_url": entry["official_url"],
                 "open_access_url": entry["open_access_url"],
                 "retrieval_date": entry["retrieval_date"],
                 "access_status": access_status,
                 "sha256": entry["sha256"],
+                "peer_review_status": entry["peer_review_status"],
+                "peer_review_basis": entry["peer_review_basis"],
                 "themes": list(entry["themes"]),
                 "relevance_summary": entry["relevance_summary"],
                 "search_queries": list(entry["search_queries"]),
                 "inclusion_reasons": list(entry["inclusion_reasons"]),
                 "exclusion_notes": entry["exclusion_notes"],
+                "metadata_notes": entry["metadata_notes"],
+                "metadata_provenance": list(entry["metadata_provenance"]),
                 "extraction": extraction,
             }
         )
 
     return {
         "schema": "literature_document_seed",
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "selection_method_version": registry["selection_method_version"],
         "documents": documents,
     }
@@ -321,21 +435,24 @@ def validate_literature_document_seed(document_seed: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Staging des passages courts — réf. tâche §15/§16
+# Staging des passages courts — réf. tâche §12/§13/§14/§15/§16
 # ---------------------------------------------------------------------------
 
 
 def build_literature_evidence_seed(document_seed: dict, evidence_candidates: list[dict]) -> dict:
-    """Réf. tâche §15/§29 : ne conserve un passage que si (a) sa source est
+    """Réf. tâche §14/§29 : ne conserve un passage que si (a) sa source est
     'open_fulltext' avec une extraction de texte disponible, (b) sa longueur
-    respecte la limite documentée, et (c) le passage est retrouvé
-    littéralement (après normalisation des espaces/retours à la ligne) dans
-    le texte extrait de cette source. Aucun passage n'est jamais accepté
-    sur la seule confiance du registre : la preuve est revérifiée ici,
-    déterministiquement, contre le texte réellement extrait localement.
+    respecte la limite documentée, (c) la page déclarée existe réellement
+    dans le découpage par page du texte extrait, et (d) le passage est
+    retrouvé littéralement (après normalisation des espaces/retours à la
+    ligne) **sur cette page précise** — pas seulement quelque part dans le
+    document entier. Un passage présent ailleurs dans le document mais pas
+    sur la page déclarée est rejeté. Tout passage conservé porte donc
+    `page_verified: true` — aucun passage à page non vérifiée n'atteint le
+    staging final (réf. tâche §16).
     """
     documents_by_id = {d["source_id"]: d for d in document_seed["documents"]}
-    text_cache: dict[str, str] = {}
+    pages_cache: dict[str, list[str]] = {}
 
     evidence: list[dict] = []
     seen_keys: set[tuple] = set()
@@ -375,18 +492,31 @@ def build_literature_evidence_seed(document_seed: dict, evidence_candidates: lis
                 f"({len(text)} > {_MAX_EVIDENCE_TEXT_LENGTH} caractères)."
             )
 
-        if source_id not in text_cache:
-            text_cache[source_id] = _normalize_whitespace(
-                Path(document["extraction"]["extracted_text_file"]).read_text(
-                    encoding="utf-8", errors="replace"
-                )
+        if source_id not in pages_cache:
+            extracted_text = Path(document["extraction"]["extracted_text_file"]).read_text(
+                encoding="utf-8", errors="replace"
             )
-        full_text_normalized = text_cache[source_id]
+            pages_cache[source_id] = split_extracted_text_pages(extracted_text)
+        pages = pages_cache[source_id]
+
+        if page > len(pages):
+            raise LiteratureSeedBuilderError(
+                f"Passage de la source '{source_id}' : page {page} déclarée mais le document "
+                f"extrait n'en compte que {len(pages)}."
+            )
+
         text_normalized = _normalize_whitespace(text)
-        if text_normalized not in full_text_normalized:
+        declared_page_normalized = _normalize_whitespace(pages[page - 1])
+        if text_normalized not in declared_page_normalized:
+            full_text_normalized = _normalize_whitespace(" ".join(pages))
+            if text_normalized in full_text_normalized:
+                raise LiteratureSeedBuilderError(
+                    f"Passage de la source '{source_id}' trouvé ailleurs dans le document mais "
+                    f"pas sur la page déclarée ({page}) : '{text[:80]}...'."
+                )
             raise LiteratureSeedBuilderError(
                 f"Passage introuvable verbatim dans le texte extrait de la source "
-                f"'{source_id}' : '{text[:80]}...'."
+                f"'{source_id}' (page {page}) : '{text[:80]}...'."
             )
 
         key = (source_id, text_normalized)
@@ -407,12 +537,13 @@ def build_literature_evidence_seed(document_seed: dict, evidence_candidates: lis
                 "locator": locator,
                 "text": text,
                 "source_sha256": document["sha256"],
+                "page_verified": True,
             }
         )
 
     return {
         "schema": "literature_evidence_seed",
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "selection_method_version": document_seed["selection_method_version"],
         "evidence": evidence,
     }
@@ -420,7 +551,8 @@ def build_literature_evidence_seed(document_seed: dict, evidence_candidates: lis
 
 def validate_literature_evidence_seed(evidence_seed: dict, document_seed: dict) -> None:
     """Réf. tâche §20 : chaque passage référence une source existante et
-    'open_fulltext', et aucun doublon exact ne subsiste."""
+    'open_fulltext', porte page_verified=true, et aucun doublon exact ne
+    subsiste."""
     documents_by_id = {d["source_id"]: d for d in document_seed["documents"]}
     seen_ids: set[str] = set()
     for item in evidence_seed["evidence"]:
@@ -436,25 +568,37 @@ def validate_literature_evidence_seed(evidence_seed: dict, document_seed: dict) 
             )
         if len(item["text"]) > _MAX_EVIDENCE_TEXT_LENGTH:
             raise LiteratureSeedBuilderError(f"Passage '{evidence_id}' dépasse la longueur maximale autorisée.")
+        if item.get("page_verified") is not True:
+            raise LiteratureSeedBuilderError(
+                f"Passage '{evidence_id}' : page_verified doit être true (réf. tâche §16)."
+            )
 
 
 # ---------------------------------------------------------------------------
-# Rapport de couverture — réf. tâche §17
+# Rapport de couverture — réf. tâche §17/§18/§20/§33
 # ---------------------------------------------------------------------------
 
 
 def build_literature_seed_report(document_seed: dict, evidence_seed: dict) -> dict:
-    """Réf. tâche §17 : rapport de couverture calculé uniquement à partir du
-    staging déjà construit — aucune valeur n'est devinée, les lacunes de
-    couverture thématique sont rapportées explicitement (coverage_gaps),
-    jamais comblées par une source inventée."""
+    """Réf. tâche §17/§33 : rapport de couverture calculé uniquement à
+    partir du staging déjà construit — aucune valeur n'est devinée, les
+    lacunes de couverture thématique sont rapportées explicitement
+    (coverage_gaps), jamais comblées par une source inventée. Les
+    compteurs peer review et access_status sont calculés depuis des
+    champs explicites du registre, jamais déduits implicitement du type de
+    publication (réf. tâche §19/§20)."""
     documents = document_seed["documents"]
 
-    peer_reviewed_types = {"journal-article", "conference-paper"}
-    peer_reviewed_count = sum(1 for d in documents if d["publication_type"] in peer_reviewed_types)
-    open_fulltext_count = sum(1 for d in documents if d["access_status"] == "open_fulltext")
-    metadata_only_count = sum(1 for d in documents if d["access_status"] != "open_fulltext")
-    sources_with_doi = sum(1 for d in documents if d["doi"])
+    peer_reviewed_count = sum(1 for d in documents if d["peer_review_status"] == "peer_reviewed")
+    not_peer_reviewed_count = sum(1 for d in documents if d["peer_review_status"] == "not_peer_reviewed")
+    unknown_peer_review_count = sum(1 for d in documents if d["peer_review_status"] == "unknown")
+
+    access_status_counts: dict[str, int] = {status: 0 for status in _ACCESS_STATUS_VALUES}
+    for d in documents:
+        access_status_counts[d["access_status"]] += 1
+
+    sources_with_publication_doi = sum(1 for d in documents if d["publication_doi"])
+    sources_with_repository_doi = sum(1 for d in documents if d["repository_doi"])
     sources_with_local_sha256 = sum(1 for d in documents if d["sha256"])
 
     theme_coverage: dict[str, int] = {theme: 0 for theme in DOCUMENTARY_THEMES}
@@ -467,20 +611,29 @@ def build_literature_seed_report(document_seed: dict, evidence_seed: dict) -> di
     for d in documents:
         publication_type_counts[d["publication_type"]] = publication_type_counts.get(d["publication_type"], 0) + 1
 
-    years = [d["year"] for d in documents]
+    years = [d["bibliographic_year"] for d in documents]
     year_range = {"min": min(years), "max": max(years)} if years else {"min": None, "max": None}
+
+    verified_page_evidence_count = sum(1 for e in evidence_seed["evidence"] if e.get("page_verified") is True)
 
     return {
         "schema": "literature_seed_report",
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "selection_method_version": document_seed["selection_method_version"],
         "source_count": len(documents),
         "peer_reviewed_count": peer_reviewed_count,
-        "open_fulltext_count": open_fulltext_count,
-        "metadata_only_count": metadata_only_count,
-        "sources_with_doi": sources_with_doi,
+        "not_peer_reviewed_count": not_peer_reviewed_count,
+        "unknown_peer_review_count": unknown_peer_review_count,
+        "open_fulltext_count": access_status_counts["open_fulltext"],
+        "metadata_only_count": access_status_counts["metadata_only"],
+        "abstract_only_count": access_status_counts["abstract_only"],
+        "unavailable_count": access_status_counts["unavailable"],
+        "access_status_counts": access_status_counts,
+        "sources_with_publication_doi": sources_with_publication_doi,
+        "sources_with_repository_doi": sources_with_repository_doi,
         "sources_with_local_sha256": sources_with_local_sha256,
         "evidence_count": len(evidence_seed["evidence"]),
+        "verified_page_evidence_count": verified_page_evidence_count,
         "theme_coverage": theme_coverage,
         "coverage_gaps": coverage_gaps,
         "year_range": year_range,
@@ -519,8 +672,8 @@ def _run_cli(argv: list[str] | None = None) -> None:
     parser.add_argument("--out-dir", required=True, help="Répertoire de sortie du staging.")
     parser.add_argument(
         "--version",
-        default="1.0",
-        help="Version du staging littérature (suffixe des fichiers de sortie, défaut '1.0').",
+        default="1.1",
+        help="Version du staging littérature (suffixe des fichiers de sortie, défaut '1.1').",
     )
     args = parser.parse_args(argv)
 

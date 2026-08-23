@@ -2,7 +2,8 @@
 Réf. architecture : CLAUDE.md — contrat technique du PFE Cyberdéception.
 
 Tests unitaires de tools/deception_kb/literature_seed_builder.py (§25.4 :
-pytest obligatoire).
+pytest obligatoire), durcis en phase 4B.3-H (schéma bibliographique 1.1,
+vérification page par page).
 
 100% hors ligne : les "fichiers locaux" utilisés ici sont des octets
 synthétiques (pas de vrais PDF ni de dépendance à pdftotext) — le builder ne
@@ -31,51 +32,85 @@ from tools.deception_kb.literature_seed_builder import (
     is_valid_fallback_source_id,
     read_evidence_candidates,
     read_literature_sources_registry,
+    split_extracted_text_pages,
     validate_literature_document_seed,
     validate_literature_evidence_seed,
     validate_literature_sources_registry,
 )
 
 FIXTURE_PDF_BYTES = b"%PDF-1.4 fixture content, not a real PDF, only bytes for SHA-256.\n"
-FIXTURE_TEXT = (
+
+# Deux pages synthétiques séparées par un form-feed (\x0c), comme produit
+# nativement par pdftotext entre deux pages réelles d'un PDF.
+FIXTURE_PAGE_1 = (
     "Fixture Deception Paper\n\n"
     "Abstract\n"
     "This fixture paper discusses honeypots and honeytokens as deception "
-    "mechanisms for cyber defense. It also covers decoy documents and "
-    "attacker engagement.\n\n"
+    "mechanisms for cyber defense.\n"
+)
+FIXTURE_PAGE_2 = (
     "1. Introduction\n"
+    "It also covers decoy documents and attacker engagement.\n"
     "Deception delays and contains an intruder while collecting "
     "intelligence about their behavior.\n"
 )
+FIXTURE_TEXT = FIXTURE_PAGE_1 + "\x0c" + FIXTURE_PAGE_2
+
+
+def make_provenance(provider="Crossref", fields=None):
+    return [
+        {
+            "provider": provider,
+            "url": "https://api.crossref.org/works/10.9999/fixture",
+            "retrieval_date": "2026-08-23",
+            "verified_fields": fields or ["title", "authors", "publication_doi"],
+        }
+    ]
 
 
 def make_source_entry(
     *,
     source_id="doi_10.9999_fixture",
-    doi="10.9999/fixture",
+    publication_doi="10.9999/fixture",
+    repository_doi=None,
+    repository_identifier=None,
     access_status="open_fulltext",
     raw_file=None,
     sha256=None,
     themes=None,
-    year=2020,
+    bibliographic_year=2020,
+    published_online_year=None,
+    published_print_year=None,
     publication_type="journal-article",
+    peer_review_status="peer_reviewed",
+    peer_review_basis="Fixture venue evaluee par les pairs.",
+    metadata_notes="",
+    metadata_provenance=None,
 ):
     return {
         "source_id": source_id,
         "title": "Fixture Deception Paper",
         "authors": ["A. Fixture", "B. Fixture"],
-        "year": year,
+        "bibliographic_year": bibliographic_year,
+        "published_online_year": published_online_year,
+        "published_print_year": published_print_year,
         "publication_type": publication_type,
         "venue": "Fixture Journal of Cyber Deception",
-        "doi": doi,
-        "official_url": "https://doi.org/10.9999/fixture" if doi else "https://example.org/fixture",
+        "publication_doi": publication_doi,
+        "repository_doi": repository_doi,
+        "repository_identifier": repository_identifier,
+        "official_url": "https://doi.org/10.9999/fixture" if publication_doi else "https://example.org/fixture",
         "open_access_url": "https://example.org/fixture.pdf" if access_status == "open_fulltext" else None,
         "retrieval_date": "2026-08-23",
         "access_status": access_status,
+        "peer_review_status": peer_review_status,
+        "peer_review_basis": peer_review_basis,
         "relevance_summary": "Fixture summary for tests.",
         "search_queries": ["fixture deception query"],
         "inclusion_reasons": ["fixture_reason"],
         "exclusion_notes": "",
+        "metadata_notes": metadata_notes,
+        "metadata_provenance": metadata_provenance if metadata_provenance is not None else make_provenance(),
         "themes": themes if themes is not None else ["honeypot", "honeytoken"],
         "raw_file": raw_file,
         "sha256": sha256,
@@ -99,8 +134,8 @@ def make_registry(tmp_path, entries=None):
         entries = [make_source_entry(raw_file=str(raw_path), sha256=sha256)]
     return {
         "schema": "deception_literature_sources",
-        "schema_version": "1.0",
-        "selection_method_version": "1.0",
+        "schema_version": "1.1",
+        "selection_method_version": "1.1",
         "sources": entries,
     }
 
@@ -139,50 +174,110 @@ class TestSourceId:
 
 
 # ---------------------------------------------------------------------------
-# B. Validation du registre
+# B. Découpage par page
 # ---------------------------------------------------------------------------
 
 
-class TestRegistryValidation:
+class TestPageSplitting:
+    def test_splits_on_form_feed(self):
+        pages = split_extracted_text_pages("page one\x0cpage two\x0cpage three")
+        assert pages == ["page one", "page two", "page three"]
+
+    def test_no_separator_returns_single_page(self):
+        pages = split_extracted_text_pages("only page content, no separator at all")
+        assert len(pages) == 1
+
+
+# ---------------------------------------------------------------------------
+# C. Validation du registre — DOI / dates / peer review / provenance
+# ---------------------------------------------------------------------------
+
+
+class TestRegistryValidationDoi:
     def test_valid_registry_accepted(self, tmp_path):
         registry = make_registry(tmp_path)
-        validate_literature_sources_registry(registry)  # ne doit pas lever
+        validate_literature_sources_registry(registry)
 
-    def test_source_with_doi(self, tmp_path):
+    def test_source_with_publication_doi(self, tmp_path):
         raw_path, sha256 = write_fixture_raw_file(tmp_path)
-        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256, doi="10.9999/fixture")
+        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256, publication_doi="10.9999/fixture")
         registry = make_registry(tmp_path, [entry])
         validate_literature_sources_registry(registry)
         assert entry["source_id"] == compute_doi_based_source_id("10.9999/fixture")
 
-    def test_source_without_doi(self, tmp_path):
-        raw_path, sha256 = write_fixture_raw_file(tmp_path, source_id="venue2020_author_title")
+    def test_source_with_repository_doi_only(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path, source_id="arxiv_9999.00000")
         entry = make_source_entry(
-            source_id="venue2020_author_title", doi=None, raw_file=str(raw_path), sha256=sha256
+            source_id="arxiv_9999.00000",
+            publication_doi=None,
+            repository_doi="10.48550/arXiv.9999.00000",
+            repository_identifier="arXiv:9999.00000",
+            raw_file=str(raw_path),
+            sha256=sha256,
+            publication_type="preprint",
+            peer_review_status="not_peer_reviewed",
+            metadata_provenance=make_provenance(provider="DataCite"),
         )
         registry = make_registry(tmp_path, [entry])
         validate_literature_sources_registry(registry)  # ne doit pas lever
 
-    def test_source_id_inconsistent_with_doi_rejected(self, tmp_path):
+    def test_source_without_any_doi(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path, source_id="venue2020_author_title")
+        entry = make_source_entry(
+            source_id="venue2020_author_title",
+            publication_doi=None,
+            raw_file=str(raw_path),
+            sha256=sha256,
+        )
+        registry = make_registry(tmp_path, [entry])
+        validate_literature_sources_registry(registry)  # ne doit pas lever
+
+    def test_source_id_inconsistent_with_publication_doi_rejected(self, tmp_path):
         raw_path, sha256 = write_fixture_raw_file(tmp_path, source_id="wrong_id")
         entry = make_source_entry(
-            source_id="wrong_id", doi="10.9999/fixture", raw_file=str(raw_path), sha256=sha256
+            source_id="wrong_id", publication_doi="10.9999/fixture", raw_file=str(raw_path), sha256=sha256
         )
         registry = make_registry(tmp_path, [entry])
         with pytest.raises(LiteratureSeedBuilderError):
             validate_literature_sources_registry(registry)
 
-    def test_duplicate_doi_rejected(self, tmp_path):
+    def test_duplicate_publication_doi_rejected(self, tmp_path):
         raw1, sha1 = write_fixture_raw_file(tmp_path, source_id="doi_10.9999_fixture")
         raw2, sha2 = write_fixture_raw_file(tmp_path, source_id="doi_10.9999_fixture_dup")
-        entry1 = make_source_entry(raw_file=str(raw1), sha256=sha1, doi="10.9999/fixture")
+        entry1 = make_source_entry(raw_file=str(raw1), sha256=sha1, publication_doi="10.9999/fixture")
         entry2 = make_source_entry(
             source_id="doi_10.9999_fixture_dup",
             raw_file=str(raw2),
             sha256=sha2,
-            doi="10.9999/FIXTURE",  # même DOI, casse différente
+            publication_doi="10.9999/FIXTURE",  # même DOI, casse différente
         )
         registry = make_registry(tmp_path, [entry1, entry2])
+        with pytest.raises(LiteratureSeedBuilderError):
+            validate_literature_sources_registry(registry)
+
+    def test_duplicate_repository_doi_rejected(self, tmp_path):
+        raw1, sha1 = write_fixture_raw_file(tmp_path, source_id="arxiv_1111.11111")
+        raw2, sha2 = write_fixture_raw_file(tmp_path, source_id="arxiv_2222.22222")
+        common_repo_doi = "10.48550/arXiv.1111.11111"
+        entry1 = make_source_entry(
+            source_id="arxiv_1111.11111", publication_doi=None, repository_doi=common_repo_doi,
+            raw_file=str(raw1), sha256=sha1,
+        )
+        entry2 = make_source_entry(
+            source_id="arxiv_2222.22222", publication_doi=None, repository_doi=common_repo_doi,
+            raw_file=str(raw2), sha256=sha2,
+        )
+        registry = make_registry(tmp_path, [entry1, entry2])
+        with pytest.raises(LiteratureSeedBuilderError):
+            validate_literature_sources_registry(registry)
+
+    def test_publication_doi_equal_to_repository_doi_rejected(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(
+            raw_file=str(raw_path), sha256=sha256,
+            publication_doi="10.9999/fixture", repository_doi="10.9999/FIXTURE",
+        )
+        registry = make_registry(tmp_path, [entry])
         with pytest.raises(LiteratureSeedBuilderError):
             validate_literature_sources_registry(registry)
 
@@ -201,23 +296,124 @@ class TestRegistryValidation:
         with pytest.raises(LiteratureSeedBuilderError):
             validate_literature_sources_registry(registry)
 
+
+class TestRegistryValidationDates:
+    def test_bibliographic_year_required(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256, bibliographic_year=None)
+        registry = make_registry(tmp_path, [entry])
+        with pytest.raises(LiteratureSeedBuilderError):
+            validate_literature_sources_registry(registry)
+
+    def test_online_and_print_years_may_be_null(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(
+            raw_file=str(raw_path), sha256=sha256,
+            bibliographic_year=2020, published_online_year=None, published_print_year=None,
+        )
+        registry = make_registry(tmp_path, [entry])
+        validate_literature_sources_registry(registry)  # ne doit pas lever
+
+    def test_online_and_print_years_when_present(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(
+            raw_file=str(raw_path), sha256=sha256,
+            bibliographic_year=2018, published_online_year=2018, published_print_year=2019,
+        )
+        registry = make_registry(tmp_path, [entry])
+        validate_literature_sources_registry(registry)  # ne doit pas lever
+
+    def test_non_integer_year_rejected(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256)
+        entry["published_online_year"] = "2020"  # chaîne, pas un entier
+        registry = make_registry(tmp_path, [entry])
+        with pytest.raises(LiteratureSeedBuilderError):
+            validate_literature_sources_registry(registry)
+
+
+class TestRegistryValidationPeerReview:
+    def test_peer_reviewed_accepted(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256, peer_review_status="peer_reviewed")
+        registry = make_registry(tmp_path, [entry])
+        validate_literature_sources_registry(registry)
+
+    def test_not_peer_reviewed_accepted(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256, peer_review_status="not_peer_reviewed")
+        registry = make_registry(tmp_path, [entry])
+        validate_literature_sources_registry(registry)
+
+    def test_unknown_peer_review_accepted(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256, peer_review_status="unknown")
+        registry = make_registry(tmp_path, [entry])
+        validate_literature_sources_registry(registry)
+
+    def test_invalid_peer_review_status_rejected(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256)
+        entry["peer_review_status"] = "definitely_reviewed_trust_me"
+        registry = make_registry(tmp_path, [entry])
+        with pytest.raises(LiteratureSeedBuilderError):
+            validate_literature_sources_registry(registry)
+
+    def test_missing_peer_review_basis_rejected(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256, peer_review_basis="")
+        registry = make_registry(tmp_path, [entry])
+        with pytest.raises(LiteratureSeedBuilderError):
+            validate_literature_sources_registry(registry)
+
+    def test_publication_type_does_not_imply_peer_review(self, tmp_path):
+        """§19 : un conference-paper avec peer_review_status='unknown' doit
+        rester 'unknown' — jamais requalifié en 'peer_reviewed' du simple
+        fait de son publication_type."""
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(
+            raw_file=str(raw_path), sha256=sha256,
+            publication_type="conference-paper", peer_review_status="unknown",
+        )
+        registry = make_registry(tmp_path, [entry])
+        validate_literature_sources_registry(registry)
+        document_seed = build_literature_document_seed(registry)
+        report = build_literature_seed_report(document_seed, {"evidence": []})
+        assert report["peer_reviewed_count"] == 0
+        assert report["unknown_peer_review_count"] == 1
+
+
+class TestRegistryValidationProvenance:
+    def test_empty_provenance_rejected(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256, metadata_provenance=[])
+        registry = make_registry(tmp_path, [entry])
+        with pytest.raises(LiteratureSeedBuilderError):
+            validate_literature_sources_registry(registry)
+
+    def test_incomplete_provenance_entry_rejected(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256)
+        entry["metadata_provenance"] = [{"provider": "Crossref"}]  # champs manquants
+        registry = make_registry(tmp_path, [entry])
+        with pytest.raises(LiteratureSeedBuilderError):
+            validate_literature_sources_registry(registry)
+
+
+class TestRegistryValidationAccessAndThemes:
     def test_metadata_only_access_status_accepted(self):
         entry = make_source_entry(access_status="metadata_only", raw_file=None, sha256=None)
         registry = {
-            "schema": "deception_literature_sources",
-            "schema_version": "1.0",
-            "selection_method_version": "1.0",
-            "sources": [entry],
+            "schema": "deception_literature_sources", "schema_version": "1.1",
+            "selection_method_version": "1.1", "sources": [entry],
         }
-        validate_literature_sources_registry(registry)  # ne doit pas lever
+        validate_literature_sources_registry(registry)
 
     def test_open_fulltext_without_raw_file_rejected(self):
         entry = make_source_entry(access_status="open_fulltext", raw_file=None, sha256=None)
         registry = {
-            "schema": "deception_literature_sources",
-            "schema_version": "1.0",
-            "selection_method_version": "1.0",
-            "sources": [entry],
+            "schema": "deception_literature_sources", "schema_version": "1.1",
+            "selection_method_version": "1.1", "sources": [entry],
         }
         with pytest.raises(LiteratureSeedBuilderError):
             validate_literature_sources_registry(registry)
@@ -246,7 +442,7 @@ class TestRegistryValidation:
 
 
 # ---------------------------------------------------------------------------
-# C. Construction et validation du staging document
+# D. Construction et validation du staging document
 # ---------------------------------------------------------------------------
 
 
@@ -255,17 +451,18 @@ class TestDocumentSeedBuilding:
         registry = make_registry(tmp_path)
         document_seed = build_literature_document_seed(registry)
         assert document_seed["schema"] == "literature_document_seed"
+        assert document_seed["schema_version"] == "1.1"
         assert len(document_seed["documents"]) == 1
         doc = document_seed["documents"][0]
         assert doc["extraction"]["word_count"] > 0
+        assert doc["extraction"]["page_count"] == 2
+        assert doc["extraction"]["page_separators_found"] is True
 
     def test_metadata_only_document_has_no_extraction(self):
         entry = make_source_entry(access_status="metadata_only", raw_file=None, sha256=None)
         registry = {
-            "schema": "deception_literature_sources",
-            "schema_version": "1.0",
-            "selection_method_version": "1.0",
-            "sources": [entry],
+            "schema": "deception_literature_sources", "schema_version": "1.1",
+            "selection_method_version": "1.1", "sources": [entry],
         }
         document_seed = build_literature_document_seed(registry)
         assert document_seed["documents"][0]["extraction"] is None
@@ -296,7 +493,7 @@ class TestDocumentSeedBuilding:
     def test_document_seed_validation_accepts_valid(self, tmp_path):
         registry = make_registry(tmp_path)
         document_seed = build_literature_document_seed(registry)
-        validate_literature_document_seed(document_seed)  # ne doit pas lever
+        validate_literature_document_seed(document_seed)
 
     def test_document_seed_validation_rejects_duplicate(self, tmp_path):
         registry = make_registry(tmp_path)
@@ -305,14 +502,29 @@ class TestDocumentSeedBuilding:
         with pytest.raises(LiteratureSeedBuilderError):
             validate_literature_document_seed(document_seed)
 
+    def test_document_seed_carries_new_bibliographic_fields(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        entry = make_source_entry(
+            raw_file=str(raw_path), sha256=sha256,
+            bibliographic_year=2018, published_online_year=2018, published_print_year=2019,
+        )
+        registry = make_registry(tmp_path, [entry])
+        document_seed = build_literature_document_seed(registry)
+        doc = document_seed["documents"][0]
+        assert doc["bibliographic_year"] == 2018
+        assert doc["published_online_year"] == 2018
+        assert doc["published_print_year"] == 2019
+        assert doc["peer_review_status"] == "peer_reviewed"
+        assert doc["metadata_provenance"]
+
 
 # ---------------------------------------------------------------------------
-# D. Passages courts (evidence)
+# E. Passages courts — vérification page par page
 # ---------------------------------------------------------------------------
 
 
-class TestEvidenceSeedBuilding:
-    def test_valid_passage_accepted(self, tmp_path):
+class TestEvidencePageVerification:
+    def test_passage_on_declared_page_accepted(self, tmp_path):
         registry = make_registry(tmp_path)
         document_seed = build_literature_document_seed(registry)
         candidates = [
@@ -325,9 +537,104 @@ class TestEvidenceSeedBuilding:
         ]
         evidence_seed = build_literature_evidence_seed(document_seed, candidates)
         assert len(evidence_seed["evidence"]) == 1
-        assert evidence_seed["evidence"][0]["evidence_id"] == "doi_10.9999_fixture__ev001"
-        assert evidence_seed["evidence"][0]["page"] == 1
-        assert evidence_seed["evidence"][0]["locator"] == "abstract"
+        entry = evidence_seed["evidence"][0]
+        assert entry["page"] == 1
+        assert entry["page_verified"] is True
+
+    def test_passage_present_but_on_wrong_declared_page_rejected(self, tmp_path):
+        registry = make_registry(tmp_path)
+        document_seed = build_literature_document_seed(registry)
+        # Ce texte est réellement sur la page 1, pas la page 2.
+        candidates = [
+            {
+                "source_id": "doi_10.9999_fixture",
+                "page": 2,
+                "locator": "abstract",
+                "text": "This fixture paper discusses honeypots and honeytokens as deception mechanisms for cyber defense.",
+            }
+        ]
+        with pytest.raises(LiteratureSeedBuilderError):
+            build_literature_evidence_seed(document_seed, candidates)
+
+    def test_passage_on_second_page_accepted(self, tmp_path):
+        registry = make_registry(tmp_path)
+        document_seed = build_literature_document_seed(registry)
+        candidates = [
+            {
+                "source_id": "doi_10.9999_fixture",
+                "page": 2,
+                "locator": "body_text",
+                "text": "It also covers decoy documents and attacker engagement.",
+            }
+        ]
+        evidence_seed = build_literature_evidence_seed(document_seed, candidates)
+        assert evidence_seed["evidence"][0]["page"] == 2
+        assert evidence_seed["evidence"][0]["page_verified"] is True
+
+    def test_nonexistent_page_rejected(self, tmp_path):
+        registry = make_registry(tmp_path)
+        document_seed = build_literature_document_seed(registry)
+        candidates = [
+            {
+                "source_id": "doi_10.9999_fixture",
+                "page": 99,
+                "locator": "abstract",
+                "text": "This fixture paper discusses honeypots and honeytokens as deception mechanisms for cyber defense.",
+            }
+        ]
+        with pytest.raises(LiteratureSeedBuilderError):
+            build_literature_evidence_seed(document_seed, candidates)
+
+    def test_page_zero_rejected(self, tmp_path):
+        registry = make_registry(tmp_path)
+        document_seed = build_literature_document_seed(registry)
+        candidates = [
+            {"source_id": "doi_10.9999_fixture", "page": 0, "locator": "abstract", "text": "irrelevant"}
+        ]
+        with pytest.raises(LiteratureSeedBuilderError):
+            build_literature_evidence_seed(document_seed, candidates)
+
+    def test_text_without_page_separators_only_page_one_valid(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(
+            tmp_path, source_id="doi_10.9999_nosep", text="No page separators in this extraction at all."
+        )
+        entry = make_source_entry(source_id="doi_10.9999_nosep", raw_file=str(raw_path), sha256=sha256)
+        registry = make_registry(tmp_path, [entry])
+        document_seed = build_literature_document_seed(registry)
+        assert document_seed["documents"][0]["extraction"]["page_separators_found"] is False
+        assert document_seed["documents"][0]["extraction"]["page_count"] == 1
+
+        # page 1 : le texte y est bien (page unique) -> accepté
+        ok_candidates = [
+            {"source_id": "doi_10.9999_nosep", "page": 1, "locator": "body_text", "text": "No page separators in this extraction at all."}
+        ]
+        evidence_seed = build_literature_evidence_seed(document_seed, ok_candidates)
+        assert len(evidence_seed["evidence"]) == 1
+
+        # page 2 déclarée : n'existe pas (une seule page reconstruite) -> rejeté
+        bad_candidates = [
+            {"source_id": "doi_10.9999_nosep", "page": 2, "locator": "body_text", "text": "No page separators in this extraction at all."}
+        ]
+        with pytest.raises(LiteratureSeedBuilderError):
+            build_literature_evidence_seed(document_seed, bad_candidates)
+
+    def test_same_passage_appearing_on_multiple_pages_must_match_declared_page(self, tmp_path):
+        text = "Repeated sentence used as a passage on both pages.\x0cRepeated sentence used as a passage on both pages."
+        raw_path, sha256 = write_fixture_raw_file(tmp_path, source_id="doi_10.9999_repeat", text=text)
+        entry = make_source_entry(source_id="doi_10.9999_repeat", raw_file=str(raw_path), sha256=sha256)
+        registry = make_registry(tmp_path, [entry])
+        document_seed = build_literature_document_seed(registry)
+        for page in (1, 2):
+            candidates = [
+                {
+                    "source_id": "doi_10.9999_repeat",
+                    "page": page,
+                    "locator": "body_text",
+                    "text": "Repeated sentence used as a passage on both pages.",
+                }
+            ]
+            evidence_seed = build_literature_evidence_seed(document_seed, candidates)
+            assert evidence_seed["evidence"][0]["page"] == page
 
     def test_passage_source_nonexistent_rejected(self, tmp_path):
         registry = make_registry(tmp_path)
@@ -339,10 +646,8 @@ class TestEvidenceSeedBuilding:
     def test_passage_on_metadata_only_source_rejected(self, tmp_path):
         entry = make_source_entry(access_status="metadata_only", raw_file=None, sha256=None)
         registry = {
-            "schema": "deception_literature_sources",
-            "schema_version": "1.0",
-            "selection_method_version": "1.0",
-            "sources": [entry],
+            "schema": "deception_literature_sources", "schema_version": "1.1",
+            "selection_method_version": "1.1", "sources": [entry],
         }
         document_seed = build_literature_document_seed(registry)
         candidates = [
@@ -351,7 +656,7 @@ class TestEvidenceSeedBuilding:
         with pytest.raises(LiteratureSeedBuilderError):
             build_literature_evidence_seed(document_seed, candidates)
 
-    def test_passage_not_found_verbatim_rejected(self, tmp_path):
+    def test_passage_not_found_anywhere_rejected(self, tmp_path):
         registry = make_registry(tmp_path)
         document_seed = build_literature_document_seed(registry)
         candidates = [
@@ -368,8 +673,8 @@ class TestEvidenceSeedBuilding:
     def test_passage_exceeding_length_limit_rejected(self, tmp_path):
         registry = make_registry(tmp_path)
         document_seed = build_literature_document_seed(registry)
-        long_text = "Deception delays and contains an intruder. " * 20  # bien > 500 caractères
-        candidates = [{"source_id": "doi_10.9999_fixture", "page": 1, "locator": "body_text", "text": long_text}]
+        long_text = "Deception delays and contains an intruder. " * 20
+        candidates = [{"source_id": "doi_10.9999_fixture", "page": 2, "locator": "body_text", "text": long_text}]
         with pytest.raises(LiteratureSeedBuilderError):
             build_literature_evidence_seed(document_seed, candidates)
 
@@ -394,7 +699,7 @@ class TestEvidenceSeedBuilding:
         document_seed = build_literature_document_seed(registry)
         candidate = {
             "source_id": "doi_10.9999_fixture",
-            "page": 1,
+            "page": 2,
             "locator": "abstract",
             "text": "It also covers decoy documents and attacker engagement.",
         }
@@ -407,38 +712,46 @@ class TestEvidenceSeedBuilding:
         candidates = [
             {
                 "source_id": "doi_10.9999_fixture",
-                "page": 1,
+                "page": 2,
                 "locator": "abstract",
                 "text": "It also covers decoy documents and attacker engagement.",
             }
         ]
         evidence_seed = build_literature_evidence_seed(document_seed, candidates)
-        validate_literature_evidence_seed(evidence_seed, document_seed)  # ne doit pas lever
+        validate_literature_evidence_seed(evidence_seed, document_seed)
 
     def test_evidence_seed_validation_rejects_orphan_source(self, tmp_path):
         registry = make_registry(tmp_path)
         document_seed = build_literature_document_seed(registry)
         corrupted = {
-            "schema": "literature_evidence_seed",
-            "schema_version": "1.0",
-            "selection_method_version": "1.0",
+            "schema": "literature_evidence_seed", "schema_version": "1.1",
+            "selection_method_version": "1.1",
             "evidence": [
                 {
-                    "evidence_id": "ghost__ev001",
-                    "source_id": "ghost_source",
-                    "page": 1,
-                    "locator": "abstract",
-                    "text": "Ghost text.",
-                    "source_sha256": "a" * 64,
+                    "evidence_id": "ghost__ev001", "source_id": "ghost_source", "page": 1,
+                    "locator": "abstract", "text": "Ghost text.", "source_sha256": "a" * 64,
+                    "page_verified": True,
                 }
             ],
         }
         with pytest.raises(LiteratureSeedBuilderError):
             validate_literature_evidence_seed(corrupted, document_seed)
 
+    def test_evidence_seed_validation_rejects_unverified_page(self, tmp_path):
+        registry = make_registry(tmp_path)
+        document_seed = build_literature_document_seed(registry)
+        candidates = [
+            {"source_id": "doi_10.9999_fixture", "page": 2, "locator": "abstract",
+             "text": "It also covers decoy documents and attacker engagement."}
+        ]
+        evidence_seed = build_literature_evidence_seed(document_seed, candidates)
+        evidence_seed["evidence"][0]["page_verified"] = False
+        with pytest.raises(LiteratureSeedBuilderError):
+            validate_literature_evidence_seed(evidence_seed, document_seed)
+
 
 # ---------------------------------------------------------------------------
-# E. Déterminisme
+# F. Déterminisme
 # ---------------------------------------------------------------------------
 
 
@@ -453,12 +766,8 @@ class TestDeterminism:
         registry = make_registry(tmp_path)
         document_seed = build_literature_document_seed(registry)
         candidates = [
-            {
-                "source_id": "doi_10.9999_fixture",
-                "page": 1,
-                "locator": "abstract",
-                "text": "It also covers decoy documents and attacker engagement.",
-            }
+            {"source_id": "doi_10.9999_fixture", "page": 2, "locator": "abstract",
+             "text": "It also covers decoy documents and attacker engagement."}
         ]
         seed_a = build_literature_evidence_seed(document_seed, candidates)
         seed_b = build_literature_evidence_seed(document_seed, candidates)
@@ -470,7 +779,7 @@ class TestDeterminism:
         candidates = [
             {"source_id": "doi_10.9999_fixture", "page": 1, "locator": "abstract",
              "text": "This fixture paper discusses honeypots and honeytokens as deception mechanisms for cyber defense."},
-            {"source_id": "doi_10.9999_fixture", "page": 1, "locator": "body_text",
+            {"source_id": "doi_10.9999_fixture", "page": 2, "locator": "body_text",
              "text": "It also covers decoy documents and attacker engagement."},
         ]
         evidence_seed = build_literature_evidence_seed(document_seed, candidates)
@@ -479,7 +788,7 @@ class TestDeterminism:
 
 
 # ---------------------------------------------------------------------------
-# F. Rapport de couverture
+# G. Rapport de couverture durci
 # ---------------------------------------------------------------------------
 
 
@@ -488,21 +797,25 @@ class TestReport:
         registry = make_registry(tmp_path)
         document_seed = build_literature_document_seed(registry)
         candidates = [
-            {
-                "source_id": "doi_10.9999_fixture",
-                "page": 1,
-                "locator": "abstract",
-                "text": "It also covers decoy documents and attacker engagement.",
-            }
+            {"source_id": "doi_10.9999_fixture", "page": 2, "locator": "abstract",
+             "text": "It also covers decoy documents and attacker engagement."}
         ]
         evidence_seed = build_literature_evidence_seed(document_seed, candidates)
         report = build_literature_seed_report(document_seed, evidence_seed)
+        assert report["schema_version"] == "1.1"
         assert report["source_count"] == 1
         assert report["peer_reviewed_count"] == 1
+        assert report["not_peer_reviewed_count"] == 0
+        assert report["unknown_peer_review_count"] == 0
         assert report["open_fulltext_count"] == 1
         assert report["metadata_only_count"] == 0
-        assert report["sources_with_doi"] == 1
+        assert report["abstract_only_count"] == 0
+        assert report["unavailable_count"] == 0
+        assert report["access_status_counts"]["open_fulltext"] == 1
+        assert report["sources_with_publication_doi"] == 1
+        assert report["sources_with_repository_doi"] == 0
         assert report["evidence_count"] == 1
+        assert report["verified_page_evidence_count"] == 1
         assert report["theme_coverage"]["honeypot"] == 1
         assert report["year_range"] == {"min": 2020, "max": 2020}
 
@@ -511,24 +824,65 @@ class TestReport:
         document_seed = build_literature_document_seed(registry)
         evidence_seed = build_literature_evidence_seed(document_seed, [])
         report = build_literature_seed_report(document_seed, evidence_seed)
-        # Le fixture registry ne couvre que honeypot/honeytoken : le reste
-        # de la taxonomie documentaire doit apparaître en lacune, jamais
-        # comblé artificiellement.
         assert set(report["coverage_gaps"]) == set(DOCUMENTARY_THEMES) - {"honeypot", "honeytoken"}
 
     def test_preprint_not_counted_as_peer_reviewed(self, tmp_path):
         raw_path, sha256 = write_fixture_raw_file(tmp_path)
-        entry = make_source_entry(raw_file=str(raw_path), sha256=sha256, publication_type="preprint")
+        entry = make_source_entry(
+            raw_file=str(raw_path), sha256=sha256, publication_type="preprint",
+            peer_review_status="not_peer_reviewed",
+        )
         registry = make_registry(tmp_path, [entry])
         document_seed = build_literature_document_seed(registry)
         evidence_seed = build_literature_evidence_seed(document_seed, [])
         report = build_literature_seed_report(document_seed, evidence_seed)
         assert report["peer_reviewed_count"] == 0
+        assert report["not_peer_reviewed_count"] == 1
         assert report["publication_type_counts"] == {"preprint": 1}
+
+    def test_access_status_counters_independent(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path)
+        open_entry = make_source_entry(raw_file=str(raw_path), sha256=sha256)
+        metadata_entry = make_source_entry(
+            source_id="venue2021_other_paper", publication_doi=None,
+            access_status="metadata_only", raw_file=None, sha256=None,
+        )
+        abstract_entry = make_source_entry(
+            source_id="venue2022_third_paper", publication_doi=None,
+            access_status="abstract_only", raw_file=None, sha256=None,
+        )
+        unavailable_entry = make_source_entry(
+            source_id="venue2023_fourth_paper", publication_doi=None,
+            access_status="unavailable", raw_file=None, sha256=None,
+        )
+        registry = make_registry(tmp_path, [open_entry, metadata_entry, abstract_entry, unavailable_entry])
+        document_seed = build_literature_document_seed(registry)
+        evidence_seed = build_literature_evidence_seed(document_seed, [])
+        report = build_literature_seed_report(document_seed, evidence_seed)
+        assert report["open_fulltext_count"] == 1
+        assert report["metadata_only_count"] == 1
+        assert report["abstract_only_count"] == 1
+        assert report["unavailable_count"] == 1
+        assert report["source_count"] == 4
+
+    def test_repository_doi_counted_separately_from_publication_doi(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(tmp_path, source_id="arxiv_9999.00000")
+        entry = make_source_entry(
+            source_id="arxiv_9999.00000", publication_doi=None,
+            repository_doi="10.48550/arXiv.9999.00000", repository_identifier="arXiv:9999.00000",
+            raw_file=str(raw_path), sha256=sha256, publication_type="preprint",
+            peer_review_status="not_peer_reviewed", metadata_provenance=make_provenance(provider="DataCite"),
+        )
+        registry = make_registry(tmp_path, [entry])
+        document_seed = build_literature_document_seed(registry)
+        evidence_seed = build_literature_evidence_seed(document_seed, [])
+        report = build_literature_seed_report(document_seed, evidence_seed)
+        assert report["sources_with_publication_doi"] == 0
+        assert report["sources_with_repository_doi"] == 1
 
 
 # ---------------------------------------------------------------------------
-# G. CLI offline
+# H. CLI offline
 # ---------------------------------------------------------------------------
 
 
@@ -539,28 +893,17 @@ class TestCli:
         registry = make_registry(tmp_path, [entry])
         registry_path = write_json(tmp_path, "literature_sources.json", registry)
         candidates_path = write_json(
-            tmp_path,
-            "evidence_candidates.json",
-            {
-                "evidence_candidates": [
-                    {
-                        "source_id": "doi_10.9999_fixture",
-                        "page": 1,
-                        "locator": "abstract",
-                        "text": "It also covers decoy documents and attacker engagement.",
-                    }
-                ]
-            },
+            tmp_path, "evidence_candidates.json",
+            {"evidence_candidates": [
+                {"source_id": "doi_10.9999_fixture", "page": 2, "locator": "abstract",
+                 "text": "It also covers decoy documents and attacker engagement."}
+            ]},
         )
         out_dir = tmp_path / "staging"
 
         _run_cli(
-            [
-                "--registry", str(registry_path),
-                "--evidence-candidates", str(candidates_path),
-                "--out-dir", str(out_dir),
-                "--version", "9.9-fixture",
-            ]
+            ["--registry", str(registry_path), "--evidence-candidates", str(candidates_path),
+             "--out-dir", str(out_dir), "--version", "9.9-fixture"]
         )
 
         doc_path = out_dir / "literature_document_seed_9.9-fixture.json"
@@ -573,6 +916,7 @@ class TestCli:
         report = json.loads(report_path.read_text(encoding="utf-8"))
         assert report["source_count"] == 1
         assert report["evidence_count"] == 1
+        assert report["verified_page_evidence_count"] == 1
 
     def test_cli_rejects_invalid_registry(self, tmp_path):
         raw_path, sha256 = write_fixture_raw_file(tmp_path)
@@ -584,11 +928,8 @@ class TestCli:
 
         with pytest.raises(LiteratureSeedBuilderError):
             _run_cli(
-                [
-                    "--registry", str(registry_path),
-                    "--evidence-candidates", str(candidates_path),
-                    "--out-dir", str(tmp_path / "staging"),
-                ]
+                ["--registry", str(registry_path), "--evidence-candidates", str(candidates_path),
+                 "--out-dir", str(tmp_path / "staging")]
             )
 
     def test_read_helpers_reject_wrong_schema(self, tmp_path):
@@ -603,7 +944,7 @@ class TestCli:
 
 
 # ---------------------------------------------------------------------------
-# H. Généralité — aucune logique liée au cas d'usage de référence
+# I. Généralité — aucune logique liée au cas d'usage de référence
 # ---------------------------------------------------------------------------
 
 

@@ -803,15 +803,21 @@ Construire un **corpus scientifique versionné et traçable**, complémentaire
 difficiles à obtenir des seules bases D3FEND/Engage (réalisme, interaction
 attaquant, déploiement, ressources, maintenance, évaluation). Cette étape
 constitue un STAGING documentaire ; elle ne construit ni le catalogue
-final, ni aucune propriété de `DeceptionMechanism`.
+final, ni aucune propriété de `DeceptionMechanism`. Durcie une première
+fois (phase 4B.3-H) : provenance bibliographique renforcée, distinction
+DOI de publication / DOI de dépôt, dates de publication explicites, statut
+d'évaluation par les pairs explicite, vérification page par page des
+passages, et complément empirique ciblé.
 
 #### Position dans l'architecture
 
 ```text
-littérature scientifique (DOI vérifiés Crossref, dépôts institutionnels)
-  → data/deception/literature/literature_sources.json (registre curé)
+littérature scientifique (DOI vérifiés Crossref/DataCite, dépôts
+institutionnels, DBLP)
+  → data/deception/literature/literature_sources.json (registre curé, schéma 1.1)
   → tools/deception_kb/literature_seed_builder.py
-  → staging documentaire (documents + passages courts vérifiés) + rapport
+  → staging documentaire (documents + passages courts vérifiés page par
+    page) + rapport
 ```
 
 Ce module vit dans `tools/`, hors du runtime chargé par
@@ -820,14 +826,16 @@ avec les staging D3FEND ou Engage (OPEN_DECISION 2).
 
 #### Entrées
 
-- registre bibliographique curé et vérifié individuellement (chaque DOI
-  confirmé via l'API Crossref, chaque URL d'accès ouvert vérifiée par
-  requête HTTP réelle) : `data/deception/literature/literature_sources.json` ;
+- registre bibliographique curé et vérifié individuellement (chaque
+  `publication_doi` confirmé via l'API Crossref, chaque `repository_doi`
+  via l'API DataCite, dates croisées via DBLP lorsque nécessaire, chaque
+  URL d'accès ouvert vérifiée par requête HTTP réelle) :
+  `data/deception/literature/literature_sources.json` ;
 - fichiers PDF déjà acquis localement pour les sources en accès ouvert
   (`data/deception/raw/literature/`, non versionnés) et leur extraction
-  texte déjà produite hors ligne par `pdftotext` (`.txt` à côté de chaque
-  `.pdf`) ;
-- passages candidats courts : `data/deception/literature/evidence_candidates.json`.
+  texte déjà produite hors ligne par `pdftotext`, séparateurs de page
+  (`\f`) conservés (`.txt` à côté de chaque `.pdf`) ;
+- passages candidats courts avec page déclarée : `data/deception/literature/evidence_candidates.json`.
 
 #### Méthode de recherche documentaire
 
@@ -836,9 +844,12 @@ honeypot, honeynet, honeytoken, decoy documents, deception placement,
 attacker engagement, deception optimization, ...) — jamais restreinte aux
 techniques ATT&CK ou actifs du scénario expérimental du PFE (T1003, T1078,
 `DC`/`WS`/`DB` explicitement exclus des requêtes). Chaque source candidate
-est vérifiée individuellement via l'API Crossref (titre, auteurs, année,
-venue) avant inclusion. Méthode complète et 16 requêtes réellement
-exécutées documentées dans `data/deception/literature/search_protocol.md`.
+est vérifiée individuellement via l'API Crossref/DataCite (titre, auteurs,
+dates, venue) avant inclusion. Complément ciblé lors du durcissement sur
+la couverture empirique (réalisme/enticingness, comportement de
+l'attaquant, efficacité observée). Méthode complète, 21 requêtes
+réellement exécutées et candidats examinés/rejetés documentés dans
+`data/deception/literature/search_protocol.md`.
 
 #### Critères d'inclusion/exclusion
 
@@ -852,42 +863,55 @@ pour atteindre un nombre arbitraire).
 sources non vérifiées indépendamment, contournement de paywall, doublons
 (même DOI, ou même travail décliné preprint + version publiée — traité
 comme une seule entité scientifique, jamais fusionné par similarité de
-titre seule).
+titre seule), publications redondantes avec une source déjà retenue
+couvrant le même jeu de données empirique (ex. deux candidats liés à
+l'étude « Tularosa » explicitement écartés, voir Traçabilité).
 
 #### Traitement réalisé
 
-- Validation du registre : aucun champ obligatoire manquant, aucun
-  `source_id`/DOI dupliqué, cohérence stricte `source_id` ↔ DOI
-  (`source_id = "doi_" + doi.lower().replace("/", "_")`, vérifiée
-  automatiquement — toute divergence est rejetée), `access_status`
-  cohérent avec la présence ou l'absence d'un fichier local.
+- Validation du registre durci : aucun champ obligatoire manquant, aucun
+  `source_id`/`publication_doi`/`repository_doi` dupliqué (chacun dans sa
+  propre catégorie), `publication_doi` jamais égal à `repository_doi`,
+  cohérence stricte `source_id` ↔ `publication_doi`
+  (`source_id = "doi_" + publication_doi.lower().replace("/", "_")`,
+  vérifiée automatiquement), `bibliographic_year` obligatoire,
+  `peer_review_status`/`peer_review_basis` obligatoires et jamais déduits
+  de `publication_type`, `metadata_provenance` non vide et structurée,
+  `access_status` cohérent avec la présence ou l'absence d'un fichier
+  local.
 - Construction du staging document : pour chaque source en accès ouvert,
   vérification que le SHA-256 du fichier local correspond exactement à
-  celui déclaré dans le registre, et que son extraction texte (`.txt`)
-  existe réellement — sinon rejet explicite, jamais une substitution
+  celui déclaré dans le registre, que son extraction texte (`.txt`)
+  existe réellement, et découpage de ce texte par page (séparateurs `\f`
+  natifs de `pdftotext`) — sinon rejet explicite, jamais une substitution
   silencieuse.
 - Construction du staging de passages courts (`≤ 500` caractères) :
   **chaque passage est revérifié par le programme**, pas seulement par la
   personne qui l'a proposé, comme sous-chaîne littérale (après
-  normalisation des espaces/retours à la ligne) du texte réellement
-  extrait localement — un passage introuvable verbatim est rejeté.
+  normalisation des espaces/retours à la ligne) **sur la page précisément
+  déclarée** — un passage présent ailleurs dans le document mais pas sur
+  cette page est explicitement rejeté (pas seulement un passage
+  introuvable partout). Tout passage conservé porte `page_verified: true`.
 - Calcul d'un rapport de couverture thématique sur une taxonomie
   documentaire (jamais les métriques SP2) ; les thèmes non couverts sont
   rapportés explicitement (`coverage_gaps`), jamais comblés par une source
-  inventée.
+  inventée ; compteurs peer review et access_status calculés depuis des
+  champs explicites, jamais déduits implicitement.
 
 #### Sorties
 
-- `data/deception/staging/literature_document_seed_1.0.json` — **12
-  sources** (11 en accès ouvert, 1 en métadonnées seules) ;
-- `data/deception/staging/literature_evidence_seed_1.0.json` — **14
-  passages courts** vérifiés verbatim, répartis sur 11 sources ;
-- `data/deception/staging/literature_seed_report_1.0.json` — 11 sources
-  évaluées par les pairs (`journal-article`/`conference-paper`), 1
-  preprint (Fraunholz et al. 2018, retenu pour sa couverture unique
-  d'aspects légaux/éthiques/psychologiques), 10 sources avec DOI, 11 avec
-  SHA-256 local, période couverte 2003–2025, 3 lacunes de couverture
-  identifiées (`decoy_asset`, `decoy_network`, `decoy_service`).
+- `data/deception/staging/literature_document_seed_1.1.json` — **14
+  sources** (13 en accès ouvert, 1 en métadonnées seules) ;
+- `data/deception/staging/literature_evidence_seed_1.1.json` — **18
+  passages courts**, tous `page_verified: true`, répartis sur 13 sources ;
+- `data/deception/staging/literature_seed_report_1.1.json` — 13 sources
+  `peer_reviewed`, 1 `not_peer_reviewed` (Fraunholz et al. 2018, retenu
+  pour sa couverture unique d'aspects légaux/éthiques/psychologiques),
+  0 `unknown`, 11 sources avec `publication_doi`, 1 avec `repository_doi`
+  uniquement (Fraunholz et al.), 13 avec SHA-256 local, période
+  bibliographique couverte 2003–2026, 3 lacunes de couverture identifiées
+  (`decoy_asset`, `decoy_network`, `decoy_service`). Les anciens fichiers
+  `literature_*_1.0.json` (schéma non durci) ont été retirés du dépôt.
 
 #### Fichiers concernés
 
@@ -903,9 +927,10 @@ titre seule).
 #### Fonctions principales
 
 `compute_doi_based_source_id`, `is_valid_fallback_source_id`,
-`validate_literature_sources_registry`, `build_literature_document_seed`,
-`validate_literature_document_seed`, `build_literature_evidence_seed`
-(vérification verbatim contre le texte extrait), `validate_literature_evidence_seed`,
+`split_extracted_text_pages`, `validate_literature_sources_registry`,
+`build_literature_document_seed`, `validate_literature_document_seed`,
+`build_literature_evidence_seed` (vérification verbatim page par page
+contre le texte extrait), `validate_literature_evidence_seed`,
 `build_literature_seed_report`.
 
 #### Invariants
@@ -913,8 +938,15 @@ titre seule).
 - un passage scientifique n'est jamais assimilé à une propriété finale de
   `DeceptionMechanism` ;
 - aucun `deception_catalog.json` n'est créé ni modifié ;
-- aucune source, aucun DOI, aucune métadonnée, aucun passage n'est inventé
-  — toute donnée non vérifiable reste `null`/absente ;
+- aucune source, aucun DOI, aucune métadonnée, aucune date, aucun passage
+  n'est inventé — toute donnée non vérifiable reste `null`/absente ;
+- un DOI de dépôt/preprint (`repository_doi`) n'est jamais assimilé à un
+  DOI de publication finale (`publication_doi`) ;
+- un `peer_review_status` n'est jamais déduit implicitement du type de
+  publication ;
+- un passage n'est conservé que si sa page déclarée est réellement
+  vérifiée (`page_verified: true`), jamais sur la seule confiance de la
+  personne qui l'a proposé ;
 - aucun appel LLM, aucun RAG, aucun embedding, aucune base vectorielle ;
 - 100 % déterministe et hors ligne (le builder ne télécharge rien) ;
 - aucun texte intégral protégé par le droit d'auteur n'est versionné dans
@@ -923,36 +955,54 @@ titre seule).
 #### Tests et validation
 
 `tests/test_literature_seed_builder.py` — identifiants stables
-déterministes, validation du registre (DOI dupliqué, source_id incohérent
-avec le DOI, thème inconnu, access_status incohérent avec la présence
-d'un fichier local), construction et validation du staging document (SHA-256
-non concordant rejeté, extraction texte absente rejetée), construction et
-validation du staging de passages (source inexistante rejetée, passage
-introuvable verbatim rejeté, passage trop long rejeté, doublon exact
-rejeté, page/locator conservés), déterminisme (même entrée → même sortie,
-ordre stable), rapport de couverture (compte les preprints séparément des
-sources évaluées par les pairs, lacunes non comblées), CLI de bout en
-bout, absence de toute logique spécifique au cas de référence PFE et
-absence de dépendance LLM/RAG/réseau (vérifiées par inspection statique du
-module). **46 tests** ajoutés, **276 tests** au total au moment de la
-validation. CI verte.
+déterministes, découpage par page (séparateurs `\f`, absence de
+séparateur), validation du registre durci (`publication_doi`/`repository_doi`
+dupliqués rejetés séparément, `publication_doi == repository_doi` rejeté,
+année bibliographique obligatoire, `peer_review_status` invalide rejeté,
+provenance vide/incomplète rejetée, thème inconnu, `access_status`
+incohérent avec la présence d'un fichier local), construction et
+validation du staging document (SHA-256 non concordant rejeté, extraction
+texte absente rejetée, champs bibliographiques propagés), construction et
+validation du staging de passages **avec vérification de page** (passage
+présent sur la bonne page accepté, passage présent ailleurs mais pas sur
+la page déclarée rejeté, page inexistante rejetée, page = 0 rejetée,
+texte sans séparateur de page traité comme page unique, même passage
+répété sur deux pages correctement distingué par page), déterminisme
+(même entrée → même sortie, ordre stable), rapport de couverture durci
+(compteurs peer review et access_status indépendants et explicites, DOI
+de publication compté séparément du DOI de dépôt), CLI de bout en bout,
+absence de toute logique spécifique au cas de référence PFE et absence de
+dépendance LLM/RAG/réseau (vérifiées par inspection statique du module).
+**73 tests** dans ce fichier (27 de plus qu'avant durcissement), **303
+tests** au total au moment de la validation. CI verte.
 
 #### Traçabilité
 
 Voir `data/deception/literature/literature_sources.json` (métadonnées et
-SHA-256 complets par source) et `data/deception/literature/search_protocol.md`
-(requêtes exécutées, méthode de vérification Crossref, gestion des
-versions arXiv/éditeur, règle de déduplication). Sources retenues :
-Han, Kheir & Balzarotti (2018, DOI 10.1145/3214305) ; Pawlick, Colbert &
-Zhu (2019, DOI 10.1145/3337772) ; Almeshekah & Spafford (2014, DOI
-10.1145/2683467.2683482) ; Fraunholz et al. (2018, preprint arXiv:1804.06196) ;
-Bowen, Hershkop, Keromytis & Stolfo (2009, DOI 10.1007/978-3-642-05284-2_4) ;
-Zhang & Thing (2021, DOI 10.1016/j.cose.2021.102288) ; Provos (2004, USENIX
-Security, sans DOI) ; Spitzner (2003, DOI 10.1109/CSAC.2003.1254322) ;
-Yuill, Zappe, Denning & Feer (2004, DOI 10.1109/IAW.2004.1437806) ; Milani
-et al. (2020, DOI 10.1007/978-3-030-64793-3_8) ; Beltrán-López, Gil Pérez
-& Nespoli (2025, DOI 10.1109/COMST.2025.3594788) ; Urias et al. (2017, DOI
-10.1109/CCST.2017.8167793, métadonnées seules).
+SHA-256 complets par source, `metadata_provenance` par source) et
+`data/deception/literature/search_protocol.md` (21 requêtes exécutées,
+méthode de vérification Crossref/DataCite/DBLP, cas détaillé
+Beltrán-López (Early Access 2025 vs. volume 2026), gestion des versions
+arXiv/éditeur, journal des corrections de métadonnées du durcissement,
+candidats examinés et rejetés avec justification). 14 sources retenues :
+les 12 du corpus initial (Han, Kheir & Balzarotti 2018 ; Pawlick, Colbert
+& Zhu 2019 ; Almeshekah & Spafford 2014 ; Fraunholz et al. 2018, preprint
+arXiv:1804.06196 ; Bowen, Hershkop, Keromytis & Stolfo 2009 ; Zhang &
+Thing 2021 ; Provos 2004 ; Spitzner 2003 ; Yuill, Zappe, Denning & Feer
+2004 ; Milani et al. 2020 ; Beltrán-López, Gil Pérez & Nespoli,
+`bibliographic_year` 2026 ; Urias et al. 2017, métadonnées seules) plus
+2 nouvelles sources empiriques ajoutées lors du durcissement : Kahlhofer,
+Achleitner, Rass & Mayrhofer (« Honeyquest », RAID 2024, DOI
+10.1145/3678890.3678897) et Ferguson-Walter, Major, Johnson & Muhleman
+(« Examining the Efficacy of Decoy-based and Psychological Cyber
+Deception », USENIX Security 2021, sans DOI).
+
+- Commit de construction initiale du corpus :
+  `8d5b7a9efd761697ced7fb557e25851eace08b27`.
+- Commit de durcissement (schéma bibliographique 1.1, vérification page
+  par page, complément empirique) : *à renseigner lors de la prochaine
+  mise à jour naturelle de ce README*, pour éviter une boucle de commits
+  d'auto-référencement.
 
 #### Couverture
 
@@ -961,18 +1011,25 @@ Thèmes couverts (source_count > 0) : `deception_mechanism`, `honeypot`,
 `attacker_interaction`, `engagement`, `redirection`, `delay`,
 `containment`, `detection`, `intelligence_collection`, `deployment`,
 `resource_requirements`, `maintenance`, `evaluation`. Lacunes identifiées
-et non comblées : `decoy_asset`, `decoy_network`, `decoy_service`.
+et non comblées, malgré une recherche complémentaire dédiée lors du
+durcissement : `decoy_asset`, `decoy_network`, `decoy_service` — aucune
+publication scientifique solide couvrant spécifiquement ces artefacts
+n'a été identifiée.
 
 #### Limites actuelles
 
 Corpus représentatif, pas exhaustif (recherche via moteur généraliste,
 pas d'interrogation systématique de chaque base bibliographique
 spécialisée via ses API propres). Un seul preprint non évalué par les
-pairs est inclus, explicitement signalé comme tel. Une source (Urias et
-al. 2017) reste en métadonnées seules, aucun mirroir en accès ouvert
-n'ayant pu être vérifié depuis cet environnement. Aucun passage n'est
-encore relié à un mécanisme D3FEND/Engage ni à une propriété finale de
-`DeceptionMechanism`.
+pairs est inclus, explicitement signalé comme tel
+(`peer_review_status = "not_peer_reviewed"`). Une source (Urias et al.
+2017) reste en métadonnées seules, aucun mirroir en accès ouvert n'ayant
+pu être vérifié depuis cet environnement. Pour deux sources anciennes
+(Spitzner 2003, Yuill et al. 2004), Crossref ne fournit aucune date de
+publication fiable ; l'année a été reconstruite à partir du
+`container-title` et de la venue officielle, documenté explicitement.
+Aucun passage n'est encore relié à un mécanisme D3FEND/Engage ni à une
+propriété finale de `DeceptionMechanism`.
 
 #### Lien avec l'étape suivante
 

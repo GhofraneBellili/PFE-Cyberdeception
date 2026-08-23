@@ -1,0 +1,62 @@
+{
+  "schema": "literature_seed_report",
+  "schema_version": "1.1",
+  "selection_method_version": "1.1",
+  "source_count": 14,
+  "peer_reviewed_count": 13,
+  "not_peer_reviewed_count": 1,
+  "unknown_peer_review_count": 0,
+  "open_fulltext_count": 13,
+  "metadata_only_count": 1,
+  "abstract_only_count": 0,
+  "unavailable_count": 0,
+  "access_status_counts": {
+    "open_fulltext": 13,
+    "metadata_only": 1,
+    "abstract_only": 0,
+    "unavailable": 0
+  },
+  "sources_with_publication_doi": 11,
+  "sources_with_repository_doi": 1,
+  "sources_with_local_sha256": 13,
+  "evidence_count": 18,
+  "verified_page_evidence_count": 18,
+  "theme_coverage": {
+    "deception_mechanism": 7,
+    "honeypot": 6,
+    "honeynet": 1,
+    "honeytoken": 7,
+    "decoy_asset": 0,
+    "decoy_credential": 2,
+    "decoy_document": 2,
+    "decoy_service": 0,
+    "decoy_network": 0,
+    "realism": 6,
+    "attacker_interaction": 6,
+    "engagement": 3,
+    "redirection": 2,
+    "delay": 1,
+    "containment": 2,
+    "detection": 7,
+    "intelligence_collection": 2,
+    "deployment": 8,
+    "resource_requirements": 2,
+    "maintenance": 2,
+    "evaluation": 6
+  },
+  "coverage_gaps": [
+    "decoy_asset",
+    "decoy_network",
+    "decoy_service"
+  ],
+  "year_range": {
+    "min": 2003,
+    "max": 2026
+  },
+  "publication_type_counts": {
+    "journal-article": 4,
+    "conference-paper": 9,
+    "preprint": 1
+  },
+  "warnings": []
+}
