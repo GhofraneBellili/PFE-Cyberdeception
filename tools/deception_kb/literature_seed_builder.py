@@ -152,10 +152,22 @@ def extract_page_structure(text: str) -> dict:
     l'extraction ne devient pas artificiellement une « page 1 ». Dans ce
     cas, `pagination_available` est `False` et `pages` est vide : aucune
     page ne peut être affirmée, ni vérifiée, à partir de ce texte.
+
+    Réf. correctif micro-durcissement : `pdftotext` termine chaque page,
+    y compris la dernière, par un `\\f` — un texte à deux pages produit
+    donc littéralement `"P1\\fP2\\f"`. Un split naïf sur `\\f` produirait
+    alors un troisième segment vide fantôme (`["P1", "P2", ""]`), qui
+    n'est PAS une page réelle. Seul ce segment vide **terminal**, causé
+    par le séparateur de fin de document, est retiré ; un segment vide
+    **interne** (page réellement vide entre deux séparateurs) est
+    conservé tel quel — il n'est jamais supprimé silencieusement.
     """
     if "\x0c" not in text:
         return {"pagination_available": False, "pages": []}
-    return {"pagination_available": True, "pages": text.split("\x0c")}
+    pages = text.split("\x0c")
+    if text.endswith("\x0c"):
+        pages = pages[:-1]
+    return {"pagination_available": True, "pages": pages}
 
 
 def read_literature_sources_registry(path: str | Path) -> dict:

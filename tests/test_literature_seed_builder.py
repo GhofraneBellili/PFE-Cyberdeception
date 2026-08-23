@@ -198,6 +198,25 @@ class TestPageSplitting:
         assert structure["pagination_available"] is False
         assert structure["pages"] == []
 
+    def test_terminal_form_feed_does_not_create_phantom_page(self):
+        """Réf. micro-correctif : pdftotext termine aussi la dernière page
+        par '\\f' — un document de 2 pages ne doit jamais devenir 3 pages."""
+        structure = extract_page_structure("page1\x0cpage2\x0c")
+        assert structure["pagination_available"] is True
+        assert structure["pages"] == ["page1", "page2"]
+
+    def test_no_terminal_form_feed_unaffected(self):
+        structure = extract_page_structure("page1\x0cpage2")
+        assert structure["pagination_available"] is True
+        assert structure["pages"] == ["page1", "page2"]
+
+    def test_internal_empty_page_preserved_only_terminal_artifact_removed(self):
+        """Une page interne réellement vide ('\\f\\f') n'est jamais
+        confondue avec l'artefact terminal — seul ce dernier est retiré."""
+        structure = extract_page_structure("page1\x0c\x0cpage3\x0c")
+        assert structure["pagination_available"] is True
+        assert structure["pages"] == ["page1", "", "page3"]
+
 
 # ---------------------------------------------------------------------------
 # C. Validation du registre — DOI / dates / peer review / provenance
