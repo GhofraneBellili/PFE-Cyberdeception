@@ -1,0 +1,50 @@
+{
+  "schema": "literature_seed_report",
+  "schema_version": "1.0",
+  "selection_method_version": "1.0",
+  "source_count": 12,
+  "peer_reviewed_count": 11,
+  "open_fulltext_count": 11,
+  "metadata_only_count": 1,
+  "sources_with_doi": 10,
+  "sources_with_local_sha256": 11,
+  "evidence_count": 14,
+  "theme_coverage": {
+    "deception_mechanism": 7,
+    "honeypot": 6,
+    "honeynet": 1,
+    "honeytoken": 6,
+    "decoy_asset": 0,
+    "decoy_credential": 1,
+    "decoy_document": 2,
+    "decoy_service": 0,
+    "decoy_network": 0,
+    "realism": 4,
+    "attacker_interaction": 4,
+    "engagement": 1,
+    "redirection": 2,
+    "delay": 1,
+    "containment": 2,
+    "detection": 6,
+    "intelligence_collection": 2,
+    "deployment": 7,
+    "resource_requirements": 2,
+    "maintenance": 2,
+    "evaluation": 4
+  },
+  "coverage_gaps": [
+    "decoy_asset",
+    "decoy_network",
+    "decoy_service"
+  ],
+  "year_range": {
+    "min": 2003,
+    "max": 2025
+  },
+  "publication_type_counts": {
+    "journal-article": 4,
+    "conference-paper": 7,
+    "preprint": 1
+  },
+  "warnings": []
+}

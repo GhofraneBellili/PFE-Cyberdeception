@@ -1,0 +1,88 @@
+{
+  "evidence_candidates": [
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 5,
+      "locator": "body_text_deployment_discussion",
+      "text": "To be effective, deception elements need to be generated to achieve perfect realism with regard to real data and system integration."
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 2,
+      "locator": "body_text",
+      "text": "a digital or information system resource whose value lies in the unauthorized use of that resource"
+    },
+    {
+      "source_id": "doi_10.1145_3337772",
+      "page": 1,
+      "locator": "abstract",
+      "text": "we propose a taxonomy that defines six types of deception: perturbation, moving target defense, obfuscation, mixing, honey-x, and attacker engagement."
+    },
+    {
+      "source_id": "doi_10.1145_2683467.2683482",
+      "page": 5,
+      "locator": "body_text_section_3.3",
+      "text": "Deception always involves two basic steps, hiding the real and showing the false, as we discussed earlier."
+    },
+    {
+      "source_id": "arxiv_1804.06196",
+      "page": 1,
+      "locator": "abstract",
+      "text": "Deception boosts security for systems and components by denial, deceit, misinformation, camouflage and obfuscation."
+    },
+    {
+      "source_id": "arxiv_1804.06196",
+      "page": 1,
+      "locator": "abstract",
+      "text": "Taxonomies, theoretical backgrounds, psychological aspects as well as concepts, implementations, legal aspects and ethics are discussed and compared."
+    },
+    {
+      "source_id": "doi_10.1007_978-3-642-05284-2_4",
+      "page": 1,
+      "locator": "abstract",
+      "text": "\"Decoy Documents\" are automatically generated and stored on a file system by the D3 System with the aim of enticing a malicious user."
+    },
+    {
+      "source_id": "doi_10.1016_j.cose.2021.102288",
+      "page": 1,
+      "locator": "body_text_introduction",
+      "text": "Instead of focusing on attackers' actions, defensive deception works on their perception by obfuscating the attack surface."
+    },
+    {
+      "source_id": "usenixsec2004_provos_virtual_honeypot_framework",
+      "page": 2,
+      "locator": "abstract",
+      "text": "A honeypot is a closely monitored network decoy serving several purposes: it can distract adversaries from more valuable machines on a network, provide early warning about new attack and exploitation trends, or allow in-depth examination of adversaries during and after exploitation of a honeypot."
+    },
+    {
+      "source_id": "doi_10.1109_csac.2003.1254322",
+      "page": 1,
+      "locator": "abstract",
+      "text": "This presentation discusses how honeypot technologies can be used to detect, identify, and gather information on these specific threats."
+    },
+    {
+      "source_id": "doi_10.1109_iaw.2004.1437806",
+      "page": 1,
+      "locator": "abstract",
+      "text": "Honeyfiles are bait files intended for hackers to access. The files reside on a file server, and the server sends an alarm when a honeyfile is accessed."
+    },
+    {
+      "source_id": "doi_10.1007_978-3-030-64793-3_8",
+      "page": 1,
+      "locator": "abstract",
+      "text": "We study the use of deception in attack graph-based Stackelberg security games."
+    },
+    {
+      "source_id": "doi_10.1007_978-3-030-64793-3_8",
+      "page": 1,
+      "locator": "abstract",
+      "text": "the defender can strategically manipulate the attack graph through three main types of deceptive actions."
+    },
+    {
+      "source_id": "doi_10.1109_comst.2025.3594788",
+      "page": 1,
+      "locator": "abstract",
+      "text": "This article aims to fill these gaps through a detailed review of the main features that comprise CYDEC, developing a comprehensive classification taxonomy."
+    }
+  ]
+}

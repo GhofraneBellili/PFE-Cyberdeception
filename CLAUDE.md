@@ -306,8 +306,9 @@ Bell & Whaley peut être conservé comme **métadonnée descriptive** uniquement
 Bell & Whaley n’est **pas** une étape obligatoire de sélection et ne doit pas être réintroduit comme ancien MCDM2.
 
 **État d’implémentation (hors runtime, `tools/deception_kb/`) :** le
-staging documentaire MITRE D3FEND et le staging documentaire MITRE Engage
-sont implémentés et testés (voir README.md, étapes 5 et 6). Ce sont des
+staging documentaire MITRE D3FEND, le staging documentaire MITRE Engage et
+le staging du corpus scientifique de cyberdéception (littérature) sont
+implémentés et testés (voir README.md, étapes 5, 6 et 7). Ce sont des
 couches de préparation de données situées en amont de la KB déception
 normalisée — elles ne constituent pas le catalogue fermé \(\mathcal D\)
 (`deception_catalog.json`) ni `knowledge_deception.py`, qui restent

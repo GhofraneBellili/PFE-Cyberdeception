@@ -1,0 +1,504 @@
+{
+  "schema": "literature_document_seed",
+  "schema_version": "1.0",
+  "selection_method_version": "1.0",
+  "documents": [
+    {
+      "source_id": "doi_10.1145_3214305",
+      "title": "Deception Techniques in Computer Security: A Research Perspective",
+      "authors": [
+        "Xiao Han",
+        "Nizar Kheir",
+        "Davide Balzarotti"
+      ],
+      "year": 2018,
+      "publication_type": "journal-article",
+      "venue": "ACM Computing Surveys, vol. 51, no. 4, article 80",
+      "doi": "10.1145/3214305",
+      "official_url": "https://doi.org/10.1145/3214305",
+      "open_access_url": "https://www.s3.eurecom.fr/docs/csur18_deception.pdf",
+      "retrieval_date": "2026-08-23",
+      "access_status": "open_fulltext",
+      "sha256": "9e482fefbed52fa438aa93f35c3ad0aacfef4fea8894618863b7e29c6f73a03e",
+      "themes": [
+        "deception_mechanism",
+        "honeypot",
+        "honeytoken",
+        "realism",
+        "attacker_interaction",
+        "detection",
+        "deployment",
+        "evaluation"
+      ],
+      "relevance_summary": "Survey general de la deception en securite informatique : classification des techniques existantes, historique (honeypots, honeytokens), et discussion des limites methodologiques (mesure d'efficacite, realisme du deploiement).",
+      "search_queries": [
+        "\"Deception Techniques in Computer Security: A Research Perspective\" ACM Computing Surveys Han Kheir Balzarotti DOI"
+      ],
+      "inclusion_reasons": [
+        "survey_reference_frequently_cited",
+        "general_taxonomy_not_use_case_specific",
+        "peer_reviewed_journal"
+      ],
+      "exclusion_notes": "",
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1145_3214305.txt",
+        "extracted_text_sha256": "353782b5f650bb77ceac78c4f5ab6463c3cb6d9f6ba18179ed116e95101c5bfb",
+        "character_count": 149898,
+        "word_count": 22166
+      }
+    },
+    {
+      "source_id": "doi_10.1145_3337772",
+      "title": "A Game-theoretic Taxonomy and Survey of Defensive Deception for Cybersecurity and Privacy",
+      "authors": [
+        "Jeffrey Pawlick",
+        "Edward Colbert",
+        "Quanyan Zhu"
+      ],
+      "year": 2019,
+      "publication_type": "journal-article",
+      "venue": "ACM Computing Surveys, vol. 52, no. 4, article 82",
+      "doi": "10.1145/3337772",
+      "official_url": "https://doi.org/10.1145/3337772",
+      "open_access_url": "https://arxiv.org/pdf/1712.05441",
+      "retrieval_date": "2026-08-23",
+      "access_status": "open_fulltext",
+      "sha256": "f2365ef9effd23a50067da02cab2b659719e3a769ffa154337625f2e4911e085",
+      "themes": [
+        "deception_mechanism",
+        "engagement",
+        "attacker_interaction",
+        "honeytoken",
+        "evaluation"
+      ],
+      "relevance_summary": "Taxonomie de six types de deception defensive (perturbation, moving target defense, obfuscation, mixing, honey-x, attacker engagement) fondee sur la theorie des jeux, avec revue de 24 articles 2008-2018.",
+      "search_queries": [
+        "\"A Game-Theoretic Taxonomy and Survey of Defensive Deception\" Pawlick Colbert Zhu ACM Computing Surveys DOI"
+      ],
+      "inclusion_reasons": [
+        "survey_reference_frequently_cited",
+        "game_theoretic_formalization_of_deception_types",
+        "peer_reviewed_journal"
+      ],
+      "exclusion_notes": "Le texte integral verifie est la version preprint arXiv:1712.05441 ; le titre, les auteurs et le contenu correspondent a la version publiee (DOI verifie via Crossref), traites comme une seule entite scientifique.",
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1145_3337772.txt",
+        "extracted_text_sha256": "8b1935381cb7ec0d9567f2f4f2f3481e3cdec838f19da9d711e42639400c54ea",
+        "character_count": 101136,
+        "word_count": 15404
+      }
+    },
+    {
+      "source_id": "doi_10.1145_2683467.2683482",
+      "title": "Planning and Integrating Deception into Computer Security Defenses",
+      "authors": [
+        "Mohammed H. Almeshekah",
+        "Eugene H. Spafford"
+      ],
+      "year": 2014,
+      "publication_type": "conference-paper",
+      "venue": "Proceedings of the 2014 New Security Paradigms Workshop (NSPW '14)",
+      "doi": "10.1145/2683467.2683482",
+      "official_url": "https://doi.org/10.1145/2683467.2683482",
+      "open_access_url": "https://www.cerias.purdue.edu/assets/pdf/bibtex_archive/2014-7.pdf",
+      "retrieval_date": "2026-08-23",
+      "access_status": "open_fulltext",
+      "sha256": "662e03e3c792cfc6dd6dd38a620aed7d30f7a7c8549336b50623a7f54f956e2c",
+      "themes": [
+        "deception_mechanism",
+        "realism",
+        "attacker_interaction",
+        "deployment"
+      ],
+      "relevance_summary": "Modele de planification et d'integration de la deception dans les defenses de securite informatique ; principes fondamentaux (dissimulation du vrai, presentation du faux) et biais cognitifs de l'attaquant exploites.",
+      "search_queries": [
+        "\"Planning and Integrating Deception into Computer Security Defenses\" Almeshekah Spafford NSPW DOI"
+      ],
+      "inclusion_reasons": [
+        "foundational_planning_principles",
+        "widely_cited_in_deception_literature",
+        "peer_reviewed_workshop"
+      ],
+      "exclusion_notes": "Texte integral obtenu via le depot institutionnel CERIAS (Purdue University), rapport technique CERIAS 2014-7 correspondant a l'article NSPW'14.",
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1145_2683467.2683482.txt",
+        "extracted_text_sha256": "3231095e3526415c803c2bd0327a6023413a67f63d29708a435e4aeb2486f81d",
+        "character_count": 57153,
+        "word_count": 9031
+      }
+    },
+    {
+      "source_id": "arxiv_1804.06196",
+      "title": "Demystifying Deception Technology: A Survey",
+      "authors": [
+        "Daniel Fraunholz",
+        "Simon Duque Anton",
+        "Christoph Lipps",
+        "Daniel Reti",
+        "Daniel Krohmer",
+        "Frederic Pohl",
+        "Matthias Tammen",
+        "Hans Dieter Schotten"
+      ],
+      "year": 2018,
+      "publication_type": "preprint",
+      "venue": "arXiv preprint",
+      "doi": null,
+      "official_url": "https://arxiv.org/abs/1804.06196",
+      "open_access_url": "https://arxiv.org/pdf/1804.06196",
+      "retrieval_date": "2026-08-23",
+      "access_status": "open_fulltext",
+      "sha256": "31279a8a340397f964fbb222361be4d7f72b61c8da204cea2d63769d0c1c281b",
+      "themes": [
+        "deception_mechanism",
+        "honeypot",
+        "honeytoken",
+        "realism",
+        "deployment",
+        "maintenance"
+      ],
+      "relevance_summary": "Vue d'ensemble etendue de l'environnement de la deception technology : taxonomies, fondements theoriques, aspects psychologiques, implementations, aspects legaux et ethiques.",
+      "search_queries": [
+        "\"Demystifying Deception Technology: A Survey\" Fraunholz arxiv"
+      ],
+      "inclusion_reasons": [
+        "unique_coverage_of_legal_and_ethical_aspects",
+        "unique_coverage_of_psychological_aspects",
+        "broad_taxonomy_not_use_case_specific"
+      ],
+      "exclusion_notes": "Preprint arXiv non evalue par les pairs a ce jour (aucune publication en revue ou conference identifiee lors de la recherche) ; retenu neanmoins car il documente des aspects (legaux, ethiques, psychologiques) absents des autres sources revues par les pairs du corpus. Classe explicitement comme preprint, pas comme article evalue par les pairs.",
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\arxiv_1804.06196.txt",
+        "extracted_text_sha256": "5bfa2981b84875cfbcc7e4809959e089fb2449323d244c1d90a661c7e7cc69f3",
+        "character_count": 72871,
+        "word_count": 11154
+      }
+    },
+    {
+      "source_id": "doi_10.1007_978-3-642-05284-2_4",
+      "title": "Baiting Inside Attackers Using Decoy Documents",
+      "authors": [
+        "Brian M. Bowen",
+        "Shlomo Hershkop",
+        "Angelos D. Keromytis",
+        "Salvatore J. Stolfo"
+      ],
+      "year": 2009,
+      "publication_type": "conference-paper",
+      "venue": "5th International ICST Conference on Security and Privacy in Communication Networks (SecureComm 2009), Lecture Notes of ICST, Springer",
+      "doi": "10.1007/978-3-642-05284-2_4",
+      "official_url": "https://doi.org/10.1007/978-3-642-05284-2_4",
+      "open_access_url": "https://www.sos-vo.org/system/files/sos_files/Baiting_Inside_Attackers_Using_Decoy_Documents.pdf",
+      "retrieval_date": "2026-08-23",
+      "access_status": "open_fulltext",
+      "sha256": "8d1ee3cf3369956075a29ef2832f3497b254b23390784de6b153f081301e0971",
+      "themes": [
+        "decoy_document",
+        "decoy_credential",
+        "detection",
+        "intelligence_collection"
+      ],
+      "relevance_summary": "Mecanismes de defense a base de leurres (decoy documents) et plateforme de deploiement pour detecter l'exfiltration de donnees par des attaquants internes ; formalisation de proprietes des leurres pour concevoir des defenses trap-based.",
+      "search_queries": [
+        "\"Baiting Inside Attackers Using Decoy Documents\" Bowen Hershkop Keromytis Stolfo SecureComm DOI"
+      ],
+      "inclusion_reasons": [
+        "foundational_decoy_document_mechanism",
+        "peer_reviewed_conference",
+        "distinct_theme_coverage_insider_threat"
+      ],
+      "exclusion_notes": "Texte integral obtenu via le miroir academique sos-vo.org (Science of Security Virtual Organization, communaute financee NSA/NSF) ; l'acces DTIC officiel (apps.dtic.mil) a retourne une erreur HTTP 403 lors de la verification.",
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1007_978-3-642-05284-2_4.txt",
+        "extracted_text_sha256": "d51f9b3fe7c1fcbc5d3e8e3e40d2cb235251d3a987fd0a70ca2c62b6ba541cb2",
+        "character_count": 56180,
+        "word_count": 9003
+      }
+    },
+    {
+      "source_id": "doi_10.1016_j.cose.2021.102288",
+      "title": "Three Decades of Deception Techniques in Active Cyber Defense - Retrospect and Outlook",
+      "authors": [
+        "Li Zhang",
+        "Vrizlynn L. L. Thing"
+      ],
+      "year": 2021,
+      "publication_type": "journal-article",
+      "venue": "Computers & Security, vol. 106, article 102288",
+      "doi": "10.1016/j.cose.2021.102288",
+      "official_url": "https://doi.org/10.1016/j.cose.2021.102288",
+      "open_access_url": "https://arxiv.org/pdf/2104.03594",
+      "retrieval_date": "2026-08-23",
+      "access_status": "open_fulltext",
+      "sha256": "e4e4d2b9eebaeb8988c1a2a94a0a5bccb441257be1930ce78856157645f8fa2e",
+      "themes": [
+        "deception_mechanism",
+        "honeypot",
+        "honeytoken",
+        "redirection",
+        "delay",
+        "containment",
+        "detection"
+      ],
+      "relevance_summary": "Revue systematique de trois decennies de techniques de deception active (honeypots, honeytokens, moving target defense) organisee selon un modele de cyber kill chain et une pile de deception a quatre couches.",
+      "search_queries": [
+        "\"Three decades of deception techniques in active cyber defense\" Zhang Thing Computers Security DOI"
+      ],
+      "inclusion_reasons": [
+        "recent_comprehensive_survey",
+        "cross_cutting_taxonomy_kill_chain_and_deception_stack",
+        "peer_reviewed_journal"
+      ],
+      "exclusion_notes": "Texte integral verifie est la version preprint arXiv:2104.03594, correspondant au meme travail que la version publiee (memes auteurs, meme titre, DOI verifie via Crossref).",
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1016_j.cose.2021.102288.txt",
+        "extracted_text_sha256": "9b00abf9d7ca8b4c9af6183115bb63b83f6fa0217ba02ffd39f7d66935b54619",
+        "character_count": 116669,
+        "word_count": 17315
+      }
+    },
+    {
+      "source_id": "usenixsec2004_provos_virtual_honeypot_framework",
+      "title": "A Virtual Honeypot Framework",
+      "authors": [
+        "Niels Provos"
+      ],
+      "year": 2004,
+      "publication_type": "conference-paper",
+      "venue": "Proceedings of the 13th USENIX Security Symposium",
+      "doi": null,
+      "official_url": "https://www.usenix.org/conference/13th-usenix-security-symposium/virtual-honeypot-framework",
+      "open_access_url": "https://www.usenix.org/legacy/event/sec04/tech/full_papers/provos/provos.pdf",
+      "retrieval_date": "2026-08-23",
+      "access_status": "open_fulltext",
+      "sha256": "3fe8b4662bbbe2488fbcc7dece4ab64ebaca47cf511de119e8db7137c380c923",
+      "themes": [
+        "honeypot",
+        "honeynet",
+        "deployment",
+        "resource_requirements"
+      ],
+      "relevance_summary": "Presente Honeyd, un cadriciel de honeypots virtuels simulant des systemes informatiques au niveau reseau sur des adresses IP non allouees, pour tromper les outils de prise d'empreinte reseau (fingerprinting).",
+      "search_queries": [
+        "Provos \"A Virtual Honeypot Framework\" USENIX Security 2004"
+      ],
+      "inclusion_reasons": [
+        "foundational_honeypot_system",
+        "peer_reviewed_conference",
+        "official_open_access_venue"
+      ],
+      "exclusion_notes": "Aucun DOI officiel identifie (papier USENIX Security 2004, anterieur a l'attribution systematique de DOI par USENIX) ; source_id derive d'une regle de repli deterministe documentee dans search_protocol.md.",
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\usenixsec2004_provos_virtual_honeypot_framework.txt",
+        "extracted_text_sha256": "1b6af525ab464f5c82b2a2b9aa823a30e2ebc49500b3ef3e188bc07e291d5165",
+        "character_count": 55723,
+        "word_count": 8701
+      }
+    },
+    {
+      "source_id": "doi_10.1109_csac.2003.1254322",
+      "title": "Honeypots: Catching the Insider Threat",
+      "authors": [
+        "Lance Spitzner"
+      ],
+      "year": 2003,
+      "publication_type": "conference-paper",
+      "venue": "19th Annual Computer Security Applications Conference (ACSAC 2003)",
+      "doi": "10.1109/CSAC.2003.1254322",
+      "official_url": "https://doi.org/10.1109/CSAC.2003.1254322",
+      "open_access_url": "https://www.acsac.org/2003/papers/spitzner.pdf",
+      "retrieval_date": "2026-08-23",
+      "access_status": "open_fulltext",
+      "sha256": "1d34799d9ded9435b666afd8548eb3ca49b3b0cd92113581561279f985d6ea70",
+      "themes": [
+        "honeypot",
+        "intelligence_collection",
+        "detection"
+      ],
+      "relevance_summary": "Discute comment les technologies de honeypots peuvent etre utilisees pour detecter, identifier et recueillir de l'information sur les menaces internes avancees (insider threat).",
+      "search_queries": [
+        "Spitzner \"Honeypots: Catching the Insider Threat\" ACSAC 2003 IEEE DOI"
+      ],
+      "inclusion_reasons": [
+        "foundational_honeypot_author",
+        "peer_reviewed_conference",
+        "distinct_theme_coverage_insider_threat"
+      ],
+      "exclusion_notes": "Texte integral obtenu via l'archive officielle de la conference (acsac.org), distincte du billet non evalue par les pairs 'Honeytokens: The Other Honeypot' (2003, SecurityFocus) explicitement ecarte de ce corpus scientifique (cf. search_protocol.md, criteres d'exclusion).",
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1109_csac.2003.1254322.txt",
+        "extracted_text_sha256": "cfd5480d51fa187c343d2e8875ebe5c943f2fe638070146ad2843814bab523d0",
+        "character_count": 41131,
+        "word_count": 6498
+      }
+    },
+    {
+      "source_id": "doi_10.1109_iaw.2004.1437806",
+      "title": "Honeyfiles: Deceptive Files for Intrusion Detection",
+      "authors": [
+        "J. Yuill",
+        "M. Zappe",
+        "D. Denning",
+        "F. Feer"
+      ],
+      "year": 2004,
+      "publication_type": "conference-paper",
+      "venue": "Proceedings from the Fifth Annual IEEE SMC Information Assurance Workshop, 2004",
+      "doi": "10.1109/IAW.2004.1437806",
+      "official_url": "https://doi.org/10.1109/IAW.2004.1437806",
+      "open_access_url": "https://faculty.nps.edu/dedennin/publications/honeyfiles.pdf",
+      "retrieval_date": "2026-08-23",
+      "access_status": "open_fulltext",
+      "sha256": "7df766dd523cb1701b95beede6970ab01546b41719004a6f1d2401afe4fd1145",
+      "themes": [
+        "decoy_document",
+        "honeytoken",
+        "detection"
+      ],
+      "relevance_summary": "Introduit les honeyfiles, fichiers appats resident sur un serveur de fichiers declenchant une alerte lorsqu'ils sont accedes ; evaluation par deploiement sur un honeynet.",
+      "search_queries": [
+        "Yuill Zappe Denning \"Honeyfiles: deceptive files for intrusion detection\" IEEE DOI"
+      ],
+      "inclusion_reasons": [
+        "foundational_decoy_file_mechanism",
+        "peer_reviewed_conference",
+        "distinct_theme_coverage_file_level_deception"
+      ],
+      "exclusion_notes": "Texte integral obtenu via la page officielle de la faculte de Dorothy Denning (Naval Postgraduate School, .edu).",
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1109_iaw.2004.1437806.txt",
+        "extracted_text_sha256": "3faf868545f84faff4686019b47cbdb87ae7a9a8791417a45093c832373f7719",
+        "character_count": 27328,
+        "word_count": 4227
+      }
+    },
+    {
+      "source_id": "doi_10.1007_978-3-030-64793-3_8",
+      "title": "Harnessing the Power of Deception in Attack Graph-Based Security Games",
+      "authors": [
+        "Stephanie Milani",
+        "Weiran Shen",
+        "Kevin S. Chan",
+        "Sridhar Venkatesan",
+        "Nandi O. Leslie",
+        "Charles Kamhoua",
+        "Fei Fang"
+      ],
+      "year": 2020,
+      "publication_type": "conference-paper",
+      "venue": "Decision and Game Theory for Security (GameSec 2020), Lecture Notes in Computer Science vol. 12513, Springer",
+      "doi": "10.1007/978-3-030-64793-3_8",
+      "official_url": "https://doi.org/10.1007/978-3-030-64793-3_8",
+      "open_access_url": "https://www.weiran-shen.info/page_files/harnessing_the_power_of_deception_in_attack_graph-based_security_games.pdf",
+      "retrieval_date": "2026-08-23",
+      "access_status": "open_fulltext",
+      "sha256": "e89feffcf70e01e239c3b4bec27ca84519e26d8a1e7a89f99ecd4ed94f4995b1",
+      "themes": [
+        "deception_mechanism",
+        "redirection",
+        "containment",
+        "deployment",
+        "evaluation"
+      ],
+      "relevance_summary": "Etudie l'usage de la deception dans des jeux de securite de Stackelberg fondes sur un graphe d'attaque, ou le defenseur peut manipuler strategiquement le graphe via trois types d'actions deceptives ; formulation d'optimisation.",
+      "search_queries": [
+        "\"Harnessing the Power of Deception in Attack Graph-Based Security Games\" authors Springer DOI",
+        "cyber deception attack graph placement optimization defensive deception scientific paper DOI"
+      ],
+      "inclusion_reasons": [
+        "attack_graph_based_deception_optimization",
+        "peer_reviewed_conference",
+        "distinct_theme_coverage_optimization"
+      ],
+      "exclusion_notes": "Texte integral obtenu via la page academique personnelle d'un des auteurs (auto-archivage), pas via Springer (payant) ; copie non verifiee comme typographiquement identique a la version d'edition finale.",
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1007_978-3-030-64793-3_8.txt",
+        "extracted_text_sha256": "bef8e935259ca7312312cf64953e7a415d415e558dd51b8afbcb66ed640306b2",
+        "character_count": 55547,
+        "word_count": 9221
+      }
+    },
+    {
+      "source_id": "doi_10.1109_comst.2025.3594788",
+      "title": "Cyber Deception: Taxonomy, State of the Art, Frameworks, Trends, and Open Challenges",
+      "authors": [
+        "Pedro Beltrán-López",
+        "Manuel Gil Pérez",
+        "Pantaleone Nespoli"
+      ],
+      "year": 2025,
+      "publication_type": "journal-article",
+      "venue": "IEEE Communications Surveys & Tutorials",
+      "doi": "10.1109/COMST.2025.3594788",
+      "official_url": "https://doi.org/10.1109/COMST.2025.3594788",
+      "open_access_url": "https://arxiv.org/pdf/2409.07194",
+      "retrieval_date": "2026-08-23",
+      "access_status": "open_fulltext",
+      "sha256": "4f4b7e172ded71740c811845628be3175b98aee0a98d970ec034a8ec74d2cca5",
+      "themes": [
+        "deception_mechanism",
+        "honeypot",
+        "honeytoken",
+        "realism",
+        "attacker_interaction",
+        "deployment",
+        "evaluation",
+        "detection"
+      ],
+      "relevance_summary": "Revue recente et etendue des mecanismes de Cyber Deception (CYDEC) : analyse des composants principaux, classification generique couvrant tous les types de solutions, comparaison des approches avec et sans intelligence artificielle.",
+      "search_queries": [
+        "\"Cyber Deception: State of the art, Trends, and Open challenges\" arxiv 2409.07194 authors",
+        "cyber deception attack graph placement optimization defensive deception scientific paper DOI"
+      ],
+      "inclusion_reasons": [
+        "most_recent_comprehensive_survey_in_corpus",
+        "peer_reviewed_top_tier_survey_journal",
+        "broad_taxonomy_not_use_case_specific"
+      ],
+      "exclusion_notes": "Le texte integral verifie est la version preprint arXiv:2409.07194, sous un titre legerement different ('Cyber Deception: State of the art, Trends and Open challenges') ; memes auteurs confirmes via Crossref sur la version publiee, traite comme une seule entite scientifique dont la version publiee (DOI) fait foi pour les metadonnees. Champ 'issued' Crossref = 2025 (date de mise en ligne anticipee), a distinguer d'une eventuelle date d'edition imprimee ulterieure.",
+      "extraction": {
+        "extracted_text_file": "data\\deception\\raw\\literature\\doi_10.1109_comst.2025.3594788.txt",
+        "extracted_text_sha256": "c96db3799656b2b12c422f6c13df04d641c11b42799de24ad95d0d3165114a80",
+        "character_count": 197442,
+        "word_count": 28760
+      }
+    },
+    {
+      "source_id": "doi_10.1109_ccst.2017.8167793",
+      "title": "Technologies to Enable Cyber Deception",
+      "authors": [
+        "Vincent E. Urias",
+        "William M. S. Stout",
+        "Jean Luc-Watson",
+        "Cole Grim",
+        "Lorie Liebrock",
+        "Monzy Merza"
+      ],
+      "year": 2017,
+      "publication_type": "conference-paper",
+      "venue": "2017 International Carnahan Conference on Security Technology (ICCST)",
+      "doi": "10.1109/CCST.2017.8167793",
+      "official_url": "https://doi.org/10.1109/CCST.2017.8167793",
+      "open_access_url": null,
+      "retrieval_date": "2026-08-23",
+      "access_status": "metadata_only",
+      "sha256": null,
+      "themes": [
+        "deployment",
+        "resource_requirements",
+        "maintenance"
+      ],
+      "relevance_summary": "Discute des technologies permettant le deploiement operationnel de la cyberdeception (exigences techniques, integration, maintenance).",
+      "search_queries": [
+        "\"Urias\" \"Technologies to Enable Cyber Deception\" ICCST 2017 DOI"
+      ],
+      "inclusion_reasons": [
+        "operational_deployment_focus",
+        "peer_reviewed_conference",
+        "distinct_theme_coverage_deployment_technology"
+      ],
+      "exclusion_notes": "Texte integral non obtenu : IEEE Xplore payant, et le miroir public identifie (OSTI.GOV, biblio/1468722) n'a pas ete accessible depuis cet environnement (erreur de connexion). Metadonnees seules conservees ; aucun passage documentaire n'est associe a cette source.",
+      "extraction": null
+    }
+  ]
+}

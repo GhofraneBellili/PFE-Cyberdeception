@@ -5,36 +5,45 @@ transforme des sources documentaires officielles en STAGING intermédiaire
 pour la future base de connaissances cyberdéception du PFE.
 
 ```text
-RAW (fichiers officiels tels que téléchargés)
-  ↓
-D3FEND STAGING (tools/deception_kb/d3fend_seed_builder.py)
-ENGAGE STAGING (tools/deception_kb/engage_seed_builder.py)
-  ↓
-future enrichment (littérature scientifique, normalisation D3FEND↔Engage,
-LLM/RAG contrôlé)
-  ↓
-FINAL CATALOG (data/deception/deception_catalog.json, chargé par
-src/knowledge_deception.py)
+D3FEND (officiel)          Engage (officiel)          Literature (curée,
+  ↓                          ↓                          vérifiée DOI/Crossref)
+D3FEND STAGING            ENGAGE STAGING                  ↓
+(d3fend_seed_builder.py)  (engage_seed_builder.py)   LITERATURE STAGING
+                                                      (literature_seed_builder.py)
+  \_________________________|_________________________/
+                             ↓
+        future normalisation contrôlée (D3FEND↔Engage↔littérature,
+                LLM/RAG contrôlé, hors périmètre actuel)
+                             ↓
+        FINAL CATALOG (data/deception/deception_catalog.json,
+                chargé par src/knowledge_deception.py)
 ```
 
 Points essentiels :
 
-- **D3FEND et MITRE Engage sont deux sources parmi d'autres**, pas le
-  catalogue final. Elles restent des staging **distincts et non fusionnés**
-  (`engage_activity_seed_*.json`/`engage_attack_mapping_seed_*.json` d'un
-  côté, `d3fend_deception_seed_*.json`/`d3fend_attack_mapping_seed_*.json`
-  de l'autre) — aucun rapprochement automatique D3FEND↔Engage n'est
-  effectué ici (OPEN_DECISION 2 ci-dessous).
+- **D3FEND, MITRE Engage et la littérature scientifique sont trois sources
+  parmi d'autres**, pas le catalogue final. Elles restent des staging
+  **distincts et non fusionnés** (`engage_activity_seed_*.json`/
+  `engage_attack_mapping_seed_*.json`, `d3fend_deception_seed_*.json`/
+  `d3fend_attack_mapping_seed_*.json`, `literature_document_seed_*.json`/
+  `literature_evidence_seed_*.json`) — aucun rapprochement automatique
+  D3FEND↔Engage↔littérature n'est effectué ici (OPEN_DECISION 2
+  ci-dessous).
 - **Le staging n'est pas le catalogue final** `deception_catalog.json` : il
   n'est ni chargé, ni lu par `src/knowledge_deception.py`.
 - **Le staging n'est pas SP1** : côté D3FEND, `parent_ids`/`child_ids`/
   `is_leaf` sont conservés tels quels ; côté Engage, une activité
-  (EACxxxx/SACxxxx) reste une entité documentaire source — dans les deux
+  (EACxxxx/SACxxxx) reste une entité documentaire source ; côté
+  littérature, un passage scientifique court (`literature_evidence_seed`)
+  reste une **preuve documentaire vérifiée**, jamais une propriété finale
+  de `DeceptionMechanism` (`interaction_mechanism`, `realism_factors`,
+  `progression_effects`, `admissibility_profile`, ...) — dans les trois
   cas, sans décider quels concepts deviennent des mécanismes déployables
   `d ∈ D` (voir OPEN_DECISION 1 ci-dessous).
 - **Les mappings D3FEND↔ATT&CK (`origin: "d3fend_inferred"`) et
   Engage↔ATT&CK (`origin: "mitre_engage_v1.0"`) extraits ici ne sont pas
-  encore `M_{i,d}`** utilisables par SP1/`admissibility.py`.
+  encore `M_{i,d}`** utilisables par SP1/`admissibility.py`. La
+  littérature n'introduit elle-même aucun mapping ATT&CK↔déception.
 - **Aucun LLM n'intervient dans cette phase.** Elle est 100 % déterministe :
   mêmes fichiers sources → mêmes fichiers de staging, bit à bit.
 
@@ -248,21 +257,91 @@ argument `--git-blob-sha-*` n'était demandé, et le SHA-256 sur les octets
 réellement téléchargés reste la preuve de provenance faisant foi. Ce champ
 reste disponible pour un enrichissement manuel ultérieur si nécessaire.
 
+## Corpus scientifique de cyberdéception (littérature)
+
+Troisième source structurée, distincte de D3FEND et d'Engage : un
+**registre bibliographique versionné et vérifié** (chaque DOI confirmé via
+l'API Crossref, chaque URL d'accès ouvert vérifiée par requête HTTP
+réelle — voir `data/deception/literature/search_protocol.md` pour la
+méthode complète), transformé en staging documentaire déterministe.
+
+### Différence structurelle avec D3FEND/Engage
+
+Il n'existe pas d'API ou de dump officiel unique regroupant toutes les
+publications scientifiques pertinentes. Le registre
+(`data/deception/literature/literature_sources.json`) joue donc le rôle du
+« fichier officiel brut » des deux autres sources, mais il est **curé
+manuellement** (assisté d'outils de vérification déterministes, jamais
+d'un LLM) plutôt que téléchargé directement depuis un point d'accès
+unique. `tools/deception_kb/literature_seed_builder.py` ne télécharge
+rien : il consomme le registre déjà vérifié, les fichiers PDF déjà acquis
+localement (`data/deception/raw/literature/`, non versionnés — voir
+`.gitignore`), et leur extraction texte déjà produite hors ligne par
+`pdftotext` (aucune dépendance Python supplémentaire, aucun OCR).
+
+### Champs du registre réellement utilisés
+
+Chaque entrée de `literature_sources.json` porte au minimum :
+`source_id`, `title`, `authors`, `year`, `publication_type`, `venue`,
+`doi`, `official_url`, `open_access_url`, `retrieval_date`,
+`access_status` (`open_fulltext` / `metadata_only` / `abstract_only` /
+`unavailable`), `relevance_summary`, `search_queries`,
+`inclusion_reasons`, `exclusion_notes`, `themes`, `raw_file`, `sha256`.
+Aucun champ non vérifiable n'est renseigné par une valeur inventée : un
+champ inconnu reste `null`.
+
+### Identifiants stables
+
+Réf. `search_protocol.md` §11 : `source_id = "doi_" + doi.lower().replace("/", "_")`
+lorsqu'un DOI existe (`compute_doi_based_source_id`, vérifié
+automatiquement contre chaque entrée par `validate_literature_sources_registry` —
+toute incohérence est rejetée) ; à défaut, une convention documentée
+`<venue><année>_<auteur>_<mots_du_titre>` est appliquée manuellement et
+seulement contrôlée structurellement (`is_valid_fallback_source_id`,
+qui rejette notamment tout identifiant du type `PAPER1`/`PAPER2`).
+
+### Passages courts (evidence) : preuve vérifiée, jamais recopiée en confiance
+
+`literature_evidence_seed_1.0.json` ne contient que des passages courts
+(≤ 500 caractères, `_MAX_EVIDENCE_TEXT_LENGTH`) associés à une source, une
+page et un `locator`. **Chaque passage est revérifié par le builder** —
+pas seulement par la personne qui l'a proposé — comme substring littéral
+(après normalisation des espaces/retours à la ligne) du texte réellement
+extrait localement (`.txt` à côté du `.pdf`) : un passage qui n'existe pas
+mot pour mot dans le texte extrait est rejeté avec
+`LiteratureSeedBuilderError`, jamais silencieusement accepté. Cette
+vérification est ce qui garantit concrètement l'invariant du rapport de
+tâche §29 : « avant de stocker un passage, vérifier qu'il existe
+réellement dans le document ».
+
+### Rapport de couverture — lacunes rapportées, jamais comblées
+
+`literature_seed_report_1.0.json` calcule `theme_coverage` sur la
+taxonomie documentaire (`DOCUMENTARY_THEMES`, §12 de la tâche — jamais les
+métriques SP2) et expose `coverage_gaps` : la liste des thèmes à zéro
+source dans le corpus actuel. Ce champ n'est **jamais** comblé
+artificiellement par une source ajoutée uniquement pour couvrir un thème
+manquant (réf. tâche §17).
+
 ## OPEN_DECISION préservées (non résolues par cette phase)
 
-1. Quels concepts D3FEND (et quelles activités/approches Engage) deviennent
-   les mécanismes déployables `d ∈ D` ?
-2. Comment relier précisément D3FEND ↔ Engage sans fusion arbitraire ?
-   (Les deux staging restent strictement séparés dans cette phase — aucun
-   rapprochement, même sémantiquement évident, ex. D3FEND « Decoy File »
-   vs Engage « Lures ».)
-3. Comment transformer les preuves D3FEND/Engage/littérature vers les
-   champs finaux `interaction_mechanism`, `realism_factors`,
-   `progression_effects`, `admissibility_profile` ?
+1. Quels concepts D3FEND deviennent réellement des mécanismes déployables
+   `d ∈ D` ?
+2. Comment aligner D3FEND et Engage sans fusion arbitraire ? (Les trois
+   staging — D3FEND, Engage, littérature — restent strictement séparés
+   dans cette phase — aucun rapprochement, même sémantiquement évident,
+   ex. D3FEND « Decoy File » vs Engage « Lures » vs les décoy documents de
+   la littérature.)
+3. Comment les passages scientifiques (et les preuves D3FEND/Engage)
+   seront-ils transformés vers les champs finaux `target_artifacts`,
+   `requirements`, `possible_placements`, `interaction_mechanism`,
+   `realism_factors`, `progression_effects`, `resource_requirements`,
+   `maintenance_requirements`, `admissibility_profile` ?
 4. Quelle sémantique SP1 donner aux listes vides de
    `DeceptionAdmissibilityProfile` ?
-5. Comment valider les mappings ATT&CK↔déception (D3FEND et Engage) avant
-   de les utiliser comme `M_{i,d}` ?
+5. Comment agréger/valider les associations ATT&CK↔déception (D3FEND et
+   Engage) avant de produire `M_{i,d}` ?
+6. Quels mécanismes constituent finalement le catalogue fermé `D` ?
 
 ## Utilisation
 
@@ -342,3 +421,27 @@ manifest étendu par cette CLI porte, pour chaque source Engage,
 `release_version` (voir extension additive et rétrocompatible de
 `build_manifest_entry` dans `d3fend_seed_builder.py`, réutilisée sans
 duplication).
+
+### CLI corpus scientifique (littérature)
+
+```bash
+python -m tools.deception_kb.literature_seed_builder \
+  --registry data/deception/literature/literature_sources.json \
+  --evidence-candidates data/deception/literature/evidence_candidates.json \
+  --out-dir data/deception/staging \
+  --version 1.0
+```
+
+| Argument | Rôle |
+|---|---|
+| `--registry` | chemin vers `literature_sources.json` (registre déjà curé et vérifié) |
+| `--evidence-candidates` | chemin vers le fichier JSON des passages candidats (chaque passage est revérifié contre le texte extrait, jamais accepté sur confiance) |
+| `--out-dir` | répertoire de sortie du staging document/evidence/rapport |
+| `--version` | version du staging littérature (défaut `1.0`), suffixe des fichiers de sortie |
+
+Contrairement à D3FEND/Engage, cette CLI ne télécharge et n'écrit aucun
+manifest de provenance partagé : chaque source du registre porte déjà ses
+propres `doi`/`official_url`/`open_access_url`/`sha256`, et
+`data/deception/source_manifest.json` reste réservé aux sources
+structurées fondamentales (D3FEND, Engage) pour ne pas mélanger deux
+formats de provenance incompatibles (réf. tâche §21).

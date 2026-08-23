@@ -773,9 +773,8 @@ total au moment de la validation. CI verte.
   `233351cb5bc168e571371babca9bfbf7c3c6683e`.
 - Commit de correctif (alignement de la nomenclature SAC/SAP sur
   « Strategic », conformément à `activity_details[id]["type"]`/
-  `approach_details[id]["type"]`) : *à renseigner lors de la prochaine mise
-  à jour naturelle de ce README*, pour éviter une boucle de commits
-  d'auto-référencement.
+  `approach_details[id]["type"]`) :
+  `d1c00a041017b73be5b1f6a9402e469a8108e9ef`.
 
 #### Limites actuelles
 
@@ -793,21 +792,214 @@ finaux de `DeceptionMechanism`) consommera conjointement les deux staging
 (D3FEND et Engage) pour produire `data/deception/deception_catalog.json`,
 chargé par `knowledge_deception.py` (étape 4).
 
+---
+
+### Étape 7 — Construction du corpus scientifique de cyberdéception
+
+#### Objectif
+
+Construire un **corpus scientifique versionné et traçable**, complémentaire
+à D3FEND et MITRE Engage, destiné à documenter — à terme — des propriétés
+difficiles à obtenir des seules bases D3FEND/Engage (réalisme, interaction
+attaquant, déploiement, ressources, maintenance, évaluation). Cette étape
+constitue un STAGING documentaire ; elle ne construit ni le catalogue
+final, ni aucune propriété de `DeceptionMechanism`.
+
+#### Position dans l'architecture
+
+```text
+littérature scientifique (DOI vérifiés Crossref, dépôts institutionnels)
+  → data/deception/literature/literature_sources.json (registre curé)
+  → tools/deception_kb/literature_seed_builder.py
+  → staging documentaire (documents + passages courts vérifiés) + rapport
+```
+
+Ce module vit dans `tools/`, hors du runtime chargé par
+`src/knowledge_deception.py`. Il ne fusionne à aucun moment ses résultats
+avec les staging D3FEND ou Engage (OPEN_DECISION 2).
+
+#### Entrées
+
+- registre bibliographique curé et vérifié individuellement (chaque DOI
+  confirmé via l'API Crossref, chaque URL d'accès ouvert vérifiée par
+  requête HTTP réelle) : `data/deception/literature/literature_sources.json` ;
+- fichiers PDF déjà acquis localement pour les sources en accès ouvert
+  (`data/deception/raw/literature/`, non versionnés) et leur extraction
+  texte déjà produite hors ligne par `pdftotext` (`.txt` à côté de chaque
+  `.pdf`) ;
+- passages candidats courts : `data/deception/literature/evidence_candidates.json`.
+
+#### Méthode de recherche documentaire
+
+Recherche manuelle assistée d'axes conceptuels généraux (cyber deception,
+honeypot, honeynet, honeytoken, decoy documents, deception placement,
+attacker engagement, deception optimization, ...) — jamais restreinte aux
+techniques ATT&CK ou actifs du scénario expérimental du PFE (T1003, T1078,
+`DC`/`WS`/`DB` explicitement exclus des requêtes). Chaque source candidate
+est vérifiée individuellement via l'API Crossref (titre, auteurs, année,
+venue) avant inclusion. Méthode complète et 16 requêtes réellement
+exécutées documentées dans `data/deception/literature/search_protocol.md`.
+
+#### Critères d'inclusion/exclusion
+
+**Inclusion** : pertinence directe pour la cyberdéception, nature
+académique (revue, conférence évaluée par les pairs, ou preprint retenu
+seulement si l'information est absente ailleurs), métadonnées vérifiables
+via une source stable, couverture thématique non redondante (aucun ajout
+pour atteindre un nombre arbitraire).
+
+**Exclusion** : blogs marketing/commerciaux, documentation fournisseur,
+sources non vérifiées indépendamment, contournement de paywall, doublons
+(même DOI, ou même travail décliné preprint + version publiée — traité
+comme une seule entité scientifique, jamais fusionné par similarité de
+titre seule).
+
+#### Traitement réalisé
+
+- Validation du registre : aucun champ obligatoire manquant, aucun
+  `source_id`/DOI dupliqué, cohérence stricte `source_id` ↔ DOI
+  (`source_id = "doi_" + doi.lower().replace("/", "_")`, vérifiée
+  automatiquement — toute divergence est rejetée), `access_status`
+  cohérent avec la présence ou l'absence d'un fichier local.
+- Construction du staging document : pour chaque source en accès ouvert,
+  vérification que le SHA-256 du fichier local correspond exactement à
+  celui déclaré dans le registre, et que son extraction texte (`.txt`)
+  existe réellement — sinon rejet explicite, jamais une substitution
+  silencieuse.
+- Construction du staging de passages courts (`≤ 500` caractères) :
+  **chaque passage est revérifié par le programme**, pas seulement par la
+  personne qui l'a proposé, comme sous-chaîne littérale (après
+  normalisation des espaces/retours à la ligne) du texte réellement
+  extrait localement — un passage introuvable verbatim est rejeté.
+- Calcul d'un rapport de couverture thématique sur une taxonomie
+  documentaire (jamais les métriques SP2) ; les thèmes non couverts sont
+  rapportés explicitement (`coverage_gaps`), jamais comblés par une source
+  inventée.
+
+#### Sorties
+
+- `data/deception/staging/literature_document_seed_1.0.json` — **12
+  sources** (11 en accès ouvert, 1 en métadonnées seules) ;
+- `data/deception/staging/literature_evidence_seed_1.0.json` — **14
+  passages courts** vérifiés verbatim, répartis sur 11 sources ;
+- `data/deception/staging/literature_seed_report_1.0.json` — 11 sources
+  évaluées par les pairs (`journal-article`/`conference-paper`), 1
+  preprint (Fraunholz et al. 2018, retenu pour sa couverture unique
+  d'aspects légaux/éthiques/psychologiques), 10 sources avec DOI, 11 avec
+  SHA-256 local, période couverte 2003–2025, 3 lacunes de couverture
+  identifiées (`decoy_asset`, `decoy_network`, `decoy_service`).
+
+#### Fichiers concernés
+
+- `tools/deception_kb/literature_seed_builder.py`
+- `tools/deception_kb/README.md`
+- `tests/test_literature_seed_builder.py`
+- `data/deception/literature/literature_sources.json`
+- `data/deception/literature/search_protocol.md`
+- `data/deception/literature/evidence_candidates.json`
+- `data/deception/staging/literature_*.json`
+- `data/deception/raw/literature/` (PDF et extractions texte non versionnés — voir `.gitignore`)
+
+#### Fonctions principales
+
+`compute_doi_based_source_id`, `is_valid_fallback_source_id`,
+`validate_literature_sources_registry`, `build_literature_document_seed`,
+`validate_literature_document_seed`, `build_literature_evidence_seed`
+(vérification verbatim contre le texte extrait), `validate_literature_evidence_seed`,
+`build_literature_seed_report`.
+
+#### Invariants
+
+- un passage scientifique n'est jamais assimilé à une propriété finale de
+  `DeceptionMechanism` ;
+- aucun `deception_catalog.json` n'est créé ni modifié ;
+- aucune source, aucun DOI, aucune métadonnée, aucun passage n'est inventé
+  — toute donnée non vérifiable reste `null`/absente ;
+- aucun appel LLM, aucun RAG, aucun embedding, aucune base vectorielle ;
+- 100 % déterministe et hors ligne (le builder ne télécharge rien) ;
+- aucun texte intégral protégé par le droit d'auteur n'est versionné dans
+  Git (seuls les passages courts vérifiés, ≤ 500 caractères, le sont).
+
+#### Tests et validation
+
+`tests/test_literature_seed_builder.py` — identifiants stables
+déterministes, validation du registre (DOI dupliqué, source_id incohérent
+avec le DOI, thème inconnu, access_status incohérent avec la présence
+d'un fichier local), construction et validation du staging document (SHA-256
+non concordant rejeté, extraction texte absente rejetée), construction et
+validation du staging de passages (source inexistante rejetée, passage
+introuvable verbatim rejeté, passage trop long rejeté, doublon exact
+rejeté, page/locator conservés), déterminisme (même entrée → même sortie,
+ordre stable), rapport de couverture (compte les preprints séparément des
+sources évaluées par les pairs, lacunes non comblées), CLI de bout en
+bout, absence de toute logique spécifique au cas de référence PFE et
+absence de dépendance LLM/RAG/réseau (vérifiées par inspection statique du
+module). **46 tests** ajoutés, **276 tests** au total au moment de la
+validation. CI verte.
+
+#### Traçabilité
+
+Voir `data/deception/literature/literature_sources.json` (métadonnées et
+SHA-256 complets par source) et `data/deception/literature/search_protocol.md`
+(requêtes exécutées, méthode de vérification Crossref, gestion des
+versions arXiv/éditeur, règle de déduplication). Sources retenues :
+Han, Kheir & Balzarotti (2018, DOI 10.1145/3214305) ; Pawlick, Colbert &
+Zhu (2019, DOI 10.1145/3337772) ; Almeshekah & Spafford (2014, DOI
+10.1145/2683467.2683482) ; Fraunholz et al. (2018, preprint arXiv:1804.06196) ;
+Bowen, Hershkop, Keromytis & Stolfo (2009, DOI 10.1007/978-3-642-05284-2_4) ;
+Zhang & Thing (2021, DOI 10.1016/j.cose.2021.102288) ; Provos (2004, USENIX
+Security, sans DOI) ; Spitzner (2003, DOI 10.1109/CSAC.2003.1254322) ;
+Yuill, Zappe, Denning & Feer (2004, DOI 10.1109/IAW.2004.1437806) ; Milani
+et al. (2020, DOI 10.1007/978-3-030-64793-3_8) ; Beltrán-López, Gil Pérez
+& Nespoli (2025, DOI 10.1109/COMST.2025.3594788) ; Urias et al. (2017, DOI
+10.1109/CCST.2017.8167793, métadonnées seules).
+
+#### Couverture
+
+Thèmes couverts (source_count > 0) : `deception_mechanism`, `honeypot`,
+`honeynet`, `honeytoken`, `decoy_credential`, `decoy_document`, `realism`,
+`attacker_interaction`, `engagement`, `redirection`, `delay`,
+`containment`, `detection`, `intelligence_collection`, `deployment`,
+`resource_requirements`, `maintenance`, `evaluation`. Lacunes identifiées
+et non comblées : `decoy_asset`, `decoy_network`, `decoy_service`.
+
+#### Limites actuelles
+
+Corpus représentatif, pas exhaustif (recherche via moteur généraliste,
+pas d'interrogation systématique de chaque base bibliographique
+spécialisée via ses API propres). Un seul preprint non évalué par les
+pairs est inclus, explicitement signalé comme tel. Une source (Urias et
+al. 2017) reste en métadonnées seules, aucun mirroir en accès ouvert
+n'ayant pu être vérifié depuis cet environnement. Aucun passage n'est
+encore relié à un mécanisme D3FEND/Engage ni à une propriété finale de
+`DeceptionMechanism`.
+
+#### Lien avec l'étape suivante
+
+Une future étape de normalisation contrôlée (hors périmètre de cette
+phase) devra décider comment les preuves D3FEND, Engage et littérature
+convergent vers le catalogue fermé `data/deception/deception_catalog.json`
+(OPEN_DECISION 1, 2, 3, 6 ci-dessous).
+
 ## OPEN_DECISION en cours
 
 Ces points sont volontairement non résolus et ne doivent pas l'être
 implicitement par une étape future sans décision explicite :
 
-1. Quels concepts D3FEND (et quelles activités/approches Engage)
-   deviennent les mécanismes déployables \(d \in \mathcal D\) ?
-2. Comment relier précisément D3FEND ↔ Engage sans fusion arbitraire ?
-   (Les deux staging restent strictement séparés dans cette phase — aucun
-   rapprochement automatique, même sémantiquement évident, ex. D3FEND
-   « Decoy File » vs Engage « Lures ».)
-3. Comment transformer les informations D3FEND/Engage/littérature vers les
-   champs finaux `interaction_mechanism`, `realism_factors`,
-   `progression_effects`, `admissibility_profile` ?
+1. Quels concepts D3FEND deviennent réellement des mécanismes déployables
+   \(d \in \mathcal D\) ?
+2. Comment aligner D3FEND et Engage sans fusion arbitraire ? (Les trois
+   staging — D3FEND, Engage, littérature — restent strictement séparés
+   dans cette phase — aucun rapprochement automatique, même
+   sémantiquement évident, ex. D3FEND « Decoy File » vs Engage « Lures »
+   vs les decoy documents de la littérature.)
+3. Comment les passages scientifiques (et les preuves D3FEND/Engage)
+   seront-ils transformés vers les champs finaux `target_artifacts`,
+   `requirements`, `possible_placements`, `interaction_mechanism`,
+   `realism_factors`, `progression_effects`, `resource_requirements`,
+   `maintenance_requirements`, `admissibility_profile` ?
 4. Quelle sémantique SP1 donner aux listes vides de
    `DeceptionAdmissibilityProfile` ?
-5. Comment valider les mappings ATT&CK↔déception (D3FEND et Engage) avant
-   de les utiliser comme \(M_{i,d}\) ?
+5. Comment agréger/valider les associations ATT&CK↔déception (D3FEND et
+   Engage) avant de produire \(M_{i,d}\) ?
+6. Quels mécanismes constituent finalement le catalogue fermé \(\mathcal D\) ?
