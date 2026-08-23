@@ -3,7 +3,9 @@ Réf. architecture : CLAUDE.md — contrat technique du PFE Cyberdéception.
 
 Tests unitaires de tools/deception_kb/literature_seed_builder.py (§25.4 :
 pytest obligatoire), durcis en phase 4B.3-H (schéma bibliographique 1.1,
-vérification page par page).
+vérification page par page) puis 4B.3-H2 (schéma de staging 1.2 :
+distinction stricte pagination observable / pagination absente —
+page_verified=true implique désormais pagination_available=true).
 
 100% hors ligne : les "fichiers locaux" utilisés ici sont des octets
 synthétiques (pas de vrais PDF ni de dépendance à pdftotext) — le builder ne
@@ -29,10 +31,10 @@ from tools.deception_kb.literature_seed_builder import (
     build_literature_evidence_seed,
     build_literature_seed_report,
     compute_doi_based_source_id,
+    extract_page_structure,
     is_valid_fallback_source_id,
     read_evidence_candidates,
     read_literature_sources_registry,
-    split_extracted_text_pages,
     validate_literature_document_seed,
     validate_literature_evidence_seed,
     validate_literature_sources_registry,
@@ -55,6 +57,10 @@ FIXTURE_PAGE_2 = (
     "intelligence about their behavior.\n"
 )
 FIXTURE_TEXT = FIXTURE_PAGE_1 + "\x0c" + FIXTURE_PAGE_2
+
+# Même contenu que FIXTURE_TEXT mais sans aucun séparateur de page — simule
+# une extraction où pdftotext n'a pas produit de "\x0c" (pagination perdue).
+FIXTURE_TEXT_NO_PAGE_SEPARATORS = FIXTURE_PAGE_1 + FIXTURE_PAGE_2
 
 
 def make_provenance(provider="Crossref", fields=None):
@@ -180,12 +186,17 @@ class TestSourceId:
 
 class TestPageSplitting:
     def test_splits_on_form_feed(self):
-        pages = split_extracted_text_pages("page one\x0cpage two\x0cpage three")
-        assert pages == ["page one", "page two", "page three"]
+        structure = extract_page_structure("page one\x0cpage two\x0cpage three")
+        assert structure["pagination_available"] is True
+        assert structure["pages"] == ["page one", "page two", "page three"]
 
-    def test_no_separator_returns_single_page(self):
-        pages = split_extracted_text_pages("only page content, no separator at all")
-        assert len(pages) == 1
+    def test_no_separator_means_pagination_unavailable(self):
+        """§4 : un texte sans séparateur de page ne doit JAMAIS être assimilé
+        à un document d'une seule page vérifiée — pagination_available doit
+        être False, et aucune page ne doit être renvoyée comme fiable."""
+        structure = extract_page_structure("only page content, no separator at all")
+        assert structure["pagination_available"] is False
+        assert structure["pages"] == []
 
 
 # ---------------------------------------------------------------------------
@@ -451,12 +462,12 @@ class TestDocumentSeedBuilding:
         registry = make_registry(tmp_path)
         document_seed = build_literature_document_seed(registry)
         assert document_seed["schema"] == "literature_document_seed"
-        assert document_seed["schema_version"] == "1.1"
+        assert document_seed["schema_version"] == "1.2"
         assert len(document_seed["documents"]) == 1
         doc = document_seed["documents"][0]
         assert doc["extraction"]["word_count"] > 0
         assert doc["extraction"]["page_count"] == 2
-        assert doc["extraction"]["page_separators_found"] is True
+        assert doc["extraction"]["pagination_available"] is True
 
     def test_metadata_only_document_has_no_extraction(self):
         entry = make_source_entry(access_status="metadata_only", raw_file=None, sha256=None)
@@ -594,29 +605,71 @@ class TestEvidencePageVerification:
         with pytest.raises(LiteratureSeedBuilderError):
             build_literature_evidence_seed(document_seed, candidates)
 
-    def test_text_without_page_separators_only_page_one_valid(self, tmp_path):
+    def test_document_without_page_separators_has_no_verifiable_pagination(self, tmp_path):
+        """§4/§6 : une extraction sans '\\x0c' ne doit jamais être assimilée
+        à un document d'une seule page vérifiée."""
         raw_path, sha256 = write_fixture_raw_file(
             tmp_path, source_id="doi_10.9999_nosep", text="No page separators in this extraction at all."
         )
         entry = make_source_entry(source_id="doi_10.9999_nosep", raw_file=str(raw_path), sha256=sha256)
         registry = make_registry(tmp_path, [entry])
         document_seed = build_literature_document_seed(registry)
-        assert document_seed["documents"][0]["extraction"]["page_separators_found"] is False
-        assert document_seed["documents"][0]["extraction"]["page_count"] == 1
+        extraction = document_seed["documents"][0]["extraction"]
+        assert extraction["pagination_available"] is False
+        assert extraction["page_count"] is None
 
-        # page 1 : le texte y est bien (page unique) -> accepté
-        ok_candidates = [
+    def test_page_one_rejected_when_pagination_unavailable(self, tmp_path):
+        """§7 : même 'page: 1' ne doit jamais être accepté silencieusement
+        quand la pagination n'est pas observable — c'est le coeur du
+        durcissement 4B.3-H2."""
+        raw_path, sha256 = write_fixture_raw_file(
+            tmp_path, source_id="doi_10.9999_nosep", text="No page separators in this extraction at all."
+        )
+        entry = make_source_entry(source_id="doi_10.9999_nosep", raw_file=str(raw_path), sha256=sha256)
+        registry = make_registry(tmp_path, [entry])
+        document_seed = build_literature_document_seed(registry)
+        candidates = [
             {"source_id": "doi_10.9999_nosep", "page": 1, "locator": "body_text", "text": "No page separators in this extraction at all."}
         ]
-        evidence_seed = build_literature_evidence_seed(document_seed, ok_candidates)
-        assert len(evidence_seed["evidence"]) == 1
+        with pytest.raises(LiteratureSeedBuilderError):
+            build_literature_evidence_seed(document_seed, candidates)
 
-        # page 2 déclarée : n'existe pas (une seule page reconstruite) -> rejeté
-        bad_candidates = [
+    def test_page_two_rejected_when_pagination_unavailable(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(
+            tmp_path, source_id="doi_10.9999_nosep", text="No page separators in this extraction at all."
+        )
+        entry = make_source_entry(source_id="doi_10.9999_nosep", raw_file=str(raw_path), sha256=sha256)
+        registry = make_registry(tmp_path, [entry])
+        document_seed = build_literature_document_seed(registry)
+        candidates = [
             {"source_id": "doi_10.9999_nosep", "page": 2, "locator": "body_text", "text": "No page separators in this extraction at all."}
         ]
         with pytest.raises(LiteratureSeedBuilderError):
-            build_literature_evidence_seed(document_seed, bad_candidates)
+            build_literature_evidence_seed(document_seed, candidates)
+
+    def test_evidence_seed_validation_rejects_page_verified_without_pagination_available(self, tmp_path):
+        """§9 : invariant page_verified=true ⇒ pagination_available=true,
+        vérifié même si le champ evidence a été falsifié après coup."""
+        raw_path, sha256 = write_fixture_raw_file(
+            tmp_path, source_id="doi_10.9999_nosep", text="No page separators in this extraction at all."
+        )
+        entry = make_source_entry(source_id="doi_10.9999_nosep", raw_file=str(raw_path), sha256=sha256)
+        registry = make_registry(tmp_path, [entry])
+        document_seed = build_literature_document_seed(registry)
+        forged_evidence_seed = {
+            "schema": "literature_evidence_seed", "schema_version": "1.2",
+            "selection_method_version": "1.1",
+            "evidence": [
+                {
+                    "evidence_id": "doi_10.9999_nosep__ev001", "source_id": "doi_10.9999_nosep",
+                    "page": 1, "locator": "body_text",
+                    "text": "No page separators in this extraction at all.",
+                    "source_sha256": sha256, "page_verified": True,
+                }
+            ],
+        }
+        with pytest.raises(LiteratureSeedBuilderError):
+            validate_literature_evidence_seed(forged_evidence_seed, document_seed)
 
     def test_same_passage_appearing_on_multiple_pages_must_match_declared_page(self, tmp_path):
         text = "Repeated sentence used as a passage on both pages.\x0cRepeated sentence used as a passage on both pages."
@@ -724,7 +777,7 @@ class TestEvidencePageVerification:
         registry = make_registry(tmp_path)
         document_seed = build_literature_document_seed(registry)
         corrupted = {
-            "schema": "literature_evidence_seed", "schema_version": "1.1",
+            "schema": "literature_evidence_seed", "schema_version": "1.2",
             "selection_method_version": "1.1",
             "evidence": [
                 {
@@ -802,7 +855,7 @@ class TestReport:
         ]
         evidence_seed = build_literature_evidence_seed(document_seed, candidates)
         report = build_literature_seed_report(document_seed, evidence_seed)
-        assert report["schema_version"] == "1.1"
+        assert report["schema_version"] == "1.2"
         assert report["source_count"] == 1
         assert report["peer_reviewed_count"] == 1
         assert report["not_peer_reviewed_count"] == 0
@@ -816,8 +869,22 @@ class TestReport:
         assert report["sources_with_repository_doi"] == 0
         assert report["evidence_count"] == 1
         assert report["verified_page_evidence_count"] == 1
+        assert report["documents_with_verified_pagination_count"] == 1
+        assert report["documents_without_verified_pagination_count"] == 0
         assert report["theme_coverage"]["honeypot"] == 1
         assert report["year_range"] == {"min": 2020, "max": 2020}
+
+    def test_report_counts_document_without_pagination(self, tmp_path):
+        raw_path, sha256 = write_fixture_raw_file(
+            tmp_path, source_id="doi_10.9999_nosep", text="No page separators in this extraction at all."
+        )
+        entry = make_source_entry(source_id="doi_10.9999_nosep", raw_file=str(raw_path), sha256=sha256)
+        registry = make_registry(tmp_path, [entry])
+        document_seed = build_literature_document_seed(registry)
+        evidence_seed = build_literature_evidence_seed(document_seed, [])
+        report = build_literature_seed_report(document_seed, evidence_seed)
+        assert report["documents_with_verified_pagination_count"] == 0
+        assert report["documents_without_verified_pagination_count"] == 1
 
     def test_coverage_gaps_reported_not_invented(self, tmp_path):
         registry = make_registry(tmp_path)

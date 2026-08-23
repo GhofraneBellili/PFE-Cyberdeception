@@ -1,6 +1,6 @@
 {
   "schema": "literature_seed_report",
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "selection_method_version": "1.1",
   "source_count": 14,
   "peer_reviewed_count": 13,
@@ -21,6 +21,8 @@
   "sources_with_local_sha256": 13,
   "evidence_count": 18,
   "verified_page_evidence_count": 18,
+  "documents_with_verified_pagination_count": 13,
+  "documents_without_verified_pagination_count": 0,
   "theme_coverage": {
     "deception_mechanism": 7,
     "honeypot": 6,
@@ -31,7 +33,7 @@
     "decoy_document": 2,
     "decoy_service": 0,
     "decoy_network": 0,
-    "realism": 6,
+    "realism": 5,
     "attacker_interaction": 6,
     "engagement": 3,
     "redirection": 2,

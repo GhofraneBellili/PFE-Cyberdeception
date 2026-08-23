@@ -1,6 +1,6 @@
 {
   "schema": "literature_document_seed",
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "selection_method_version": "1.1",
   "documents": [
     {
@@ -66,8 +66,8 @@
         "extracted_text_sha256": "353782b5f650bb77ceac78c4f5ab6463c3cb6d9f6ba18179ed116e95101c5bfb",
         "character_count": 149898,
         "word_count": 22166,
-        "page_count": 37,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 37
       }
     },
     {
@@ -130,8 +130,8 @@
         "extracted_text_sha256": "8b1935381cb7ec0d9567f2f4f2f3481e3cdec838f19da9d711e42639400c54ea",
         "character_count": 101136,
         "word_count": 15404,
-        "page_count": 30,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 30
       }
     },
     {
@@ -192,8 +192,8 @@
         "extracted_text_sha256": "3231095e3526415c803c2bd0327a6023413a67f63d29708a435e4aeb2486f81d",
         "character_count": 57153,
         "word_count": 9031,
-        "page_count": 13,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 13
       }
     },
     {
@@ -263,8 +263,8 @@
         "extracted_text_sha256": "5bfa2981b84875cfbcc7e4809959e089fb2449323d244c1d90a661c7e7cc69f3",
         "character_count": 72871,
         "word_count": 11154,
-        "page_count": 26,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 26
       }
     },
     {
@@ -326,8 +326,8 @@
         "extracted_text_sha256": "d51f9b3fe7c1fcbc5d3e8e3e40d2cb235251d3a987fd0a70ca2c62b6ba541cb2",
         "character_count": 56180,
         "word_count": 9003,
-        "page_count": 21,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 21
       }
     },
     {
@@ -390,8 +390,8 @@
         "extracted_text_sha256": "9b00abf9d7ca8b4c9af6183115bb63b83f6fa0217ba02ffd39f7d66935b54619",
         "character_count": 116669,
         "word_count": 17315,
-        "page_count": 20,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 20
       }
     },
     {
@@ -450,8 +450,8 @@
         "extracted_text_sha256": "1b6af525ab464f5c82b2a2b9aa823a30e2ebc49500b3ef3e188bc07e291d5165",
         "character_count": 55723,
         "word_count": 8701,
-        "page_count": 16,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 16
       }
     },
     {
@@ -518,8 +518,8 @@
         "extracted_text_sha256": "cfd5480d51fa187c343d2e8875ebe5c943f2fe638070146ad2843814bab523d0",
         "character_count": 41131,
         "word_count": 6498,
-        "page_count": 11,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 11
       }
     },
     {
@@ -589,8 +589,8 @@
         "extracted_text_sha256": "3faf868545f84faff4686019b47cbdb87ae7a9a8791417a45093c832373f7719",
         "character_count": 27328,
         "word_count": 4227,
-        "page_count": 8,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 8
       }
     },
     {
@@ -658,8 +658,8 @@
         "extracted_text_sha256": "bef8e935259ca7312312cf64953e7a415d415e558dd51b8afbcb66ed640306b2",
         "character_count": 55547,
         "word_count": 9221,
-        "page_count": 21,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 21
       }
     },
     {
@@ -707,7 +707,7 @@
         "broad_taxonomy_not_use_case_specific"
       ],
       "exclusion_notes": "Le texte integral verifie est la version preprint arXiv:2409.07194, sous un titre legerement different ('Cyber Deception: State of the art, Trends and Open challenges') ; memes auteurs confirmes via Crossref et DBLP sur la version publiee, traitee comme une seule entite scientifique dont la publication_doi fait foi pour les metadonnees.",
-      "metadata_notes": "CAS VERIFIE EN DETAIL (hardening) : Crossref distingue trois evenements — 'created' (premier enregistrement du DOI) = 2025-08-01 ; 'issued' = 'published-print' = 2026 (annee seule, volume 28) ; aucun champ 'published-online' formel n'est fourni par Crossref. Une recherche web independante corrobore explicitement une mise en Early Access en 2025, anterieure a l'assignation au volume 2026. DBLP (interroge le 23/08/2026) confirme year=2026, coherent avec 'issued'/'published-print'. Regle appliquee : bibliographic_year = 2026 (annee de citation formelle, volume/pagination definitifs, confirmee par deux sources independantes Crossref+DBLP) ; published_online_year = 2025 (Early Access, derive de 'created' + corroboration externe, PAS d'un champ Crossref 'published-online' formellement absent — distinction explicitement documentee pour ne pas etre confondue avec le cas Zhang & Thing, ou aucune corroboration equivalente n'existe et published_online_year reste null).",
+      "metadata_notes": "CAS VERIFIE EN DETAIL (hardening 4B.3-H, precise en 4B.3-H2) : Crossref distingue trois evenements -- 'created' (premier enregistrement du DOI) = 2025-08-01 ; 'issued' = 'published-print' = 2026 (annee seule, volume 28) ; aucun champ 'published-online' formel n'est fourni par Crossref. IEEE Xplore lui-meme n'a pas pu etre consulte directement depuis cet environnement (acces bloque). L'API OpenAlex (base bibliographique academique independante, https://openalex.org), interrogee le 2026-08-23, rapporte 'publication_date': '2025-08-01' pour ce DOI -- date identique a 'created' Crossref, mais provenant d'une base de donnees distincte avec sa propre methodologie d'ingestion, ce qui constitue une corroboration independante et non un simple repli sur le champ 'created' seul. DBLP (interroge le 23/08/2026) confirme year=2026, coherent avec 'issued'/'published-print'. Regle appliquee : bibliographic_year = 2026 (annee de citation formelle, volume/pagination definitifs, confirmee par Crossref+DBLP) ; published_online_year = 2025 (Early Access, confirme par la source bibliographique academique independante OpenAlex en plus de Crossref 'created' -- provenance structuree consignee dans metadata_provenance).",
       "metadata_provenance": [
         {
           "provider": "Crossref",
@@ -731,6 +731,14 @@
             "bibliographic_year",
             "venue"
           ]
+        },
+        {
+          "provider": "OpenAlex",
+          "url": "https://api.openalex.org/works/doi:10.1109/COMST.2025.3594788",
+          "retrieval_date": "2026-08-23",
+          "verified_fields": [
+            "published_online_year"
+          ]
         }
       ],
       "extraction": {
@@ -738,8 +746,8 @@
         "extracted_text_sha256": "c96db3799656b2b12c422f6c13df04d641c11b42799de24ad95d0d3165114a80",
         "character_count": 197442,
         "word_count": 28760,
-        "page_count": 39,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 39
       }
     },
     {
@@ -825,7 +833,6 @@
       "peer_review_basis": "RAID (International Symposium on Research in Attacks, Intrusions and Defenses) : conference scientifique avec comite de programme, actes ACM (venue confirmee via Crossref).",
       "themes": [
         "honeytoken",
-        "realism",
         "attacker_interaction",
         "engagement",
         "evaluation",
@@ -837,12 +844,12 @@
         "cyber deception enticingness experiment"
       ],
       "inclusion_reasons": [
-        "empirical_measurement_of_realism_and_enticingness",
+        "empirical_measurement_of_enticingness",
         "peer_reviewed_conference",
         "fills_empirical_gap_identified_in_prior_corpus_report"
       ],
       "exclusion_notes": "Texte integral verifie est la version preprint arXiv:2408.10796, correspondant au meme travail que la version publiee ACM (memes auteurs et titre confirmes via Crossref).",
-      "metadata_notes": "Crossref : issued = published-print = published-online = 2024-09-30 (proceedings-article, date unique de la conference).",
+      "metadata_notes": "Durcissement 4B.3-H2 : le theme documentaire 'realism' a ete retire. Le texte integral n'evoque 'realism' que (a) pour decrire le realisme de la METHODE experimentale de Honeyquest elle-meme (inspiree des evenements CTF et des honeypots), et (b) en travaux connexes attribues a d'autres auteurs (Zhu et al. ; Sahin, Hebert & Cabrera Lozoya 2022) que le papier cite pour s'en distinguer explicitement -- jamais comme une propriete mesuree par Honeyquest lui-meme. La contribution empirique propre du papier est l'enticingness (attractivite), mesuree aupres de 47 participants sur 25 techniques de deception et 19 vrais risques -- distincte du realisme au sens de 'plausibilite/indiscernabilite d'un leurre', explicitement presente comme un axe d'evaluation different dans les travaux connexes cites par le papier lui-meme.",
       "metadata_provenance": [
         {
           "provider": "Crossref",
@@ -862,8 +869,8 @@
         "extracted_text_sha256": "70d82251797ec98baca68cb8398146f63a26ee26a857edd79c1798b700f4a601",
         "character_count": 128227,
         "word_count": 19185,
-        "page_count": 21,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 21
       }
     },
     {
@@ -929,8 +936,8 @@
         "extracted_text_sha256": "07ee3021a209ffbdda34917e8fd6d03aeb26166042ff3b8a532e48b1c5f26189",
         "character_count": 94056,
         "word_count": 13769,
-        "page_count": 20,
-        "page_separators_found": true
+        "pagination_available": true,
+        "page_count": 20
       }
     }
   ]

@@ -338,30 +338,53 @@ appliquée manuellement et seulement contrôlée structurellement
 type `PAPER1`/`PAPER2`). Aucun des 12 `source_id` du corpus initial n'a
 été modifié lors du durcissement.
 
+### Pagination : distinction stricte observable / non observable (durcissement final, schéma 1.2)
+
+`extract_page_structure(text)` découpe le texte extrait sur les
+séparateurs de page (`\f`) natifs de `pdftotext` et renvoie
+`{"pagination_available": bool, "pages": [...]}`. **Invariant central,
+corrigé lors du second durcissement (4B.3-H2)** : un texte extrait sans
+aucun séparateur `\f` n'est **jamais** assimilé à un document d'une seule
+page vérifiée — `pagination_available` vaut alors `False` et `page_count`
+reste `null` dans `literature_document_seed_1.2.json`. La version
+précédente (schéma 1.1) traitait par erreur un tel texte comme une
+« page 1 » valide, ce qui aurait permis à un document de 20 pages ayant
+perdu ses séparateurs à l'extraction de devenir artificiellement un
+document à page unique vérifiée — comportement identifié comme
+scientifiquement incorrect et corrigé.
+
 ### Passages courts (evidence) : preuve vérifiée page par page
 
-`literature_evidence_seed_1.1.json` ne contient que des passages courts
+`literature_evidence_seed_1.2.json` ne contient que des passages courts
 (≤ 500 caractères, `_MAX_EVIDENCE_TEXT_LENGTH`) associés à une source, une
 page et un `locator`. **Chaque passage est revérifié par le builder** —
 pas seulement par la personne qui l'a proposé — comme substring littéral
 (après normalisation des espaces/retours à la ligne) **sur la page
 précisément déclarée**, pas seulement quelque part dans le document
-entier (durcissement, réf. `search_protocol.md` §11ter).
-`split_extracted_text_pages` découpe le texte extrait sur les
-séparateurs de page (`\f`) natifs de `pdftotext` ; un passage présent
-ailleurs dans le document mais absent de la page déclarée est rejeté
-(message distinct d'un passage introuvable partout) ; une page
-au-delà du nombre de pages reconstruites est rejetée ; un texte sans
-séparateur de page est traité comme une unique page 1, jamais une page
-inventée. Tout passage conservé porte `page_verified: true` — aucun
-passage à page non vérifiée n'atteint le staging final. Cette
-vérification garantit concrètement l'invariant du rapport de tâche §29 :
-« avant de stocker un passage, vérifier qu'il existe réellement dans le
-document [à la page indiquée] ».
+entier (durcissement, réf. `search_protocol.md` §11ter). Si
+`pagination_available` est `False` pour la source, **tout** passage
+candidat est rejeté d'emblée (`LiteratureSeedBuilderError`), quelle que
+soit la page demandée — y compris `page: 1`. Si la pagination est
+observable : un passage présent ailleurs dans le document mais absent de
+la page déclarée est rejeté (message distinct d'un passage introuvable
+partout) ; une page au-delà du nombre de pages reconstruites est rejetée.
+Tout passage conservé porte `page_verified: true`, et
+`validate_literature_evidence_seed` vérifie explicitement l'invariant
+`page_verified: true` ⇒ `pagination_available: true` sur sa source —
+toute incohérence (y compris une falsification a posteriori du champ)
+lève `LiteratureSeedBuilderError`. Cette vérification garantit
+concrètement l'invariant du rapport de tâche §29 : « avant de stocker un
+passage, vérifier qu'il existe réellement dans le document [à la page
+indiquée, et seulement si cette page est réellement vérifiable] ».
+
+**Constat empirique (session 4B.3-H2) :** les 13 documents réels en
+accès ouvert du corpus ont tous une pagination observable
+(`pagination_available: true`) — aucun n'a dû être régénéré ou retiré
+suite à ce durcissement.
 
 ### Rapport de couverture — lacunes rapportées, jamais comblées
 
-`literature_seed_report_1.1.json` calcule `theme_coverage` sur la
+`literature_seed_report_1.2.json` calcule `theme_coverage` sur la
 taxonomie documentaire (`DOCUMENTARY_THEMES`, §12 de la tâche — jamais les
 métriques SP2) et expose `coverage_gaps` : la liste des thèmes à zéro
 source dans le corpus actuel. Ce champ n'est **jamais** comblé
@@ -370,8 +393,20 @@ manquant (réf. tâche §17). Le rapport distingue également, indépendamment
 de `publication_type` : `open_fulltext_count`/`metadata_only_count`/
 `abstract_only_count`/`unavailable_count` (+ `access_status_counts`
 complet), `sources_with_publication_doi`/`sources_with_repository_doi`,
-et `verified_page_evidence_count` (toujours égal à `evidence_count`, par
-construction — aucun passage non vérifié n'atteint jamais le staging).
+`verified_page_evidence_count` (toujours égal à `evidence_count`, par
+construction — aucun passage non vérifié n'atteint jamais le staging), et
+`documents_with_verified_pagination_count`/`documents_without_verified_pagination_count`
+(calculés sur les seuls documents `open_fulltext`).
+
+### Enticingness vs realism (Honeyquest) — précision documentaire
+
+Le thème `realism` a été retiré de la source Honeyquest (Kahlhofer et
+al., RAID 2024) : le papier ne mesure lui-même que l'**enticingness**
+(attractivité), distincte du réalisme au sens « plausibilité d'un
+leurre » qu'il attribue explicitement à des travaux tiers cités en
+contexte connexe (voir `search_protocol.md` §11quinquies pour l'analyse
+textuelle complète). Aucun nouveau thème `enticingness` n'a été ajouté à
+`DOCUMENTARY_THEMES` — voir OPEN_DECISION 7 ci-dessous.
 
 ## OPEN_DECISION préservées (non résolues par cette phase)
 
@@ -392,6 +427,11 @@ construction — aucun passage non vérifié n'atteint jamais le staging).
 5. Comment agréger/valider les associations ATT&CK↔déception (D3FEND et
    Engage) avant de produire `M_{i,d}` ?
 6. Quels mécanismes constituent finalement le catalogue fermé `D` ?
+7. Un thème documentaire `enticingness`, distinct de `realism`, doit-il
+   être ajouté à `DOCUMENTARY_THEMES` si le corpus s'enrichit d'autres
+   travaux empiriques sur l'attractivité des leurres (réf. Honeyquest,
+   `search_protocol.md` §11quinquies) ? Non résolue dans cette phase —
+   `realism` retiré de Honeyquest sans création de nouveau thème.
 
 ## Utilisation
 
@@ -479,7 +519,7 @@ python -m tools.deception_kb.literature_seed_builder \
   --registry data/deception/literature/literature_sources.json \
   --evidence-candidates data/deception/literature/evidence_candidates.json \
   --out-dir data/deception/staging \
-  --version 1.1
+  --version 1.2
 ```
 
 | Argument | Rôle |
@@ -487,7 +527,7 @@ python -m tools.deception_kb.literature_seed_builder \
 | `--registry` | chemin vers `literature_sources.json` (registre déjà curé et vérifié) |
 | `--evidence-candidates` | chemin vers le fichier JSON des passages candidats (chaque passage est revérifié contre le texte extrait de la page déclarée, jamais accepté sur confiance) |
 | `--out-dir` | répertoire de sortie du staging document/evidence/rapport |
-| `--version` | version du staging littérature (défaut `1.1`), suffixe des fichiers de sortie — passée de `1.0` à `1.1` lors du durcissement (schéma bibliographique étendu), les anciens fichiers `literature_*_1.0.json` ayant été retirés pour éviter qu'un nom de fichier `1.0` contienne silencieusement un schéma `1.1` |
+| `--version` | version du staging littérature (défaut `1.2`), suffixe des fichiers de sortie — `1.0`→`1.1` lors du premier durcissement (schéma bibliographique étendu), puis `1.1`→`1.2` lors du second (invariant strict de pagination, `page_separators_found` remplacé par `pagination_available`) ; à chaque changement de schéma, les fichiers de la version précédente sont retirés pour éviter qu'un nom de fichier contienne silencieusement un schéma différent |
 
 Contrairement à D3FEND/Engage, cette CLI ne télécharge et n'écrit aucun
 manifest de provenance partagé : chaque source du registre porte déjà ses

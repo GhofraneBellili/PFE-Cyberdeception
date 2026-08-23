@@ -15,6 +15,10 @@
   distinction DOI publication/repository, dates explicites, peer review
   explicite, vérification page par page, complément empirique) :
   **2026-08-23** (même journée, session distincte).
+- Session de durcissement finale (phase 4B.3-H2 — invariant strict de
+  pagination, provenance structurée de l'Early Access Beltrán-López,
+  distinction enticingness/realism pour Honeyquest) : **2026-08-23**
+  (même journée, troisième session distincte).
 
 ## 2. Portée
 
@@ -335,33 +339,133 @@ dédiée). Toutes les autres sont `peer_reviewed`, chacune avec sa
 justification propre consignée dans `peer_review_basis` (voir
 `literature_sources.json`).
 
-## 11ter. Vérification page par page des passages (durcissement)
+## 11ter. Vérification page par page des passages (durcissement 4B.3-H,
+précisé en 4B.3-H2)
 
-Réf. tâche §12/§13/§14. Le texte extrait par `pdftotext` conserve
-nativement un séparateur de page (`\f`, form feed) entre chaque page du
-PDF source. `split_extracted_text_pages` (module builder) découpe le
-texte extrait sur ce séparateur ; si aucun séparateur n'est présent
-(extraction sans structure de page reconstruable), le texte entier est
-traité comme une unique page 1 — jamais une page inventée au-delà de ce
-qui est structurellement observable.
+Réf. tâche §12/§13/§14 (4B.3-H) puis §3/§4/§5/§9 (4B.3-H2). Le texte
+extrait par `pdftotext` conserve nativement un séparateur de page (`\f`,
+form feed) entre chaque page du PDF source. `extract_page_structure`
+(module builder) découpe le texte extrait sur ce séparateur et renvoie
+`{"pagination_available": bool, "pages": [...]}`.
 
-Pour chaque passage candidat (`page`, `text`), le builder vérifie
-désormais que le texte normalisé (espaces/retours à la ligne réduits à un
-espace unique) apparaît **sur la page précisément déclarée**, et non plus
-seulement quelque part dans le document entier. Un passage trouvé
-ailleurs dans le document mais pas sur la page annoncée est rejeté
-explicitement (message distinct d'un passage introuvable partout). Tout
-passage conservé dans `literature_evidence_seed_1.1.json` porte
-`page_verified: true` — aucun passage à page non vérifiée n'atteint le
-staging final.
+**Invariant strict ajouté en 4B.3-H2 :** si aucun séparateur `\f` n'est
+présent dans l'extraction, `pagination_available` vaut `False` et
+**aucune page ne peut plus être affirmée du tout** — y compris la
+« page 1 ». La version précédente (4B.3-H) traitait par erreur un texte
+sans séparateur comme un document d'une seule page vérifiable, ce qui
+aurait permis à un document de 20 pages ayant perdu ses séparateurs à
+l'extraction de devenir artificiellement un document « page 1 » validé.
+Ce comportement a été identifié comme scientifiquement incorrect et
+corrigé : toute source dont `pagination_available` vaut `False` rejette
+désormais explicitement tout passage candidat, quelle que soit la page
+déclarée (`LiteratureSeedBuilderError`).
 
-Les 14 passages du corpus initial ont été reconstruits et revérifiés avec
-cette méthode stricte : les 14 pages précédemment enregistrées (déjà
-calculées par comptage de séparateurs de page lors de la phase initiale)
-se sont toutes confirmées exactes sous ce contrôle plus strict, sans
-qu'aucune ne doive être corrigée. 4 nouveaux passages (2 par nouvelle
-source empirique) ont été ajoutés et vérifiés selon la même méthode,
+Pour chaque passage candidat (`page`, `text`) d'une source dont la
+pagination est observable, le builder vérifie que le texte normalisé
+(espaces/retours à la ligne réduits à un espace unique) apparaît **sur la
+page précisément déclarée**, et non plus seulement quelque part dans le
+document entier. Un passage trouvé ailleurs dans le document mais pas sur
+la page annoncée est rejeté explicitement (message distinct d'un passage
+introuvable partout). Tout passage conservé dans
+`literature_evidence_seed_1.2.json` porte `page_verified: true` — invariant
+désormais vérifié explicitement (à la construction ET à la validation du
+staging evidence) : `page_verified: true` implique structurellement
+`pagination_available: true` sur le document source ; toute incohérence
+lève `LiteratureSeedBuilderError`.
+
+**Vérification empirique des 13 documents réels** (session 4B.3-H2,
+2026-08-23) : chacun des 13 fichiers `.txt` extraits localement pour les
+sources `open_fulltext` a été relu et contrôlé — les 13 contiennent
+réellement au moins un séparateur `\f` (`pagination_available: true` pour
+100 % du corpus réel). Aucun document réel n'a donc dû être ni
+régénéré, ni retiré du staging suite à ce durcissement.
+
+Les 14 passages du corpus initial (4B.3-H) ont été reconstruits et
+revérifiés avec la méthode stricte page par page : les 14 pages
+précédemment enregistrées (déjà calculées par comptage de séparateurs de
+page lors de la phase initiale) se sont toutes confirmées exactes sous ce
+contrôle plus strict, sans qu'aucune ne doive être corrigée. 4 nouveaux
+passages (2 par nouvelle source empirique) ont été ajoutés et vérifiés
+selon la même méthode,
 portant le total à 18 passages, tous `page_verified: true`.
+
+## 11quater. Provenance structurée du published_online_year — Beltrán-López et al. (4B.3-H2)
+
+Réf. tâche §12-§17. La version 4B.3-H justifiait `published_online_year =
+2025` uniquement par le champ Crossref `created` (2025-08-01) et une
+« corroboration web externe » informelle, ce qui ne constitue pas, selon
+la règle explicitement rappelée pour ce durcissement, une preuve
+suffisante (`created` = date d'enregistrement du DOI, pas nécessairement
+date de publication en ligne).
+
+**Vérification complémentaire effectuée (2026-08-23) :**
+
+1. `https://ieeexplore.ieee.org/document/11106825` — tentative directe
+   (WebFetch et requête HTTP) : page bloquée / contenu non exploitable
+   (réponse HTTP 202 « Accepted » sans contenu utile côté IEEE Xplore,
+   probable protection anti-robot). **IEEE Xplore n'a donc PAS pu être
+   consulté directement** — ce point est documenté honnêtement plutôt que
+   masqué.
+2. API **Semantic Scholar** (`https://api.semanticscholar.org/graph/v1/paper/DOI:10.1109/COMST.2025.3594788`)
+   — confirme `year: 2026`, `DBLP: journals/comsur/LopezPN26`, mais
+   `publicationDate: null` (pas d'information exploitable pour la
+   distinction Early Access).
+3. API **OpenAlex** (`https://api.openalex.org/works/doi:10.1109/COMST.2025.3594788`)
+   — base bibliographique académique indépendante (successeur de
+   Microsoft Academic Graph, méthodologie d'ingestion propre, distincte de
+   Crossref/DataCite/DBLP déjà consultés) — rapporte explicitement
+   `publication_year: 2025` et `publication_date: "2025-08-01"`, avec
+   `volume: 28`, `first_page: 1520`, `last_page: 1556` (cohérent avec
+   Crossref pour le volume/pagination finaux).
+
+**Décision finale :** `published_online_year = 2025` est **conservé**,
+mais sa preuve documentée change de nature : ce n'est plus seulement le
+champ `created` de Crossref, mais une **corroboration indépendante**
+(OpenAlex, catégorie « autre source bibliographique académique fiable »
+de la priorité définie pour ce durcissement) qui rapporte une date de
+publication identique par une méthodologie distincte. Une entrée
+`metadata_provenance` dédiée (`provider: "OpenAlex"`) a été ajoutée dans
+`literature_sources.json`, avec `verified_fields: ["published_online_year"]`.
+`bibliographic_year = 2026` et `published_print_year = 2026` restent
+inchangés (aucune erreur détectée, toujours soutenus par Crossref +
+DBLP).
+
+## 11quinquies. Honeyquest — enticingness ≠ realism (4B.3-H2)
+
+Réf. tâche §18-§21. Relecture ciblée du texte intégral extrait de
+Kahlhofer, Achleitner, Rass & Mayrhofer (RAID 2024) autour de toutes les
+occurrences de « realis » (2026-08-23). Constat : le papier mentionne
+« realism »/« realistic » à cinq endroits, mais **jamais comme une
+propriété que Honeyquest lui-même mesure** :
+
+- deux mentions décrivent le réalisme de la **méthode expérimentale**
+  elle-même (« combines the benefits of questionnaires with the realism
+  of CTF events and honeypots » ; « mimic a realistic app ») ;
+- les autres mentions attribuent explicitement le réalisme comme
+  dimension d'évaluation à des **travaux tiers cités en contexte
+  connexe** (Zhu et al. ; Sahin, Hébert & Cabrera Lozoya 2022 — « (2)
+  Plausibility and realism of deception, i.e., measuring how well
+  deceptive assets are discernible from genuine assets »), précisément
+  pour distinguer ces travaux de la contribution propre du papier.
+
+La contribution empirique propre de Honeyquest est l'**enticingness**
+(attractivité), mesurée auprès de 47 participants sur 25 techniques de
+déception et 19 vrais risques — un concept documentairement **distinct**
+du réalisme (plausibilité/indiscernabilité d'un leurre), le papier
+lui-même les traitant comme deux axes d'évaluation différents dans ses
+travaux connexes.
+
+**Décision** : le thème documentaire `realism` est retiré des `themes` de
+cette source (liste finale : `honeytoken`, `attacker_interaction`,
+`engagement`, `evaluation`, `deployment`). `inclusion_reasons[0]` est
+corrigé de `empirical_measurement_of_realism_and_enticingness` à
+`empirical_measurement_of_enticingness`. Aucun nouveau thème documentaire
+`enticingness` n'a été ajouté à `DOCUMENTARY_THEMES` — conformément à la
+consigne de ne pas étendre la taxonomie sans nécessité claire ; le sujet
+est noté comme **OPEN_DECISION** (voir `tools/deception_kb/README.md`) :
+un futur thème documentaire `enticingness` distinct de `realism` pourrait
+être justifié si le corpus s'enrichit d'autres travaux empiriques sur ce
+concept précis, mais cette décision est reportée à une phase ultérieure.
 
 ## 12. Limites de la recherche
 
@@ -393,6 +497,10 @@ portant le total à 18 passages, tous `page_verified: true`.
   reconstruite à partir du `container-title` Crossref et de la page
   officielle de la venue, documenté explicitement dans `metadata_notes`
   (§8.2) plutôt que masqué.
+- IEEE Xplore n'a pas pu être consulté directement depuis cet
+  environnement (page bloquée) lors de la vérification de l'Early Access
+  de Beltrán-López et al. — la corroboration retenue (OpenAlex) reste une
+  base bibliographique tierce, pas la source primaire de l'éditeur (§11quater).
 
 ## 13. Journal des corrections de métadonnées lors du hardening
 
@@ -413,3 +521,14 @@ année et DOI inchangées ; seuls les nouveaux champs structurés
 ajoutés. Deux nouvelles sources empiriques ont été ajoutées (§5.2) sans
 modifier aucune des 12 sources préexistantes au-delà des précisions
 ci-dessus.
+
+### 13bis. Corrections de la session 4B.3-H2
+
+| source_id | Champ | Ancienne représentation | Nouvelle représentation | Raison | Preuve |
+|---|---|---|---|---|---|
+| `doi_10.1109_comst.2025.3594788` | `metadata_provenance` / `metadata_notes` | `published_online_year=2025` justifié uniquement par Crossref `created` + corroboration web informelle | `metadata_provenance` étendu d'une entrée `provider: "OpenAlex"` (`verified_fields: ["published_online_year"]`) ; `metadata_notes` reformulé pour expliciter la tentative IEEE Xplore (échouée) et la corroboration OpenAlex | La règle du durcissement interdit `created` seul comme preuve suffisante d'une date de publication en ligne ; une source bibliographique académique indépendante était requise. | API OpenAlex, `https://api.openalex.org/works/doi:10.1109/COMST.2025.3594788` (`publication_date: "2025-08-01"`), interrogée le 2026-08-23. |
+| `doi_10.1145_3678890.3678897` | `themes` | `["honeytoken", "realism", "attacker_interaction", "engagement", "evaluation", "deployment"]` | `["honeytoken", "attacker_interaction", "engagement", "evaluation", "deployment"]` (`realism` retiré) | Relecture du texte intégral : le papier ne mesure jamais lui-même le « realism » (concept attribué à des travaux tiers cités en contexte connexe) ; sa contribution empirique propre est l'enticingness. | Relecture directe de `data/deception/raw/literature/doi_10.1145_3678890.3678897.txt`, 2026-08-23 (voir §11quinquies). |
+| `doi_10.1145_3678890.3678897` | `inclusion_reasons[0]` | `empirical_measurement_of_realism_and_enticingness` | `empirical_measurement_of_enticingness` | Idem — la formulation précédente laissait entendre à tort une mesure de realism. | Idem. |
+
+Aucune autre source n'a été modifiée lors de cette session. Aucune
+nouvelle publication n'a été ajoutée au corpus (14 sources inchangées).

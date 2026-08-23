@@ -46,6 +46,16 @@ Durcissement (phase 4B.3-H) — réf. tâche :
   accepté que s'il apparaît sur la page précisément déclarée, pas
   seulement quelque part dans le document.
 
+Durcissement 4B.3-H2 (schéma de staging 1.2) — réf. tâche :
+- `extract_page_structure` distingue explicitement une pagination
+  **réellement observable** (`pagination_available: true`, séparateurs
+  `\\f` présents) d'une pagination **absente** (`pagination_available:
+  false`) : un texte sans aucun séparateur de page n'est plus jamais
+  assimilé à un document PDF d'une seule page vérifiée — invariant
+  structurel : `page_verified: true` implique toujours
+  `pagination_available: true` sur sa source (vérifié à la fois à la
+  construction et à la validation du staging evidence).
+
 Convention : identifiants de code en anglais, commentaires et docstrings en
 français (§25.1).
 """
@@ -130,14 +140,22 @@ def _normalize_whitespace(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def split_extracted_text_pages(text: str) -> list[str]:
-    """Réf. tâche §13 : reconstruit les pages d'un texte extrait par
-    `pdftotext` à partir des séparateurs de page `\\f` (form feed) qu'il
-    insère nativement entre chaque page. Si aucun séparateur n'est présent
-    (extraction sans page connue), le texte entier est traité comme une
-    unique page 1 — jamais une page inventée au-delà de ce qui est
-    structurellement observable."""
-    return text.split("\x0c")
+def extract_page_structure(text: str) -> dict:
+    """Réf. tâche §4/§5 (durcissement 4B.3-H2) : reconstruit la structure de
+    pages d'un texte extrait par `pdftotext` à partir des séparateurs de
+    page `\\f` (form feed) qu'il insère nativement entre chaque page.
+
+    Distingue explicitement une pagination réellement observable d'une
+    pagination absente : un texte sans aucun séparateur `\\f` ne doit
+    JAMAIS être assimilé à un document PDF d'une seule page vérifiée — un
+    document de 20 pages dont les séparateurs ont été perdus à
+    l'extraction ne devient pas artificiellement une « page 1 ». Dans ce
+    cas, `pagination_available` est `False` et `pages` est vide : aucune
+    page ne peut être affirmée, ni vérifiée, à partir de ce texte.
+    """
+    if "\x0c" not in text:
+        return {"pagination_available": False, "pages": []}
+    return {"pagination_available": True, "pages": text.split("\x0c")}
 
 
 def read_literature_sources_registry(path: str | Path) -> dict:
@@ -365,14 +383,14 @@ def build_literature_document_seed(registry: dict) -> dict:
                     "requise pour toute source déclarée 'open_fulltext'."
                 )
             extracted_text = text_path.read_text(encoding="utf-8", errors="replace")
-            pages = split_extracted_text_pages(extracted_text)
+            page_structure = extract_page_structure(extracted_text)
             extraction = {
                 "extracted_text_file": str(text_path),
                 "extracted_text_sha256": hashlib.sha256(extracted_text.encode("utf-8")).hexdigest(),
                 "character_count": len(extracted_text),
                 "word_count": len(extracted_text.split()),
-                "page_count": len(pages),
-                "page_separators_found": "\x0c" in extracted_text,
+                "pagination_available": page_structure["pagination_available"],
+                "page_count": len(page_structure["pages"]) if page_structure["pagination_available"] else None,
             }
 
         documents.append(
@@ -408,7 +426,7 @@ def build_literature_document_seed(registry: dict) -> dict:
 
     return {
         "schema": "literature_document_seed",
-        "schema_version": "1.1",
+        "schema_version": "1.2",
         "selection_method_version": registry["selection_method_version"],
         "documents": documents,
     }
@@ -440,15 +458,21 @@ def validate_literature_document_seed(document_seed: dict) -> None:
 
 
 def build_literature_evidence_seed(document_seed: dict, evidence_candidates: list[dict]) -> dict:
-    """Réf. tâche §14/§29 : ne conserve un passage que si (a) sa source est
-    'open_fulltext' avec une extraction de texte disponible, (b) sa longueur
-    respecte la limite documentée, (c) la page déclarée existe réellement
-    dans le découpage par page du texte extrait, et (d) le passage est
-    retrouvé littéralement (après normalisation des espaces/retours à la
-    ligne) **sur cette page précise** — pas seulement quelque part dans le
-    document entier. Un passage présent ailleurs dans le document mais pas
-    sur la page déclarée est rejeté. Tout passage conservé porte donc
-    `page_verified: true` — aucun passage à page non vérifiée n'atteint le
+    """Réf. tâche §14/§29 (durcie en 4B.3-H2 §4/§7) : ne conserve un passage
+    que si (a) sa source est 'open_fulltext' avec une extraction de texte
+    disponible, (b) sa longueur respecte la limite documentée, (c) la
+    **pagination de cette extraction est réellement observable**
+    (`extraction["pagination_available"] is True` — sinon rejet explicite,
+    jamais un repli silencieux sur une « page 1 » non vérifiée), (d) la
+    page déclarée existe réellement dans le découpage par page du texte
+    extrait, et (e) le passage est retrouvé littéralement (après
+    normalisation des espaces/retours à la ligne) **sur cette page
+    précise** — pas seulement quelque part dans le document entier. Un
+    passage présent ailleurs dans le document mais pas sur la page
+    déclarée est rejeté. Tout passage conservé porte donc
+    `page_verified: true`, ce qui implique désormais structurellement que
+    sa source avait `pagination_available: true` — aucun passage à page
+    non vérifiée n'atteint le
     staging final (réf. tâche §16).
     """
     documents_by_id = {d["source_id"]: d for d in document_seed["documents"]}
@@ -492,11 +516,18 @@ def build_literature_evidence_seed(document_seed: dict, evidence_candidates: lis
                 f"({len(text)} > {_MAX_EVIDENCE_TEXT_LENGTH} caractères)."
             )
 
+        if not document["extraction"]["pagination_available"]:
+            raise LiteratureSeedBuilderError(
+                f"Passage de la source '{source_id}' : pagination impossible à vérifier pour "
+                "cette extraction (aucun séparateur de page détecté) — aucune page ne peut "
+                "être affirmée, réf. tâche §4."
+            )
+
         if source_id not in pages_cache:
             extracted_text = Path(document["extraction"]["extracted_text_file"]).read_text(
                 encoding="utf-8", errors="replace"
             )
-            pages_cache[source_id] = split_extracted_text_pages(extracted_text)
+            pages_cache[source_id] = extract_page_structure(extracted_text)["pages"]
         pages = pages_cache[source_id]
 
         if page > len(pages):
@@ -543,16 +574,20 @@ def build_literature_evidence_seed(document_seed: dict, evidence_candidates: lis
 
     return {
         "schema": "literature_evidence_seed",
-        "schema_version": "1.1",
+        "schema_version": "1.2",
         "selection_method_version": document_seed["selection_method_version"],
         "evidence": evidence,
     }
 
 
 def validate_literature_evidence_seed(evidence_seed: dict, document_seed: dict) -> None:
-    """Réf. tâche §20 : chaque passage référence une source existante et
-    'open_fulltext', porte page_verified=true, et aucun doublon exact ne
-    subsiste."""
+    """Réf. tâche §20/§9 (durcie en 4B.3-H2) : chaque passage référence une
+    source existante et 'open_fulltext', porte page_verified=true, aucun
+    doublon exact ne subsiste, et — invariant central du durcissement —
+    tout passage `page_verified=true` référence obligatoirement un
+    document dont `pagination_available=true` : un passage ne peut jamais
+    être marqué vérifié si sa source n'a pas de pagination réellement
+    observable (réf. tâche §9)."""
     documents_by_id = {d["source_id"]: d for d in document_seed["documents"]}
     seen_ids: set[str] = set()
     for item in evidence_seed["evidence"]:
@@ -571,6 +606,11 @@ def validate_literature_evidence_seed(evidence_seed: dict, document_seed: dict) 
         if item.get("page_verified") is not True:
             raise LiteratureSeedBuilderError(
                 f"Passage '{evidence_id}' : page_verified doit être true (réf. tâche §16)."
+            )
+        if not documents_by_id[source_id]["extraction"]["pagination_available"]:
+            raise LiteratureSeedBuilderError(
+                f"Passage '{evidence_id}' : page_verified=true mais la source '{source_id}' "
+                "n'a pas de pagination_available=true — invariant violé (réf. tâche §9)."
             )
 
 
@@ -616,9 +656,17 @@ def build_literature_seed_report(document_seed: dict, evidence_seed: dict) -> di
 
     verified_page_evidence_count = sum(1 for e in evidence_seed["evidence"] if e.get("page_verified") is True)
 
+    open_fulltext_documents = [d for d in documents if d["access_status"] == "open_fulltext"]
+    documents_with_verified_pagination_count = sum(
+        1 for d in open_fulltext_documents if d["extraction"]["pagination_available"]
+    )
+    documents_without_verified_pagination_count = sum(
+        1 for d in open_fulltext_documents if not d["extraction"]["pagination_available"]
+    )
+
     return {
         "schema": "literature_seed_report",
-        "schema_version": "1.1",
+        "schema_version": "1.2",
         "selection_method_version": document_seed["selection_method_version"],
         "source_count": len(documents),
         "peer_reviewed_count": peer_reviewed_count,
@@ -634,6 +682,8 @@ def build_literature_seed_report(document_seed: dict, evidence_seed: dict) -> di
         "sources_with_local_sha256": sources_with_local_sha256,
         "evidence_count": len(evidence_seed["evidence"]),
         "verified_page_evidence_count": verified_page_evidence_count,
+        "documents_with_verified_pagination_count": documents_with_verified_pagination_count,
+        "documents_without_verified_pagination_count": documents_without_verified_pagination_count,
         "theme_coverage": theme_coverage,
         "coverage_gaps": coverage_gaps,
         "year_range": year_range,
@@ -672,8 +722,8 @@ def _run_cli(argv: list[str] | None = None) -> None:
     parser.add_argument("--out-dir", required=True, help="Répertoire de sortie du staging.")
     parser.add_argument(
         "--version",
-        default="1.1",
-        help="Version du staging littérature (suffixe des fichiers de sortie, défaut '1.1').",
+        default="1.2",
+        help="Version du staging littérature (suffixe des fichiers de sortie, défaut '1.2').",
     )
     args = parser.parse_args(argv)
 
