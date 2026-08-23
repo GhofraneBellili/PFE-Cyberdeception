@@ -54,9 +54,9 @@ def default_activities():
         },
         {
             "id": "SAC9001",
-            "name": "Fixture Support Activity",
-            "description": "Description synthétique de support.",
-            "long_description": "Description longue synthétique de support.",
+            "name": "Fixture Strategic Activity",
+            "description": "Description synthétique stratégique.",
+            "long_description": "Description longue synthétique stratégique.",
         },
     ]
 
@@ -98,9 +98,9 @@ def default_approaches():
         },
         {
             "id": "SAP9001",
-            "name": "Fixture Support Approach",
-            "description": "Description synthétique d'approche de support.",
-            "long_description": "Description longue synthétique d'approche de support.",
+            "name": "Fixture Strategic Approach",
+            "description": "Description synthétique d'approche stratégique.",
+            "long_description": "Description longue synthétique d'approche stratégique.",
         },
     ]
 
@@ -119,9 +119,9 @@ def default_approach_details():
             "type": "Strategic",
             "goals": ["SGO9001"],
             "activities": ["SAC9001"],
-            "name": "Fixture Support Approach",
-            "description": "Description synthétique d'approche de support.",
-            "long_description": "Description longue synthétique d'approche de support.",
+            "name": "Fixture Strategic Approach",
+            "description": "Description synthétique d'approche stratégique.",
+            "long_description": "Description longue synthétique d'approche stratégique.",
         },
     }
 
@@ -285,6 +285,27 @@ class TestActivitySeedBuilding:
         by_id = {a["approach_id"]: a for a in seed["approaches"]}
         assert by_id["EAP9001"]["approach_family"] == "EAP"
         assert by_id["SAP9001"]["approach_family"] == "SAP"
+
+    def test_sac_activity_family_matches_strategic_detail_type(self, tmp_path):
+        """Réf. correctif de nomenclature : SAC = Strategic Activity (pas
+        "Support Activity"), garanti par activity_details[id]["type"] =
+        "Strategic". Empêche une régression terminologique future."""
+        seed = build_seed_from_fixture(tmp_path)
+        by_id = {a["activity_id"]: a for a in seed["activities"]}
+        sac = by_id["SAC9001"]
+        assert sac["activity_family"] == "SAC"
+        assert sac["detail_type"] == "Strategic"
+
+    def test_sap_approach_family_matches_strategic_source_evidence(self, tmp_path):
+        """Réf. correctif de nomenclature : SAP = Strategic Approach (pas
+        "Support Approach"), garanti par approach_details[id]["type"] =
+        "Strategic", conservé dans la provenance de l'approche."""
+        seed = build_seed_from_fixture(tmp_path)
+        by_id = {a["approach_id"]: a for a in seed["approaches"]}
+        sap = by_id["SAP9001"]
+        assert sap["approach_family"] == "SAP"
+        type_evidence = [e for e in sap["source_evidence"] if e["source_property"] == "type"]
+        assert type_evidence and type_evidence[0]["evidence_text"] == "Strategic"
 
     def test_unrecognized_activity_prefix_rejected(self, tmp_path):
         activities = default_activities()
@@ -533,7 +554,8 @@ class TestReportAndManifest:
         report = build_engage_seed_report(activity_seed, mapping_seed, manifest_entries=[])
         assert report["activity_count"] == 2
         assert report["engagement_activity_count"] == 1
-        assert report["support_activity_count"] == 1
+        assert report["strategic_activity_count"] == 1
+        assert "support_activity_count" not in report
         assert report["approach_count"] == 2
         assert report["raw_attack_mapping_count"] == 1
         assert report["unique_attack_mapping_count"] == 1

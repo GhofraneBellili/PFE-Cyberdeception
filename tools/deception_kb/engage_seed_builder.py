@@ -22,10 +22,11 @@ Format réellement observé dans MITRE Engage v1.0, commit
 pour le détail complet de l'inspection) :
 
 - `activities.json` : liste plate de {id, name, description, long_description}
-  — id préfixé EAC (Engagement Activity) ou SAC (constaté : "SAC" apparaît
-  dans les identifiants, le champ activity_details["type"] correspondant
-  vaut "Strategic", pas "Support" — les deux libellés sont conservés
-  séparément, aucun n'est inventé) ;
+  — id préfixé EAC (Engagement Activity) ou SAC (Strategic Activity) ;
+  constaté par inspection directe : `activity_details[id]["type"]` vaut
+  respectivement "Engagement" ou "Strategic" (jamais "Support") — la
+  famille SAC est donc documentée comme "Strategic Activity", jamais comme
+  "Support Activity" ;
 - `activity_details.json` : dict indexé par id d'activité, portant
   notamment type, goals, vulnerabilities (liste de {id, eav}),
   attack_techniques (liste de {id, name, attack_tactics: [libellés
@@ -34,7 +35,9 @@ pour le détail complet de l'inspection) :
   approaches (ids), references (liste de {id, title, url}) ;
 - `approaches.json` / `approach_details.json` /
   `approach_activity_mappings.json` : même schéma relationnel qu'activités,
-  avec id préfixé EAP (Engagement Approach) ou SAP ;
+  avec id préfixé EAP (Engagement Approach) ou SAP (Strategic Approach) ;
+  constaté de même sur `approach_details[id]["type"]` ("Engagement" ou
+  "Strategic") ;
 - `attack_mapping.json` : liste plate de relations {attack_id,
   attack_technique, eav_id, eav, eac_id, eac} — tous les attack_id
   observés respectent Txxxx/Txxxx.xxx (aucune anomalie de framework
@@ -553,10 +556,16 @@ def validate_engage_attack_mapping_seed(mapping_seed: dict, activity_seed: dict)
 def build_engage_seed_report(activity_seed: dict, mapping_seed: dict, manifest_entries: list[dict]) -> dict:
     """Réf. tâche §18 : petit rapport local sur l'extraction Engage
     réalisée. warnings reste vide tant qu'aucune divergence n'est
-    constatée — jamais ajusté artificiellement."""
+    constatée — jamais ajusté artificiellement.
+
+    Réf. correctif de nomenclature : la famille SAC correspond, dans les
+    données réelles (`activity_details[id]["type"] == "Strategic"`), à
+    "Strategic Activity" — jamais "Support Activity". La clé de rapport
+    reflète donc `strategic_activity_count`, pas `support_activity_count`.
+    """
     activities = activity_seed["activities"]
     engagement_activity_count = sum(1 for a in activities if a["activity_family"] == "EAC")
-    support_activity_count = sum(1 for a in activities if a["activity_family"] == "SAC")
+    strategic_activity_count = sum(1 for a in activities if a["activity_family"] == "SAC")
     distinct_attack_ids = {m["attack_id"] for m in mapping_seed["mappings"]}
     distinct_eav_ids = {
         m["adversary_vulnerability_id"] for m in mapping_seed["mappings"] if m.get("adversary_vulnerability_id")
@@ -569,7 +578,7 @@ def build_engage_seed_report(activity_seed: dict, mapping_seed: dict, manifest_e
         "sources": manifest_entries,
         "activity_count": len(activities),
         "engagement_activity_count": engagement_activity_count,
-        "support_activity_count": support_activity_count,
+        "strategic_activity_count": strategic_activity_count,
         "approach_count": len(activity_seed["approaches"]),
         "raw_attack_mapping_count": mapping_seed["raw_mapping_count"],
         "unique_attack_mapping_count": mapping_seed["unique_mapping_count"],

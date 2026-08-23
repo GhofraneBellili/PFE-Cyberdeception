@@ -178,10 +178,25 @@ Aucune liste ni règle n'est codée en dur : la famille d'une entité
 identifiant**, démontré par inspection sur les deux familles d'entités
 (activités et approches) du jeu de données réel — `EAC`/`SAC` pour les
 activités (23 EAC, 8 SAC sur 31), `EAP`/`SAP` pour les approches. Un préfixe
-non reconnu lève `EngageSeedBuilderError` plutôt que d'être deviné. Le champ
-brut `activity_details[id]["type"]` (`"Engagement"` ou `"Strategic"` —
-jamais `"Support"`) est conservé séparément sous `detail_type`, sans être
-fusionné avec `activity_family` ni traduit.
+non reconnu lève `EngageSeedBuilderError` plutôt que d'être deviné.
+
+Interprétation humaine/documentaire de chaque préfixe, telle que
+**réellement supportée** par `activity_details[id]["type"]` et
+`approach_details[id]["type"]` (valeurs observées : `"Engagement"` ou
+`"Strategic"` — jamais `"Support"`) :
+
+| Préfixe | Signification | Valeur `type` observée |
+|---|---|---|
+| `EAC` | Engagement Activity | `"Engagement"` |
+| `SAC` | **Strategic** Activity | `"Strategic"` |
+| `EAP` | Engagement Approach | `"Engagement"` |
+| `SAP` | **Strategic** Approach | `"Strategic"` |
+
+`SAC`/`SAP` ne doivent jamais être présentés comme « Support Activity »/
+« Support Approach » — cette lecture n'est pas supportée par les données
+officielles. Le champ brut `type` est conservé séparément sous
+`detail_type` (activités) ou dans `source_evidence` (approches), sans être
+fusionné avec `activity_family`/`approach_family` ni traduit.
 
 ### Le champ `activity_id` de `references.json` peut désigner une approche
 

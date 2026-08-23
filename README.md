@@ -646,6 +646,10 @@ sont conservés comme deux notions distinctes, jamais conflées.
   `d \in \mathcal D`. La famille (`activity_family`/`approach_family`) est
   dérivée du préfixe d'identifiant réellement observé (jamais d'une liste
   codée en dur) ; un préfixe non reconnu lève une erreur explicite.
+  Interprétation retenue, conforme à `activity_details[id]["type"]`/
+  `approach_details[id]["type"]` (`"Engagement"` ou `"Strategic"`, jamais
+  `"Support"`) : EAC = Engagement Activity, SAC = Strategic Activity,
+  EAP = Engagement Approach, SAP = Strategic Approach.
 - Jointure activité ↔ approche à partir de la table de correspondance
   canonique `approach_activity_mappings.json` (pas des copies dénormalisées
   embarquées dans `activity_details.json`/`approach_details.json`).
@@ -683,8 +687,11 @@ sont conservés comme deux notions distinctes, jamais conflées.
 
 #### Sorties
 
-- `data/deception/staging/engage_activity_seed_1.0.json` — **31 activités**
-  (**23 EAC** / **8 SAC**) et **9 approches** ;
+- `data/deception/staging/engage_activity_seed_1.0.json` — **31 activités** :
+  **23 Engagement Activities (EAC)** et **8 Strategic Activities (SAC)**
+  (jamais « Support Activities » — non supporté par les données officielles,
+  `activity_details[id]["type"] == "Strategic"`), et **9 approches**
+  (**Engagement Approaches, EAP** / **Strategic Approaches, SAP**) ;
 - `data/deception/staging/engage_attack_mapping_seed_1.0.json` — **793
   bindings bruts**, **792 relations documentaires uniques** après
   déduplication exacte (1 doublon exact retiré), **596 couples
@@ -740,8 +747,10 @@ différente (comportement explicite de la clé), ordre déterministe,
 provenance SHA-256, `source_revision` conservé, CLI de bout en bout
 (staging + rapport + fusion de manifest), même entrée → même sortie,
 absence de toute logique spécifique au cas de référence PFE (T1003/T1078/
-etc., vérifiée par inspection statique du module). **33 tests** ajoutés,
-**228 tests** au total au moment de la validation. CI verte.
+etc., vérifiée par inspection statique du module), et régression
+terminologique SAC/SAP (`activity_family`/`approach_family` cohérents avec
+`type == "Strategic"`). **35 tests** dans ce fichier, **230 tests** au
+total au moment de la validation. CI verte.
 
 #### Traçabilité
 
@@ -760,6 +769,13 @@ etc., vérifiée par inspection statique du module). **33 tests** ajoutés,
 - Le champ optionnel `git_blob_sha` de `build_manifest_entry` n'est pas
   peuplé automatiquement par la CLI (aucun argument dédié demandé) —
   documenté dans `tools/deception_kb/README.md`.
+- Commit de validation initiale (extraction du staging) :
+  `233351cb5bc168e571371babca9bfbf7c3c6683e`.
+- Commit de correctif (alignement de la nomenclature SAC/SAP sur
+  « Strategic », conformément à `activity_details[id]["type"]`/
+  `approach_details[id]["type"]`) : *à renseigner lors de la prochaine mise
+  à jour naturelle de ce README*, pour éviter une boucle de commits
+  d'auto-référencement.
 
 #### Limites actuelles
 
