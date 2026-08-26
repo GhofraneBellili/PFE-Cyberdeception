@@ -11,6 +11,16 @@ Le contrat scientifique et architectural complet du projet est
 qu'il synthétise). Ce README n'en est pas une copie : il en documente la
 **traduction logicielle réellement construite**.
 
+Depuis la branche `implementation/chapter4`, un dossier
+`docs/chapter4/` complète ce README pour la rédaction du chapitre 4 du
+mémoire : `docs/chapter4/IMPLEMENTATION_REPORT.md` (matière technique
+détaillée par module, avec matrice de correspondance chapitre 3 →
+implémentation), `docs/chapter4/TECHNOLOGIES.md` (technologies
+réellement utilisées) et `docs/chapter4/SCREENSHOT_MANIFEST.md`
+(captures prévues pour le chapitre 4, avec leur statut réel). Ce README
+reste le journal cumulatif complet ; `docs/chapter4/` n'en est pas un
+doublon mais une matière de rédaction ciblée.
+
 ## 1. Objectif du projet
 
 Le système vise à déterminer quelle technique de cyberdéception déployer,

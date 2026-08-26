@@ -1,0 +1,82 @@
+pfe-cyberdeception/
+|-- CLAUDE.md
+|-- README.md
+|-- data/
+|   |-- attack/
+|   |   +-- README.md
+|   +-- deception/
+|       |-- README.md
+|       |-- literature/
+|       |   |-- evidence_candidates.json
+|       |   |-- literature_sources.json
+|       |   +-- search_protocol.md
+|       |-- raw/
+|       |   |-- d3fend/
+|       |   |   +-- 1.5.0/
+|       |   |       +-- (2 fichiers officiels bruts, non versionnes)
+|       |   |-- engage/
+|       |   |   +-- 1.0/
+|       |   |       +-- (10 fichiers officiels bruts, non versionnes)
+|       |   +-- literature/
+|       |       +-- (26 fichiers officiels bruts, non versionnes)
+|       |-- source_manifest.json
+|       +-- staging/
+|           |-- d3fend_attack_mapping_seed_1.5.0.json
+|           |-- d3fend_deception_seed_1.5.0.json
+|           |-- d3fend_seed_report_1.5.0.json
+|           |-- engage_activity_seed_1.0.json
+|           |-- engage_attack_mapping_seed_1.0.json
+|           |-- engage_seed_report_1.0.json
+|           |-- literature_document_seed_1.2.json
+|           |-- literature_evidence_seed_1.2.json
+|           +-- literature_seed_report_1.2.json
+|-- docs/
+|   |-- Présentation de la méthodologie corrigée.pdf
+|   |-- architecture_complete_cyberdeception_PFE.pdf
+|   +-- chapter4/
+|       |-- outputs/
+|       |   +-- architecture_tree.txt
+|       +-- screenshots/
+|           |-- 01_architecture/
+|           |-- 02_knowledge/
+|           |-- 03_sp1/
+|           |-- 04_rag/
+|           |-- 05_llm/
+|           |-- 06_sp2/
+|           |-- 07_risk/
+|           |-- 08_optimization/
+|           +-- 09_pipeline/
+|-- pyproject.toml
+|-- src/
+|   |-- __init__.py
+|   |-- admissibility.py
+|   |-- annotation_validator.py
+|   |-- annotator_llm.py
+|   |-- cost_engine.py
+|   |-- graph_builder.py
+|   |-- knowledge_attack.py
+|   |-- knowledge_deception.py
+|   |-- optimizer.py
+|   |-- rag_indexer.py
+|   |-- rag_retriever.py
+|   |-- reporter.py
+|   |-- risk_engine.py
+|   +-- schemas.py
+|-- tests/
+|   |-- test_d3fend_seed_builder.py
+|   |-- test_engage_seed_builder.py
+|   |-- test_graph_builder.py
+|   |-- test_knowledge_attack.py
+|   |-- test_knowledge_deception.py
+|   |-- test_literature_seed_builder.py
+|   |-- test_normalization_builder.py
+|   +-- test_schemas.py
++-- tools/
+    |-- __init__.py
+    +-- deception_kb/
+        |-- README.md
+        |-- __init__.py
+        |-- d3fend_seed_builder.py
+        |-- engage_seed_builder.py
+        |-- literature_seed_builder.py
+        +-- normalization_builder.py
