@@ -35,7 +35,7 @@ déclaration d'intention) :
 | `src/graph_builder.py` | 201 | **IMPLEMENTE** |
 | `src/knowledge_attack.py` | 385 | **IMPLEMENTE** |
 | `src/knowledge_deception.py` | 239 | **IMPLEMENTE** |
-| `src/admissibility.py` | 8 (stub) | NON IMPLEMENTE |
+| `src/admissibility.py` | ~250 | **IMPLEMENTE** (SP1, périmètre petite instance) |
 | `src/rag_indexer.py` | 7 (stub) | NON IMPLEMENTE |
 | `src/rag_retriever.py` | 7 (stub) | NON IMPLEMENTE |
 | `src/annotator_llm.py` | 8 (stub) | NON IMPLEMENTE |
@@ -55,7 +55,7 @@ section 3.
 Knowledge layer (schemas, graph_builder, knowledge_attack,
 knowledge_deception + tools/deception_kb/*)
   ↓
-SP1 (admissibility.py)               ← NON IMPLEMENTE
+SP1 (admissibility.py)               ← IMPLEMENTE (petite instance)
   ↓
 RAG (rag_indexer.py / rag_retriever.py)   ← NON IMPLEMENTE
   ↓
@@ -213,11 +213,102 @@ il n'a jamais encore chargé un vrai catalogue, faute de
 
 ## 4. Implémentation de SP1
 
-**Status : NON IMPLEMENTE.**
+**Status : IMPLEMENTE (périmètre « petite instance », voir Limites).**
 
-`src/admissibility.py` est un stub de 8 lignes (docstring de
-traçabilité uniquement). Aucune fonction, aucune classe. Prochain module
-dans l'ordre d'implémentation imposé.
+### Objectif
+
+Déterminer, pour chaque occurrence non terminale du graphe d'attaque,
+l'ensemble des couples (mécanisme, emplacement) admissibles `C_i_h`, à
+partir de `D_i` (mapping M_{i,d} fourni), `Allowed`, `PrerequisSatisfaits`
+et `Pertinent`.
+
+### Correspondance avec le chapitre 3
+
+`D_i` (§10.2), `L_i_h_d` (§10.4), `C_i_h` (§10.5) — notation verrouillée
+(section 0 de ce document) : `Autorise`, `PrerequisSatisfaits`,
+`Pertinent`.
+
+### Fichiers concernés
+
+`src/admissibility.py`, `tests/test_admissibility.py`,
+`examples/sp1_example.py`.
+
+### Classes / fonctions principales
+
+`evaluate_allowed`, `evaluate_requirements_satisfied`, `evaluate_relevant`,
+`build_admissibility_report`.
+
+### Entrées
+
+Une `SystemInstance` déjà validée (graphe + inventaire SI), un catalogue
+`dict[str, DeceptionMechanism]`, un mapping M_{i,d}
+`dict[str, list[str]]` (technique_id → identifiants de mécanismes
+applicables, **fourni par l'appelant** — sa construction depuis
+D3FEND/Engage/littérature reste une OPEN_DECISION non résolue, réf.
+`tools/deception_kb/README.md`), et les seuils `theta_c`/`theta_i`/
+`theta_a` (§6, jamais par défaut).
+
+### Traitement
+
+Pour chaque occurrence : si Terminal (§6), aucun candidat n'est généré
+(`C_i_h = ∅` par construction). Sinon, pour chaque mécanisme du
+catalogue × chaque emplacement du SI, un diagnostic complet est produit :
+`mapping` (d ∈ D_i ?), puis si `mapping="pass"`, `Autorise`,
+`PrerequisSatisfaits`, `Pertinent` (chacun `pass`/`fail`/`undetermined`).
+**OPEN_DECISION 4 appliquée en politique prudente** : lorsque les listes
+pertinentes de `DeceptionAdmissibilityProfile` sont toutes vides, le
+critère est `undetermined` et le candidat est exclu de `C_i_h` (jamais
+d'admission devinée).
+
+### Sorties
+
+Un rapport structuré : par occurrence, `is_terminal`, `D_i`, la liste
+complète des diagnostics `candidates`, et `C_i_h` ; plus un résumé
+(`occurrence_count`, `candidate_count`, `admissible_count`,
+`rejected_count`).
+
+### Technologie utilisée
+
+Python pur (pas de dépendance supplémentaire).
+
+### Commande réelle d'exécution
+
+```bash
+python -m examples.sp1_example
+```
+
+### Tests
+
+`tests/test_admissibility.py` — 21 tests : `Allowed`/
+`PrerequisSatisfaits`/`Pertinent` chacun en pass/fail/undetermined,
+mapping absent (rejet sans évaluation), occurrence Terminal (aucun
+candidat), déterminisme, cohérence des compteurs de synthèse, contenu de
+`rejection_reason`. Tous verts.
+
+### Exemple réel disponible
+
+`docs/chapter4/outputs/sp1_candidates.json` (rapport complet) et
+`docs/chapter4/outputs/sp1_example.txt` (résumé), générés par
+`examples/sp1_example.py` sur une petite instance explicite (T1078 sur un
+contrôleur de domaine DC01, deux mécanismes candidats D3-DUC/D3-DF, deux
+emplacements) : 4 candidats bruts, 1 admissible.
+
+### Capture associée
+
+CAPTURE 3 — voir `SCREENSHOT_MANIFEST.md` (`READY_FOR_SCREENSHOT`).
+
+### Limites
+
+- `Pertinent` est simplifié à une relation topologique **directe** (même
+  actif, ou arête `SITopologyEdge` à un saut) — pas une analyse complète
+  des voisins du graphe d'attaque ni des chemins vers les nœuds
+  terminaux (§10.4 le permet en principe, mais ce niveau de détail est
+  hors périmètre d'une première « petite instance », pour éviter la
+  sur-ingénierie).
+- M_{i,d} est un paramètre d'entrée, pas construit par ce module.
+- Aucun catalogue réel n'existe encore (section 3) : les tests et
+  l'exemple utilisent des mécanismes synthétiques mais structurellement
+  valides (mêmes champs qu'un `DeceptionMechanism` réel issu de D3FEND).
 
 ---
 
@@ -327,9 +418,9 @@ lorsque `src/annotator_llm.py` sera implémenté.
 | Attributs de nœud | `src/schemas.py` | `NodeAttributes` | `test_schemas.py` | — | — | IMPLEMENTE |
 | KB ATT&CK | `src/knowledge_attack.py` | `load_attack_knowledge` | `test_knowledge_attack.py` | — | — | IMPLEMENTE |
 | Catalogue `D` (chargeur) | `src/knowledge_deception.py` | `load_deception_catalog` | `test_knowledge_deception.py` | — | — | IMPLEMENTE (chargeur) ; catalogue réel absent |
-| `D_i` | `src/admissibility.py` | — | — | — | C3 | NON IMPLEMENTE |
-| `L_{i,h,d}` | `src/admissibility.py` | — | — | — | C3 | NON IMPLEMENTE |
-| `C_{i,h}` | `src/admissibility.py` | — | — | — | C3 | NON IMPLEMENTE |
+| `D_i` | `src/admissibility.py` | `build_admissibility_report` | `test_admissibility.py` | `sp1_candidates.json` | C3 | IMPLEMENTE |
+| `L_{i,h,d}` | `src/admissibility.py` | `evaluate_allowed`/`evaluate_requirements_satisfied`/`evaluate_relevant` | `test_admissibility.py` | `sp1_candidates.json` | C3 | IMPLEMENTE |
+| `C_{i,h}` | `src/admissibility.py` | `build_admissibility_report` | `test_admissibility.py` | `sp1_candidates.json` | C3 | IMPLEMENTE |
 | 11 sous-métriques | `src/annotator_llm.py` | — | — | — | C6 | NON IMPLEMENTE |
 | `Realisme` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
 | `P_interaction` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |

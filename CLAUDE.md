@@ -2218,7 +2218,7 @@ INTERDIT
 - [x] `graph_builder.py`
 - [x] `knowledge_attack.py`
 - [x] `knowledge_deception.py`
-- [ ] `admissibility.py`
+- [x] `admissibility.py`
 - [ ] `rag_indexer.py`
 - [ ] `rag_retriever.py`
 - [ ] `annotator_llm.py`

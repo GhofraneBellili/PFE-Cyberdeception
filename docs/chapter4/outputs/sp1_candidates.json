@@ -1,0 +1,72 @@
+{
+  "schema": "sp1_admissibility_report",
+  "schema_version": "1.0",
+  "occurrences": {
+    "T1078@DC01": {
+      "is_terminal": false,
+      "D_i": [
+        "D3-DF",
+        "D3-DUC"
+      ],
+      "candidates": [
+        {
+          "occurrence_id": "T1078@DC01",
+          "mechanism_id": "D3-DF",
+          "location_id": "auth-store",
+          "mapping": "pass",
+          "Autorise": "fail",
+          "PrerequisSatisfaits": "undetermined",
+          "Pertinent": "pass",
+          "admissible": false,
+          "rejection_reason": "Autorise=fail, PrerequisSatisfaits=undetermined"
+        },
+        {
+          "occurrence_id": "T1078@DC01",
+          "mechanism_id": "D3-DF",
+          "location_id": "/tmp",
+          "mapping": "pass",
+          "Autorise": "pass",
+          "PrerequisSatisfaits": "undetermined",
+          "Pertinent": "pass",
+          "admissible": false,
+          "rejection_reason": "PrerequisSatisfaits=undetermined"
+        },
+        {
+          "occurrence_id": "T1078@DC01",
+          "mechanism_id": "D3-DUC",
+          "location_id": "auth-store",
+          "mapping": "pass",
+          "Autorise": "pass",
+          "PrerequisSatisfaits": "pass",
+          "Pertinent": "pass",
+          "admissible": true,
+          "rejection_reason": null
+        },
+        {
+          "occurrence_id": "T1078@DC01",
+          "mechanism_id": "D3-DUC",
+          "location_id": "/tmp",
+          "mapping": "pass",
+          "Autorise": "fail",
+          "PrerequisSatisfaits": "fail",
+          "Pertinent": "pass",
+          "admissible": false,
+          "rejection_reason": "Autorise=fail, PrerequisSatisfaits=fail"
+        }
+      ],
+      "C_i_h": [
+        {
+          "mechanism_id": "D3-DUC",
+          "location_id": "auth-store"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "occurrence_count": 1,
+    "terminal_occurrence_count": 0,
+    "candidate_count": 4,
+    "admissible_count": 1,
+    "rejected_count": 3
+  }
+}

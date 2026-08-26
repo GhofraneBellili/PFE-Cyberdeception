@@ -35,12 +35,12 @@ Raison du blocage: data/deception/deception_catalog.json n'existe pas encore —
 ## Capture C3 — Résultat réel de SP1
 
 ```
-Status: NOT_IMPLEMENTED
-Module: src/admissibility.py (stub, non implémenté)
-Fichier de sortie: (absent)
-Commande: (absente)
-Capture: (absente)
-Ce qui doit être visible (une fois implémenté): Occurrence ; Mecanisme ; Emplacement ; Decision (admissible/rejeté), avec Autorise/PrerequisSatisfaits/Pertinent.
+Status: READY_FOR_SCREENSHOT
+Module: src/admissibility.py
+Fichier de sortie: docs/chapter4/outputs/sp1_example.txt (résumé) + docs/chapter4/outputs/sp1_candidates.json (complet)
+Commande: python -m examples.sp1_example
+Capture: docs/chapter4/screenshots/03_sp1/sp1_result.png (à produire manuellement depuis sp1_example.txt)
+Ce qui doit être visible: Occurrence ; Mecanisme ; Emplacement ; Decision (ADMISSIBLE/REJETE avec raison Autorise/PrerequisSatisfaits/Pertinent) ; compteurs Candidats bruts/Admissibles/Rejetes.
 Rôle dans le chapitre 4: Section 4.4 — Implémentation de SP1.
 ```
 

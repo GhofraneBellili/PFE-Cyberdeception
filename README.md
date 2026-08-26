@@ -1088,6 +1088,65 @@ phase) devra décider comment les preuves D3FEND, Engage et littérature
 convergent vers le catalogue fermé `data/deception/deception_catalog.json`
 (OPEN_DECISION 1, 2, 3, 6 ci-dessous).
 
+---
+
+### Étape 8 — Implémentation de SP1 (`src/admissibility.py`)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Construire l'espace admissible `C_i_h` pour chaque occurrence non
+terminale d'une instance de système d'information, à partir d'un mapping
+M_{i,d} déjà fourni et des règles déterministes `Allowed`,
+`RequirementsSatisfied`, `Relevant` (notation verrouillée du chapitre 4 :
+`Autorise`, `PrerequisSatisfaits`, `Pertinent`).
+
+#### Traitement réalisé
+
+Pour chaque occurrence non Terminal : diagnostic complet par couple
+(mécanisme du catalogue × emplacement du SI), avec court-circuit explicite
+si le mécanisme n'appartient pas à `D_i` (`mapping="fail"` →
+`not_evaluated` pour les trois critères). `Relevant` est simplifié à une
+relation topologique directe (même actif, ou arête `SITopologyEdge` à un
+saut) — limite documentée, pas une omission silencieuse. Politique
+prudente pour l'OPEN_DECISION 4 (listes vides de
+`DeceptionAdmissibilityProfile`) : un critère dont les listes pertinentes
+sont toutes vides est `undetermined`, jamais admis par défaut.
+
+#### Sorties
+
+`docs/chapter4/outputs/sp1_candidates.json` / `sp1_example.txt`, générés
+par `python -m examples.sp1_example` sur une petite instance explicite :
+4 candidats bruts, 1 admissible.
+
+#### Fichiers concernés
+
+`src/admissibility.py`, `tests/test_admissibility.py`,
+`examples/sp1_example.py`.
+
+#### Tests et validation
+
+`tests/test_admissibility.py` — 21 tests (pass/fail/undetermined pour
+chacun des trois critères, occurrence Terminal sans candidat, mapping
+absent, déterminisme, cohérence des compteurs). **368 tests** au total au
+moment de la validation. Détail complet (correspondance chapitre 3,
+limites, invariant LLM hors chemin d'exécution) :
+`docs/chapter4/IMPLEMENTATION_REPORT.md`, section 4.
+
+#### Limites actuelles
+
+`Pertinent` ne couvre pas encore les chemins complets vers les nœuds
+terminaux ni les voisins du graphe d'attaque (relation topologique directe
+uniquement). M_{i,d} reste un paramètre d'entrée, pas construit par SP1
+lui-même (OPEN_DECISION 5).
+
+#### Lien avec l'étape suivante
+
+SP3 (moteur de risque déterministe, `src/risk_engine.py`), avec pour
+critère de correction le test de régression `test_reference_example` sur
+l'exemple numérique de référence du chapitre 3.
+
 ## OPEN_DECISION en cours
 
 Ces points sont volontairement non résolus et ne doivent pas l'être
