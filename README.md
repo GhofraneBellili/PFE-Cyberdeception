@@ -1456,6 +1456,74 @@ SP1 → contexte → annotation (reste au futur orchestrateur).
 Gel de la table d'annotations (« freeze », `src/annotation_validator.py`),
 puis orchestrateur du pipeline complet.
 
+---
+
+### Étape 14 — Validation, agrégation SP2 et gel des annotations (`src/annotation_validator.py`)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Valider la complétude des 11 annotations d'un candidat, calculer PAR
+CODE `Realisme`, `P_interaction`, `P_engagement`, `Effet_prog`, `DE`
+(§12.3-§12.7, jamais par le LLM, §11.5), et geler le résultat dans une
+table versionnée réutilisable par l'optimisation sans jamais rappeler le
+LLM (§13) : `LLM+RAG -> Annotation -> Validation -> Table figée ->
+Optimisation`.
+
+#### Traitement réalisé
+
+`validate_candidate_annotations` vérifie exactement les 11
+sous-métriques, sans doublon, `model_version`/`prompt_version`
+cohérents. Agrégations par moyenne simple (poids égaux par défaut,
+pondération explicite acceptée si elle somme à 1) :
+`Realisme = moyenne(R_tech, R_context, R_perception, R_behavior)`,
+`P_interaction = moyenne(A_object, A_action, A_source)`,
+`Effet_prog = moyenne(S_stop, S_redirect, S_contain, S_delay)`,
+`P_engagement = Realisme × P_interaction`, `DE = P_engagement ×
+Effet_prog`. `freeze_table` produit une `FrozenAnnotationTable` immuable
+et versionnée, dont `de_by_candidate()` produit directement le
+`dict[(occurrence_id, mechanism_id, location_id), float]` attendu par
+`src.optimizer.build_candidates_from_admissibility` — le pont concret
+entre SP2 gelé et `(P)`.
+
+#### Sorties
+
+`docs/chapter4/outputs/frozen_annotations_example.csv`, généré par
+`python -m examples.freeze_example` : chaîne réelle complète SP1 → RAG →
+annotation (repli `rule_based_stub`) → validation/agrégation/gel pour le
+candidat `(T1078@DC01, D3-DUC, auth-store)` — `Realisme=0.333`,
+`P_interaction=0.333`, `P_engagement=0.111`, `Effet_prog=0.333`,
+`DE=0.037`.
+
+#### Fichiers concernés
+
+`src/annotation_validator.py`, `tests/test_annotation_validator.py`,
+`examples/freeze_example.py`.
+
+#### Tests et validation
+
+`tests/test_annotation_validator.py` — 21 tests (complétude, formules
+d'agrégation à poids égaux et personnalisés, chaîne
+`P_engagement`/`DE` cohérente avec l'ordre de grandeur de l'ancre de
+référence §20.4, gel d'un candidat et d'une table multi-candidats,
+identifiant déterministe, doublon rejeté, `de_by_candidate()` conforme au
+format de l'optimiseur, table immuable, invariant d'importation).
+**495 tests** au total au moment de la validation. Détail complet :
+`docs/chapter4/IMPLEMENTATION_REPORT.md`, section 7.
+
+#### Limites actuelles
+
+Les scores bruts agrégés proviennent du repli déterministe
+`rule_based_stub` (étape 13) — identiques entre les 11 sous-métriques,
+pas une distinction sémantique réelle. Les formules d'agrégation
+elles-mêmes sont réelles et indépendantes de la source des scores.
+
+#### Lien avec l'étape suivante
+
+Orchestrateur du pipeline complet (`runs/<run_id>/...`), dernier module
+de l'ordre imposé.
+
 ## OPEN_DECISION en cours
 
 Ces points sont volontairement non résolus et ne doivent pas l'être

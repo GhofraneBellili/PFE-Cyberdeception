@@ -41,7 +41,7 @@ déclaration d'intention) :
 | `src/rag_indexer.py` | ~250 | **IMPLEMENTE** (chunks tracés + vecteurs TF-IDF hachés) |
 | `src/rag_retriever.py` | ~70 | **IMPLEMENTE** (similarité cosinus, top-k) |
 | `src/annotator_llm.py` | ~215 | **IMPLEMENTE** (11 sous-métriques, repli déterministe `rule_based_stub`, cache) |
-| `src/annotation_validator.py` | 8 (stub) | NON IMPLEMENTE |
+| `src/annotation_validator.py` | ~225 | **IMPLEMENTE** (validation, agrégats §12.3-§12.7, gel §13) |
 | `src/risk_engine.py` | ~150 | **IMPLEMENTE** (SP3, `test_reference_example` vert) |
 | `src/cost_engine.py` | ~140 | **IMPLEMENTE** (Cost(d;H)) |
 | `src/optimizer.py` | ~270 | **IMPLEMENTE** (unicité, budget, Pareto, `test_reference_example`-style validation exhaustive) |
@@ -63,11 +63,11 @@ RAG (rag_indexer.py / rag_retriever.py)   ← IMPLEMENTE (chunks reels D3FEND/En
   ↓
 LLM structured annotation (annotator_llm.py)  ← IMPLEMENTE (repli deterministe rule_based_stub, cache)
   ↓
-validation (annotation_validator.py)  ← NON IMPLEMENTE (bornage deja assure par Pydantic/Annotation)
+validation (annotation_validator.py)  ← IMPLEMENTE (completude des 11 sous-metriques)
   ↓
-deterministic SP2 aggregation         ← NON IMPLEMENTE
+deterministic SP2 aggregation         ← IMPLEMENTE (Realisme/P_interaction/P_engagement/Effet_prog/DE)
   ↓
-frozen annotations                    ← NON IMPLEMENTE
+frozen annotations                    ← IMPLEMENTE (FrozenAnnotationTable, versionnee, immuable)
   ↓
 Cost (cost_engine.py)                ← IMPLEMENTE (Cost(d;H))
 SP3 (risk_engine.py)                 ← IMPLEMENTE (test_reference_example vert)
@@ -552,10 +552,103 @@ CAPTURE 6 — voir `SCREENSHOT_MANIFEST.md` (`READY_FOR_SCREENSHOT`).
 
 ## 7. Calcul déterministe de SP2
 
-**Status : NON IMPLEMENTE.**
+**Status : IMPLEMENTE (avec le repli déterministe `rule_based_stub` de
+la section 6 — voir Limites).**
 
-Aucun module ne calcule encore `Realisme`, `P_interaction`,
-`P_engagement`, `Effet_prog`, `DE` à partir d'annotations réelles.
+### Objectif
+
+Calculer PAR CODE — jamais par le LLM (§11.5) — `Realisme`,
+`P_interaction`, `P_engagement`, `Effet_prog`, `DE` à partir des 11
+`Annotation` brutes validées d'un candidat, puis geler le résultat.
+
+### Correspondance avec le chapitre 3
+
+CLAUDE.md §12.3 (`Realisme`), §12.4 (`P_interaction`), §12.5
+(`P_engagement`), §12.6 (`Effet_prog`), §12.7 (`DE`) ; §13 (validation et
+gel).
+
+### Fichiers concernés
+
+`src/annotation_validator.py`, `tests/test_annotation_validator.py`,
+`examples/freeze_example.py`.
+
+### Classes / fonctions principales
+
+`validate_candidate_annotations`, `compute_realisme`,
+`compute_p_interaction`, `compute_effet_prog`, `compute_p_engagement`,
+`compute_de`, `freeze_candidate`, `freeze_table`, `FrozenAnnotation`,
+`FrozenAnnotationTable` (avec `de_by_candidate()`, pont direct vers
+`src.optimizer.build_candidates_from_admissibility`).
+
+### Entrées
+
+Les 11 `Annotation` brutes d'un candidat `(occurrence_id, mechanism_id,
+location_id)` (produites par `src/annotator_llm.py`).
+
+### Traitement
+
+Validation de complétude (exactement 11 sous-métriques, sans doublon,
+`model_version`/`prompt_version` cohérents) — le bornage `[0,1]` et les
+champs obligatoires sont déjà garantis par `Annotation` (Pydantic).
+Agrégations par moyenne simple (poids égaux par défaut, §12.3/§12.4/§12.6,
+pondération explicite acceptée en option si elle somme à 1) :
+`Realisme = moyenne(R_tech, R_context, R_perception, R_behavior)`,
+`P_interaction = moyenne(A_object, A_action, A_source)`,
+`Effet_prog = moyenne(S_stop, S_redirect, S_contain, S_delay)`,
+`P_engagement = Realisme × P_interaction`, `DE = P_engagement ×
+Effet_prog`. Gel dans une `FrozenAnnotationTable` immuable et versionnée
+(`annotation_set_version`, `frozen_at`), rejetant tout candidat en
+double.
+
+### Sorties
+
+`FrozenAnnotation` par candidat (11 scores bruts + 5 agrégats + preuves +
+confiance) ; `FrozenAnnotationTable.de_by_candidate()` ->
+`dict[(occurrence_id, mechanism_id, location_id), float]`, directement
+consommable par `src/optimizer.py`.
+
+### Technologie utilisée
+
+Python pur.
+
+### Commande réelle d'exécution
+
+```bash
+python -m examples.freeze_example
+```
+
+### Tests
+
+`tests/test_annotation_validator.py` — 21 tests : complétude (métrique
+manquante/dupliquée/`model_version` incohérent rejetés), formules
+d'agrégation (poids égaux par défaut, poids personnalisés validés),
+chaîne complète `P_engagement`/`DE` reproduisant l'ordre de grandeur de
+l'ancre de référence (§20.4 : `P_engage=0.70`, `Effectiveness_prog=0.60`
+→ `DE=0.42`), gel d'un candidat et d'une table multi-candidats,
+identifiant déterministe, doublon rejeté, `de_by_candidate()` conforme au
+format attendu par l'optimiseur, table immuable, invariant
+d'importation. Tous verts.
+
+### Exemple réel disponible
+
+`docs/chapter4/outputs/frozen_annotations_example.csv` — chaîne réelle
+complète SP1 → RAG → annotation (stub) → validation/agrégation/gel pour
+le candidat `(T1078@DC01, D3-DUC, auth-store)`, générée par
+`examples/freeze_example.py`.
+
+### Capture associée
+
+CAPTURE 7 — voir `SCREENSHOT_MANIFEST.md` (`READY_FOR_SCREENSHOT`).
+
+### Limites
+
+Les valeurs `Realisme`/`P_interaction`/`P_engagement`/`Effet_prog`/`DE`
+de l'exemple réel dépendent des scores bruts du repli déterministe
+`rule_based_stub` (section 6) — donc identiques entre les 11
+sous-métriques, pas une distinction sémantique réelle. Les FORMULES
+d'agrégation elles-mêmes sont réelles et indépendantes de la source des
+scores bruts (elles fonctionneraient identiquement avec de vraies
+annotations LLM).
 
 ---
 
@@ -877,10 +970,12 @@ vérifient, par analyse de l'arbre syntaxique (`ast`, pas une recherche de
 sous-chaîne), que `src/risk_engine.py` et `src/optimizer.py` n'importent
 jamais `src/annotator_llm.py`, `src/rag_indexer.py` ni
 `src/rag_retriever.py` — **les deux tests sont verts**. Symétriquement,
-`tests/test_annotator_llm.py::TestNeverComputesAggregates` vérifie que
-`src/annotator_llm.py` n'importe jamais `src/risk_engine.py` ni
-`src/optimizer.py` — **également vert**. Le volet reste à ajouter pour un
-futur `reporter.py`/orchestrateur dès qu'ils existeront.
+`tests/test_annotator_llm.py::TestNeverComputesAggregates` et
+`tests/test_annotation_validator.py::TestLlmOutOfExecutionPath` vérifient
+que `src/annotator_llm.py` et `src/annotation_validator.py` n'importent
+jamais `src/risk_engine.py` ni `src/optimizer.py` — **les deux sont
+verts**. Le volet reste à ajouter pour un futur `reporter.py`/
+orchestrateur dès qu'ils existeront.
 
 ### Déterminisme du LLM
 
@@ -924,11 +1019,11 @@ température fixe (0) pour préserver cette reproductibilité.
 | `L_{i,h,d}` | `src/admissibility.py` | `evaluate_allowed`/`evaluate_requirements_satisfied`/`evaluate_relevant` | `test_admissibility.py` | `sp1_candidates.json` | C3 | IMPLEMENTE |
 | `C_{i,h}` | `src/admissibility.py` | `build_admissibility_report` | `test_admissibility.py` | `sp1_candidates.json` | C3 | IMPLEMENTE |
 | 11 sous-métriques | `src/annotator_llm.py` | `RuleBasedStubAnnotator.annotate` | `test_annotator_llm.py` | `llm_annotation_example.json` | C6 | IMPLEMENTE (repli `rule_based_stub`, pas une annotation sémantique réelle) |
-| `Realisme` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
-| `P_interaction` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
-| `P_engagement` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
-| `Effet_prog` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
-| `DE` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
+| `Realisme` | `src/annotation_validator.py` | `compute_realisme` | `test_annotation_validator.py` | `frozen_annotations_example.csv` | C7 | IMPLEMENTE |
+| `P_interaction` | `src/annotation_validator.py` | `compute_p_interaction` | `test_annotation_validator.py` | `frozen_annotations_example.csv` | C7 | IMPLEMENTE |
+| `P_engagement` | `src/annotation_validator.py` | `compute_p_engagement` | `test_annotation_validator.py` | `frozen_annotations_example.csv` | C7 | IMPLEMENTE |
+| `Effet_prog` | `src/annotation_validator.py` | `compute_effet_prog` | `test_annotation_validator.py` | `frozen_annotations_example.csv` | C7 | IMPLEMENTE |
+| `DE` | `src/annotation_validator.py` | `compute_de` | `test_annotation_validator.py` | `frozen_annotations_example.csv` | C7 | IMPLEMENTE |
 | `Cout(d;H)` | `src/cost_engine.py` | `compute_cost_by_mechanism` | `test_cost_engine.py` | `cost_example.txt` | — | IMPLEMENTE |
 | `Gamma`, `A`, `P`, `R` | `src/risk_engine.py` | `propagate_risk` | `test_reference_example` | `risk_example.csv` | C8 | IMPLEMENTE |
 | unicité + budget | `src/optimizer.py` | `enumerate_configurations` / `filter_by_budget` | `test_optimizer.py` | `optimizer_example.txt` | (chapitre 5) | IMPLEMENTE |

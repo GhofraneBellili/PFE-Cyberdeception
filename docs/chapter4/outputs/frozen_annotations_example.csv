@@ -1,0 +1,2 @@
+annotation_id,occurrence_id,mechanism_id,location_id,model,prompt_version,R_tech,R_context,R_perception,R_behavior,A_object,A_action,A_source,S_stop,S_redirect,S_contain,S_delay,Realisme,P_interaction,P_engagement,Effet_prog,DE,confidence,evidence_ids,annotation_set_version
+frozen:de07bbe3b3fe79c8,T1078@DC01,D3-DUC,auth-store,rule_based_stub,rule_based_stub-v1,0.3333,0.3333,0.3333,0.3333,0.3333,0.3333,0.3333,0.3333,0.3333,0.3333,0.3333,0.3333,0.3333,0.1111,0.3333,0.0370,1.0000,d3fend:D3-DUC:0;d3fend:D3-DUC:1;d3fend:D3-DUC:3,chapter4-example-v1

@@ -2222,7 +2222,7 @@ INTERDIT
 - [x] `rag_indexer.py`
 - [x] `rag_retriever.py`
 - [x] `annotator_llm.py`
-- [ ] `annotation_validator.py`
+- [x] `annotation_validator.py`
 - [x] `risk_engine.py`
 - [x] `cost_engine.py`
 - [x] `optimizer.py`

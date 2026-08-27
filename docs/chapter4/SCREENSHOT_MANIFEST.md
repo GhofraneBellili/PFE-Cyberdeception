@@ -84,9 +84,14 @@ Avertissement: repli déterministe rule_based_stub (aucune API LLM réelle dispo
 ## Capture C7 — Table réelle des annotations figées / DE
 
 ```
-Status: NOT_IMPLEMENTED
-Module: src/annotation_validator.py (stub, non implémenté) ; calcul déterministe SP2 (non implémenté)
+Status: READY_FOR_SCREENSHOT
+Module: src/annotation_validator.py
+Fichier de sortie: docs/chapter4/outputs/frozen_annotations_example.csv
+Commande: python -m examples.freeze_example
+Capture: docs/chapter4/screenshots/06_sp2/frozen_annotations.png (à produire manuellement depuis frozen_annotations_example.csv — limiter aux colonnes annotation_id/occurrence_id/mechanism_id/location_id/Realisme/P_interaction/P_engagement/Effet_prog/DE, pas les 11 sous-métriques brutes dans la capture)
+Ce qui doit être visible: une ligne figée réelle (T1078@DC01/D3-DUC/auth-store) avec Realisme, P_interaction, P_engagement, Effet_prog, DE calculés par code (src/annotation_validator.py), model="rule_based_stub".
 Rôle dans le chapitre 4: Section 4.6 — Moteurs déterministes et optimisation.
+Avertissement: les scores bruts proviennent du repli déterministe rule_based_stub (section LLM) — les FORMULES d'agrégation sont réelles, pas les scores sémantiques sous-jacents.
 ```
 
 ## Capture C8 — Sortie simple du moteur SP3
