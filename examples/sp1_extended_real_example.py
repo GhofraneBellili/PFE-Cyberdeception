@@ -1,10 +1,13 @@
 """
 Réf. architecture : CLAUDE.md §10 (SP1) — réf. tâche « enrichir l'instance
-technique SP1 » (Phase 11) : instance PIPELINE-ILLUSTRATION plus riche que
-`examples/sp1_real_example.py` (12 candidats bruts, 1 seul admissible),
-utilisant le catalogue et le mapping RÉELS ÉTENDUS (26 mécanismes, 591
-relations M_{i,d} — `tools/deception_kb/catalog_builder.py`,
-`tools/deception_kb/mapping_builder.py`).
+technique SP1 » puis réf. tâche « separate knowledge and organization
+capabilities » : instance runtime représentative de SP1, utilisant le
+catalogue de CONNAISSANCES réel étendu (51 mécanismes,
+`tools/deception_kb/catalog_builder.py`), le catalogue OPÉRATIONNEL d'une
+organisation d'exemple (42 mécanismes référencés, 30 activés —
+`examples/data/organization_deception_catalog.json`,
+`examples/build_organization_catalog_example.py`) et le mapping M_{i,d}
+réel (591 relations, `tools/deception_kb/mapping_builder.py`).
 
 **Scénario** : deux points d'entrée (T1566 hameçonnage sur un poste de
 travail WS01, T1190 exploitation d'une application web publique sur
@@ -16,21 +19,15 @@ de fichiers FS01 (T1083, T1039) et une base de données DB01 (T1005),
 avant de converger vers une exfiltration terminale (T1041 sur APP01,
 impact élevé). Chaque actif a un rôle cohérent avec ce scénario — aucun
 type d'actif n'a été ajouté seulement pour rendre un mécanisme
-admissible (réf. tâche §11, mise en garde explicite).
+admissible (réf. tâche §11/§13, mise en garde explicite).
 
-**Constat honnête (réf. tâche §11 : « si un seul candidat admissible,
-analyser la cause, ne pas relâcher SP1 »)** : `src/admissibility.py`
-retourne `PrerequisSatisfaits = "undetermined"` (jamais admissible) tant
-que `required_asset_types`/`required_services`/`required_artifacts` du
-mécanisme sont TOUS vides (politique prudente OPEN_DECISION 4). Après
-relecture ciblée des sources documentaires (réf.
-`docs/chapter4/CATALOG_AUDIT.md`, section 6bis), exactement **3
-mécanismes** sur 26 disposent d'un prérequis documenté :
-D3-DNR (déjà audité), EAC0009 et EAC0021 (infrastructure de messagerie).
-Ce n'est donc pas un manque de richesse d'instance qui limitait SP1 à 1
-seul candidat admissible, mais un manque de preuve documentaire de
-prérequis — cette instance le rend visible en couvrant délibérément les
-occurrences où ces 3 mécanismes interviennent réellement dans D_i.
+**SP1 est un module RUNTIME** (réf. tâche §6) : ce script appelle
+`build_admissibility_report` avec le graphe/SI courants, le catalogue de
+connaissances, le catalogue opérationnel de l'organisation et le mapping
+— rien n'est pré-calculé hors ligne. La réduction observée
+(`|D_knowledge|=51` -> `|D_org|=42` référencés/30 activés -> `|D_i|` par
+technique -> `|C_i_h|`) provient entièrement de cet appel runtime, jamais
+d'une réduction préalable du catalogue.
 
 Exécution :
     python -m examples.sp1_extended_real_example
@@ -45,8 +42,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from src.admissibility import build_admissibility_report
+from src.admissibility import build_admissibility_report, enabled_mechanism_ids
 from src.knowledge_deception import load_attack_deception_mapping, load_deception_catalog, to_sp1_mapping
+from src.organization_catalog import capabilities_by_id, load_organization_catalog, validate_against_knowledge_catalog
 from src.schemas import (
     Asset,
     AttackGraph,
@@ -61,6 +59,7 @@ from src.schemas import (
 
 CATALOG_PATH = Path("data/deception/deception_catalog.json")
 MAPPING_PATH = Path("data/deception/attack_deception_mapping.json")
+ORGANIZATION_CATALOG_PATH = Path("examples/data/organization_deception_catalog.json")
 OUT_DIR = Path("docs/chapter4/outputs")
 
 THETA = 0.85
@@ -155,10 +154,12 @@ def build_example_instance() -> SystemInstance:
     return SystemInstance(graph=graph, si_inventory=inventory)
 
 
-def render_text_summary(report: dict) -> str:
+def render_text_summary(report: dict, *, d_knowledge_size: int, d_org_referenced: int, d_org_enabled: int) -> str:
     lines = [
-        "SP1 etendu - instance riche (catalogue et mapping REELS, 26 mecanismes)",
-        "-" * 88,
+        "SP1 runtime - instance riche (catalogue de connaissances + catalogue organisationnel + mapping REELS)",
+        "-" * 96,
+        f"|D_knowledge| = {d_knowledge_size}   |D_org| (reference) = {d_org_referenced}   |D_org| (enabled) = {d_org_enabled}",
+        "-" * 96,
         f"{'Occurrence':<16}{'Mecanisme':<12}{'Emplacement':<24}{'Decision'}",
     ]
     admissible_mechanisms: set[str] = set()
@@ -167,31 +168,37 @@ def render_text_summary(report: dict) -> str:
         if occ["is_terminal"]:
             lines.append(f"{occurrence_id} : TERMINAL (C_i_h = vide par construction, §6)")
             continue
-        lines.append(f"D_i({occurrence_id}) = {occ['D_i']}")
+        lines.append(f"D_i({occurrence_id}) = {occ['D_i']}  (|D_i|={len(occ['D_i'])})")
         for candidate in occ["candidates"]:
             if not candidate["admissible"]:
                 continue
             admissible_mechanisms.add(candidate["mechanism_id"])
             admissible_occurrences.add(occurrence_id)
             lines.append(f"{occurrence_id:<16}{candidate['mechanism_id']:<12}{candidate['location_id']:<24}ADMISSIBLE")
-    lines.append("-" * 88)
+    lines.append("-" * 96)
     summary = report["summary"]
+    lines.append(f"|D_org| (enabled, rapporte par SP1) : {summary['d_org_size']}")
     lines.append(f"Occurrences (non terminales) : {summary['occurrence_count'] - summary['terminal_occurrence_count']}")
     lines.append(f"Occurrences terminales        : {summary['terminal_occurrence_count']}")
-    lines.append(f"Candidats bruts                : {summary['candidate_count']}")
+    lines.append(f"Candidats bruts (mecanisme x emplacement evalues) : {summary['candidate_count']}")
     lines.append(f"Admissibles                    : {summary['admissible_count']}")
     lines.append(f"Rejetes                        : {summary['rejected_count']}")
     lines.append(f"Occurrences couvertes par >=1 admissible : {len(admissible_occurrences)} ({sorted(admissible_occurrences)})")
     lines.append(f"Mecanismes admissibles distincts          : {len(admissible_mechanisms)} ({sorted(admissible_mechanisms)})")
-    lines.append("-" * 88)
+    lines.append("-" * 96)
     lines.append(
-        "Analyse (§11) : PrerequisSatisfaits reste 'undetermined' (jamais admissible) tant que "
-        "required_asset_types/required_services/required_artifacts du mecanisme sont TOUS vides "
-        "(politique prudente OPEN_DECISION 4). Seuls D3-DNR, EAC0009 et EAC0021 disposent d'un "
-        "prerequis documente (docs/chapter4/CATALOG_AUDIT.md, section 6bis) : ce n'est donc pas un "
-        "manque de richesse d'instance qui limitait SP1 a 1 seul candidat admissible auparavant, "
-        "mais un manque de preuve documentaire de prerequis pour les 23 autres mecanismes -- limite "
-        "documentee, pas comblee artificiellement."
+        "Chaine de reduction observee (ref. tache SS6/SS16) : "
+        f"|D_knowledge|={d_knowledge_size} -> |D_org| reference={d_org_referenced} -> |D_org| active={d_org_enabled} "
+        f"-> somme des |D_i| par occurrence -> {summary['admissible_count']} candidats reellement admissibles. "
+        "Cette reduction est realisee entierement par SP1 au runtime (mapping, Autorise, PrerequisSatisfaits, "
+        "Pertinent), jamais par une reduction prealable du catalogue de connaissances."
+    )
+    lines.append(
+        "Note (SS10) : PrerequisSatisfaits reste 'undetermined (missing organization configuration)' "
+        "(jamais admissible) tant que l'organisation n'a pas renseigne allowed_asset_types/required_services/"
+        "required_artifacts pour un mecanisme active -- ce n'est plus une limite documentaire D3FEND (le "
+        "catalogue de connaissances n'est plus consulte pour cette decision), mais une configuration "
+        "organisationnelle non encore fournie -- voir examples/build_organization_catalog_example.py."
     )
     return "\n".join(lines) + "\n"
 
@@ -201,16 +208,27 @@ def main() -> None:
     attack_mapping = load_attack_deception_mapping(MAPPING_PATH)
     sp1_mapping = to_sp1_mapping(attack_mapping, kb)
 
+    organization_catalog_model = load_organization_catalog(ORGANIZATION_CATALOG_PATH)
+    validate_against_knowledge_catalog(organization_catalog_model, kb)
+    organization_catalog = dict(capabilities_by_id(organization_catalog_model))
+
     instance = build_example_instance()
     catalog = dict(kb.mechanisms_by_id)
 
-    report = build_admissibility_report(instance, catalog, sp1_mapping, theta_c=THETA, theta_i=THETA, theta_a=THETA)
+    report = build_admissibility_report(
+        instance, catalog, organization_catalog, sp1_mapping, theta_c=THETA, theta_i=THETA, theta_a=THETA
+    )
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "sp1_extended_real_example.json").write_text(
         json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
     )
-    text = render_text_summary(report)
+    text = render_text_summary(
+        report,
+        d_knowledge_size=len(catalog),
+        d_org_referenced=len(organization_catalog),
+        d_org_enabled=len(enabled_mechanism_ids(organization_catalog)),
+    )
     (OUT_DIR / "sp1_extended_real_example.txt").write_text(text, encoding="utf-8")
 
     print(text)

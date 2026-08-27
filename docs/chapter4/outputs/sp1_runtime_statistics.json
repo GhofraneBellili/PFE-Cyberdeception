@@ -1,0 +1,54 @@
+{
+  "d_knowledge_size": 51,
+  "d_org_referenced_size": 42,
+  "d_org_enabled_size": 30,
+  "d_i_by_occurrence": {
+    "T1566@WS01": 3,
+    "T1190@WEB01": 2,
+    "T1110@DC01": 2,
+    "T1003@DC01": 2,
+    "T1078@DC01": 4,
+    "T1059@APP01": 3,
+    "T1083@FS01": 6,
+    "T1005@DB01": 6,
+    "T1039@FS01": 4
+  },
+  "d_i_stats": {
+    "min": 2,
+    "max": 6,
+    "mean": 3.5555555555555554,
+    "median": 3
+  },
+  "c_i_h_by_occurrence": {
+    "T1566@WS01": 4,
+    "T1190@WEB01": 2,
+    "T1110@DC01": 4,
+    "T1003@DC01": 3,
+    "T1078@DC01": 10,
+    "T1059@APP01": 9,
+    "T1083@FS01": 9,
+    "T1005@DB01": 1,
+    "T1039@FS01": 4
+  },
+  "candidate_pairs_evaluated": 5967,
+  "rejected_by_mapping": 5486,
+  "rejected_by_organization": 65,
+  "rejected_by_autorise": 282,
+  "rejected_by_prerequisites_satisfied": 205,
+  "rejected_by_pertinent": 232,
+  "admissible_count": 46,
+  "distinct_admissible_mechanisms": [
+    "D3-DF",
+    "D3-DNR",
+    "EAC0005",
+    "EAC0008",
+    "EAC0009",
+    "EAC0011",
+    "EAC0014",
+    "EAC0021",
+    "EAC0022"
+  ],
+  "distinct_admissible_mechanism_count": 9,
+  "occurrence_count_non_terminal": 9,
+  "occurrences_with_at_least_one_candidate": 9
+}

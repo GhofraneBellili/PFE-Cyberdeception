@@ -1,0 +1,695 @@
+{
+  "organization_id": "example-mid-size-enterprise",
+  "catalog_version": "example-org-catalog-1.0",
+  "capabilities": [
+    {
+      "mechanism_id": "D3-CHN",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_segment"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "D3-CHN",
+      "notes": "honeynet connecte planifie pour le prochain trimestre, pas encore deploye"
+    },
+    {
+      "mechanism_id": "D3-DF",
+      "enabled": true,
+      "allowed_asset_types": [
+        "file_server",
+        "workstation",
+        "application_server",
+        "database_server"
+      ],
+      "allowed_location_types": [
+        "filesystem",
+        "network_share"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "D3-DF",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "D3-DNR",
+      "enabled": true,
+      "allowed_asset_types": [
+        "file_server",
+        "web_application_server"
+      ],
+      "allowed_location_types": [
+        "network_resource"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "D3-DNR",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "D3-DP",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "account"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "D3-DP",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "D3-DST",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "session_store"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "D3-DST",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "D3-DUC",
+      "enabled": true,
+      "allowed_asset_types": [
+        "domain_controller"
+      ],
+      "allowed_location_types": [
+        "credential_store"
+      ],
+      "required_services": [
+        "ldap"
+      ],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "D3-DUC",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0005",
+      "enabled": true,
+      "allowed_asset_types": [
+        "workstation",
+        "domain_controller",
+        "file_server"
+      ],
+      "allowed_location_types": [
+        "credential_store",
+        "account",
+        "filesystem"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0005",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0006",
+      "enabled": true,
+      "allowed_asset_types": [
+        "web_application_server",
+        "application_server"
+      ],
+      "allowed_location_types": [
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0006",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0007",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_segment"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0007",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0008",
+      "enabled": true,
+      "allowed_asset_types": [
+        "workstation",
+        "domain_controller"
+      ],
+      "allowed_location_types": [
+        "host",
+        "account"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0008",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0009",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "mailbox"
+      ],
+      "required_services": [
+        "email"
+      ],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0009",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0010",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0010",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0011",
+      "enabled": true,
+      "allowed_asset_types": [
+        "workstation",
+        "file_server"
+      ],
+      "allowed_location_types": [
+        "filesystem",
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0011",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0014",
+      "enabled": true,
+      "allowed_asset_types": [
+        "application_server",
+        "file_server",
+        "workstation"
+      ],
+      "allowed_location_types": [
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0014",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0015",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0015",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0016",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_segment"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0016",
+      "notes": "necessite l'accord prealable de l'equipe reseau (changement de topologie)"
+    },
+    {
+      "mechanism_id": "EAC0018",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "host",
+        "network_share"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0018",
+      "notes": "necessite une revue du comite de gestion du changement"
+    },
+    {
+      "mechanism_id": "EAC0020",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_segment",
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0020",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0021",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "mailbox",
+        "host",
+        "network_segment"
+      ],
+      "required_services": [
+        "email"
+      ],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0021",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0022",
+      "enabled": true,
+      "allowed_asset_types": [
+        "workstation",
+        "domain_controller",
+        "file_server"
+      ],
+      "allowed_location_types": [
+        "host",
+        "account",
+        "filesystem",
+        "credential_store"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0022",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "EAC0023",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "host",
+        "network_resource"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "EAC0023",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-DECEPTIVE-ATTACK-GRAPH",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_segment",
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-DECEPTIVE-ATTACK-GRAPH",
+      "notes": "necessite un engagement d'equipe red-team non encore planifie"
+    },
+    {
+      "mechanism_id": "LIT-DECEPTIVE-TOPOLOGY",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_segment"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-DECEPTIVE-TOPOLOGY",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-DECOY-COMPUTE",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-DECOY-COMPUTE",
+      "notes": "cout de duplication du serveur d'application juge trop eleve pour l'instant"
+    },
+    {
+      "mechanism_id": "LIT-DECOY-FORM",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_resource"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-DECOY-FORM",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-DECOY-HYPERLINK",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_resource"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-DECOY-HYPERLINK",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-DECOY-SOURCECODE",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "filesystem"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-DECOY-SOURCECODE",
+      "notes": "aucune preoccupation de fuite de code source identifiee a ce jour"
+    },
+    {
+      "mechanism_id": "LIT-DECOY-TRAFFIC",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_segment"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-DECOY-TRAFFIC",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-DYNAMIC-IDS",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_segment"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-DYNAMIC-IDS",
+      "notes": "l'infrastructure IDS actuelle ne supporte pas le placement dynamique"
+    },
+    {
+      "mechanism_id": "LIT-FAKE-HONEYPOT",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-FAKE-HONEYPOT",
+      "notes": "pas encore evalue par l'equipe securite"
+    },
+    {
+      "mechanism_id": "LIT-HONEY-CONFIG",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_resource"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-HONEY-CONFIG",
+      "notes": "pas encore priorise dans la feuille de route de l'equipe web"
+    },
+    {
+      "mechanism_id": "LIT-HONEY-ENCRYPTION",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "filesystem",
+        "configuration_store"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-HONEY-ENCRYPTION",
+      "notes": "necessite une integration cryptographique applicative non encore evaluee"
+    },
+    {
+      "mechanism_id": "LIT-HONEY-PERMISSION",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "account"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-HONEY-PERMISSION",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-HONEYPATCH",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-HONEYPATCH",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-HONEYPOT",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_segment",
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-HONEYPOT",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-HONEYTOKEN",
+      "enabled": true,
+      "allowed_asset_types": [
+        "database_server",
+        "file_server"
+      ],
+      "allowed_location_types": [
+        "database",
+        "filesystem",
+        "configuration_store"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-HONEYTOKEN",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-HONEYWORD",
+      "enabled": true,
+      "allowed_asset_types": [
+        "domain_controller"
+      ],
+      "allowed_location_types": [
+        "credential_store"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-HONEYWORD",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-IP-ROTATION",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_segment"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-IP-ROTATION",
+      "notes": "adressage IP statique impose par une exigence de conformite"
+    },
+    {
+      "mechanism_id": "LIT-OS-FINGERPRINT",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "host",
+        "network_segment"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-OS-FINGERPRINT",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-SHADOW-HONEYPOT",
+      "enabled": false,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-SHADOW-HONEYPOT",
+      "notes": "necessite une integration applicative non encore evaluee"
+    },
+    {
+      "mechanism_id": "LIT-SOFTWARE-DECOY",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "host"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-SOFTWARE-DECOY",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    },
+    {
+      "mechanism_id": "LIT-TARPIT",
+      "enabled": true,
+      "allowed_asset_types": [],
+      "allowed_location_types": [
+        "network_segment"
+      ],
+      "required_services": [],
+      "required_artifacts": [],
+      "forbidden_asset_types": [],
+      "forbidden_locations": [],
+      "operational_parameters": {},
+      "cost_profile_id": "LIT-TARPIT",
+      "notes": "actif dans la posture de deception courante de l'organisation"
+    }
+  ]
+}

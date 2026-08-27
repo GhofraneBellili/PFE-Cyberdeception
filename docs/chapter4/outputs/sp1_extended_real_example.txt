@@ -1,27 +1,73 @@
-SP1 etendu - instance riche (catalogue et mapping REELS, 26 mecanismes)
-----------------------------------------------------------------------------------------
+SP1 runtime - instance riche (catalogue de connaissances + catalogue organisationnel + mapping REELS)
+------------------------------------------------------------------------------------------------
+|D_knowledge| = 51   |D_org| (reference) = 42   |D_org| (enabled) = 30
+------------------------------------------------------------------------------------------------
 Occurrence      Mecanisme   Emplacement             Decision
-D_i(T1566@WS01) = ['EAC0009', 'EAC0011', 'EAC0021']
+D_i(T1566@WS01) = ['EAC0009', 'EAC0011', 'EAC0021']  (|D_i|=3)
 T1566@WS01      EAC0009     mailbox-ws01            ADMISSIBLE
+T1566@WS01      EAC0011     host-ws01               ADMISSIBLE
 T1566@WS01      EAC0021     mailbox-ws01            ADMISSIBLE
 T1566@WS01      EAC0021     host-ws01               ADMISSIBLE
-D_i(T1190@WEB01) = ['EAC0005', 'EAC0006']
-D_i(T1110@DC01) = ['EAC0005', 'EAC0014', 'EAC0018']
-D_i(T1003@DC01) = ['EAC0005', 'EAC0011']
-D_i(T1078@DC01) = ['EAC0005', 'EAC0008', 'EAC0011', 'EAC0022']
-D_i(T1059@APP01) = ['D3-DF', 'EAC0014', 'EAC0018', 'EAC0022']
-D_i(T1083@FS01) = ['D3-DF', 'EAC0005', 'EAC0011', 'EAC0014', 'EAC0015', 'EAC0022']
-D_i(T1005@DB01) = ['D3-DF', 'EAC0005', 'EAC0008', 'EAC0011', 'EAC0014', 'EAC0015', 'EAC0018']
-D_i(T1039@FS01) = ['D3-DNR', 'EAC0005', 'EAC0011', 'EAC0015', 'EAC0016', 'EAC0018']
+D_i(T1190@WEB01) = ['EAC0005', 'EAC0006']  (|D_i|=2)
+T1190@WEB01     EAC0005     cred-store-dc01         ADMISSIBLE
+T1190@WEB01     EAC0005     account-dc01            ADMISSIBLE
+D_i(T1110@DC01) = ['EAC0005', 'EAC0014']  (|D_i|=2)
+T1110@DC01      EAC0005     cred-store-dc01         ADMISSIBLE
+T1110@DC01      EAC0005     account-dc01            ADMISSIBLE
+T1110@DC01      EAC0014     host-ws01               ADMISSIBLE
+T1110@DC01      EAC0014     host-app01              ADMISSIBLE
+D_i(T1003@DC01) = ['EAC0005', 'EAC0011']  (|D_i|=2)
+T1003@DC01      EAC0005     cred-store-dc01         ADMISSIBLE
+T1003@DC01      EAC0005     account-dc01            ADMISSIBLE
+T1003@DC01      EAC0011     host-ws01               ADMISSIBLE
+D_i(T1078@DC01) = ['EAC0005', 'EAC0008', 'EAC0011', 'EAC0022']  (|D_i|=4)
+T1078@DC01      EAC0005     cred-store-dc01         ADMISSIBLE
+T1078@DC01      EAC0005     account-dc01            ADMISSIBLE
+T1078@DC01      EAC0008     host-ws01               ADMISSIBLE
+T1078@DC01      EAC0008     host-dc01               ADMISSIBLE
+T1078@DC01      EAC0008     account-dc01            ADMISSIBLE
+T1078@DC01      EAC0011     host-ws01               ADMISSIBLE
+T1078@DC01      EAC0022     cred-store-dc01         ADMISSIBLE
+T1078@DC01      EAC0022     host-ws01               ADMISSIBLE
+T1078@DC01      EAC0022     host-dc01               ADMISSIBLE
+T1078@DC01      EAC0022     account-dc01            ADMISSIBLE
+D_i(T1059@APP01) = ['D3-DF', 'EAC0014', 'EAC0022']  (|D_i|=3)
+T1059@APP01     D3-DF       filesystem-fs01         ADMISSIBLE
+T1059@APP01     D3-DF       network-share-fs01      ADMISSIBLE
+T1059@APP01     EAC0014     host-app01              ADMISSIBLE
+T1059@APP01     EAC0014     host-fs01               ADMISSIBLE
+T1059@APP01     EAC0022     cred-store-dc01         ADMISSIBLE
+T1059@APP01     EAC0022     host-dc01               ADMISSIBLE
+T1059@APP01     EAC0022     host-fs01               ADMISSIBLE
+T1059@APP01     EAC0022     account-dc01            ADMISSIBLE
+T1059@APP01     EAC0022     filesystem-fs01         ADMISSIBLE
+D_i(T1083@FS01) = ['D3-DF', 'EAC0005', 'EAC0011', 'EAC0014', 'EAC0015', 'EAC0022']  (|D_i|=6)
+T1083@FS01      D3-DF       filesystem-fs01         ADMISSIBLE
+T1083@FS01      D3-DF       network-share-fs01      ADMISSIBLE
+T1083@FS01      EAC0005     filesystem-fs01         ADMISSIBLE
+T1083@FS01      EAC0011     host-fs01               ADMISSIBLE
+T1083@FS01      EAC0011     filesystem-fs01         ADMISSIBLE
+T1083@FS01      EAC0014     host-app01              ADMISSIBLE
+T1083@FS01      EAC0014     host-fs01               ADMISSIBLE
+T1083@FS01      EAC0022     host-fs01               ADMISSIBLE
+T1083@FS01      EAC0022     filesystem-fs01         ADMISSIBLE
+D_i(T1005@DB01) = ['D3-DF', 'EAC0005', 'EAC0008', 'EAC0011', 'EAC0014', 'EAC0015']  (|D_i|=6)
+T1005@DB01      EAC0014     host-app01              ADMISSIBLE
+D_i(T1039@FS01) = ['D3-DNR', 'EAC0005', 'EAC0011', 'EAC0015']  (|D_i|=4)
 T1039@FS01      D3-DNR      network-resource-fs01   ADMISSIBLE
+T1039@FS01      EAC0005     filesystem-fs01         ADMISSIBLE
+T1039@FS01      EAC0011     host-fs01               ADMISSIBLE
+T1039@FS01      EAC0011     filesystem-fs01         ADMISSIBLE
 T1041@APP01 : TERMINAL (C_i_h = vide par construction, §6)
-----------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
+|D_org| (enabled, rapporte par SP1) : 30
 Occurrences (non terminales) : 9
 Occurrences terminales        : 1
-Candidats bruts                : 3042
-Admissibles                    : 4
-Rejetes                        : 3038
-Occurrences couvertes par >=1 admissible : 2 (['T1039@FS01', 'T1566@WS01'])
-Mecanismes admissibles distincts          : 3 (['D3-DNR', 'EAC0009', 'EAC0021'])
-----------------------------------------------------------------------------------------
-Analyse (§11) : PrerequisSatisfaits reste 'undetermined' (jamais admissible) tant que required_asset_types/required_services/required_artifacts du mecanisme sont TOUS vides (politique prudente OPEN_DECISION 4). Seuls D3-DNR, EAC0009 et EAC0021 disposent d'un prerequis documente (docs/chapter4/CATALOG_AUDIT.md, section 6bis) : ce n'est donc pas un manque de richesse d'instance qui limitait SP1 a 1 seul candidat admissible auparavant, mais un manque de preuve documentaire de prerequis pour les 23 autres mecanismes -- limite documentee, pas comblee artificiellement.
+Candidats bruts (mecanisme x emplacement evalues) : 5967
+Admissibles                    : 46
+Rejetes                        : 5921
+Occurrences couvertes par >=1 admissible : 9 (['T1003@DC01', 'T1005@DB01', 'T1039@FS01', 'T1059@APP01', 'T1078@DC01', 'T1083@FS01', 'T1110@DC01', 'T1190@WEB01', 'T1566@WS01'])
+Mecanismes admissibles distincts          : 9 (['D3-DF', 'D3-DNR', 'EAC0005', 'EAC0008', 'EAC0009', 'EAC0011', 'EAC0014', 'EAC0021', 'EAC0022'])
+------------------------------------------------------------------------------------------------
+Chaine de reduction observee (ref. tache SS6/SS16) : |D_knowledge|=51 -> |D_org| reference=42 -> |D_org| active=30 -> somme des |D_i| par occurrence -> 46 candidats reellement admissibles. Cette reduction est realisee entierement par SP1 au runtime (mapping, Autorise, PrerequisSatisfaits, Pertinent), jamais par une reduction prealable du catalogue de connaissances.
+Note (SS10) : PrerequisSatisfaits reste 'undetermined (missing organization configuration)' (jamais admissible) tant que l'organisation n'a pas renseigne allowed_asset_types/required_services/required_artifacts pour un mecanisme active -- ce n'est plus une limite documentaire D3FEND (le catalogue de connaissances n'est plus consulte pour cette decision), mais une configuration organisationnelle non encore fournie -- voir examples/build_organization_catalog_example.py.

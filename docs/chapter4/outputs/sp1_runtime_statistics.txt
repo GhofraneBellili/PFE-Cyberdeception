@@ -1,0 +1,32 @@
+SP1 - Statistiques de reduction runtime (instance reelle)
+------------------------------------------------------------------------------
+|D_knowledge| (catalogue de connaissances)      : 51
+|D_org| reference (catalogue operationnel)       : 42
+|D_org| active (enabled=true)                    : 30
+------------------------------------------------------------------------------
+|D_i| par occurrence (D_i = D_org active INTER M_i,d) :
+  T1566@WS01           |D_i|=3   |C_i_h|=4
+  T1190@WEB01          |D_i|=2   |C_i_h|=2
+  T1110@DC01           |D_i|=2   |C_i_h|=4
+  T1003@DC01           |D_i|=2   |C_i_h|=3
+  T1078@DC01           |D_i|=4   |C_i_h|=10
+  T1059@APP01          |D_i|=3   |C_i_h|=9
+  T1083@FS01           |D_i|=6   |C_i_h|=9
+  T1005@DB01           |D_i|=6   |C_i_h|=1
+  T1039@FS01           |D_i|=4   |C_i_h|=4
+  min=2  max=6  mean=3.56  median=3
+------------------------------------------------------------------------------
+Couples (mecanisme x emplacement) evalues : 5967
+  rejetes par mapping (M_i,d=0)            : 5486
+  rejetes par organization (non active/non reference) : 65
+  rejetes par Autorise                     : 282
+  rejetes par PrerequisSatisfaits           : 205
+  rejetes par Pertinent                     : 232
+  ADMISSIBLES                                : 46
+------------------------------------------------------------------------------
+Mecanismes admissibles distincts : 9 ['D3-DF', 'D3-DNR', 'EAC0005', 'EAC0008', 'EAC0009', 'EAC0011', 'EAC0014', 'EAC0021', 'EAC0022']
+Occurrences avec >=1 candidat admissible : 9 / 9
+------------------------------------------------------------------------------
+Lecture : grand catalogue de connaissances -> reduction operationnelle (D_org) -> reduction
+contextuelle par technique (mapping, D_i) -> reduction par SP1 (Autorise/PrerequisSatisfaits/
+Pertinent) -> C_i_h. Chaque etage de reduction est visible et attribuable a un critere precis.
