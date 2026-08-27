@@ -1,0 +1,23 @@
+SP1 - Resultats d'admissibilite (catalogue et mapping REELS)
+------------------------------------------------------------------------------
+Occurrence      Mecanisme Emplacement   Decision
+D_i(T1110.001@DC01) = ['D3-DUC']
+T1110.001@DC01  D3-DF     auth-store    REJETE (mapping=faux (mecanisme absent de D_i pour cette technique))
+T1110.001@DC01  D3-DF     shared-drive  REJETE (mapping=faux (mecanisme absent de D_i pour cette technique))
+T1110.001@DC01  D3-DNR    auth-store    REJETE (mapping=faux (mecanisme absent de D_i pour cette technique))
+T1110.001@DC01  D3-DNR    shared-drive  REJETE (mapping=faux (mecanisme absent de D_i pour cette technique))
+T1110.001@DC01  D3-DUC    auth-store    REJETE (PrerequisSatisfaits=undetermined)
+T1110.001@DC01  D3-DUC    shared-drive  REJETE (Autorise=fail, PrerequisSatisfaits=undetermined, Pertinent=fail)
+D_i(T1039@FS01) = ['D3-DNR']
+T1039@FS01      D3-DF     auth-store    REJETE (mapping=faux (mecanisme absent de D_i pour cette technique))
+T1039@FS01      D3-DF     shared-drive  REJETE (mapping=faux (mecanisme absent de D_i pour cette technique))
+T1039@FS01      D3-DNR    auth-store    REJETE (Autorise=fail, PrerequisSatisfaits=undetermined, Pertinent=fail)
+T1039@FS01      D3-DNR    shared-drive  REJETE (PrerequisSatisfaits=undetermined)
+T1039@FS01      D3-DUC    auth-store    REJETE (mapping=faux (mecanisme absent de D_i pour cette technique))
+T1039@FS01      D3-DUC    shared-drive  REJETE (mapping=faux (mecanisme absent de D_i pour cette technique))
+------------------------------------------------------------------------------
+Candidats bruts : 12
+Admissibles     : 0
+Rejetes         : 12
+------------------------------------------------------------------------------
+Note : RequirementsSatisfied='undetermined' pour tout candidat car le catalogue reel ne renseigne aucun required_asset_types/services/artifacts (aucune preuve documentaire ne les justifie) -- politique prudente OPEN_DECISION 4, resultat honnete, pas un bug.

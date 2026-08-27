@@ -25,7 +25,9 @@ from src.knowledge_deception import (
     get_evidence,
     has_deception,
     list_deception_ids,
+    load_attack_deception_mapping,
     load_deception_catalog,
+    to_sp1_mapping,
     validate_deception_ids,
 )
 
@@ -95,6 +97,13 @@ def make_mechanism_payload(
 
 def write_catalog(tmp_path, mechanisms, filename="catalog.json", catalog_version="1.0"):
     payload = {"catalog_version": catalog_version, "mechanisms": mechanisms}
+    path = tmp_path / filename
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def write_mapping(tmp_path, relations, filename="mapping.json", mapping_version="1.0"):
+    payload = {"mapping_version": mapping_version, "relations": relations}
     path = tmp_path / filename
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
@@ -556,3 +565,85 @@ class TestImmutability:
         kb = load_deception_catalog(path)
         with pytest.raises(TypeError):
             kb.mechanisms_by_id["NEW"] = get_deception(kb, "D-001")
+
+
+# ---------------------------------------------------------------------------
+# J. Mapping M_{i,d} — réf. §10.2 (synthétique uniquement, cf. docstring
+# de module ; le mapping réel est couvert par tests/test_mapping_builder.py)
+# ---------------------------------------------------------------------------
+
+
+def make_relation(attack_id="T1078", mechanism_id="D-001", evidence=None, origin="synthetic"):
+    if evidence is None:
+        evidence = [{"source": "synthetic.json", "relation_path": {}}]
+    return {"attack_id": attack_id, "mechanism_id": mechanism_id, "evidence": evidence, "origin": origin}
+
+
+class TestLoadAttackDeceptionMapping:
+    def test_loads_valid_mapping(self, tmp_path):
+        path = write_mapping(tmp_path, [make_relation()])
+        mapping = load_attack_deception_mapping(path)
+        assert mapping.mapping_version == "1.0"
+        assert len(mapping.relations) == 1
+        assert mapping.relations[0]["attack_id"] == "T1078"
+
+    def test_missing_mapping_version_rejected(self, tmp_path):
+        path = tmp_path / "bad.json"
+        path.write_text(json.dumps({"relations": []}), encoding="utf-8")
+        with pytest.raises(DeceptionKnowledgeError):
+            load_attack_deception_mapping(path)
+
+    def test_relation_missing_attack_id_rejected(self, tmp_path):
+        bad_relation = {"mechanism_id": "D-001", "evidence": [], "origin": "synthetic"}
+        path = write_mapping(tmp_path, [bad_relation])
+        with pytest.raises(DeceptionKnowledgeError):
+            load_attack_deception_mapping(path)
+
+    def test_relation_missing_mechanism_id_rejected(self, tmp_path):
+        bad_relation = {"attack_id": "T1078", "evidence": [], "origin": "synthetic"}
+        path = write_mapping(tmp_path, [bad_relation])
+        with pytest.raises(DeceptionKnowledgeError):
+            load_attack_deception_mapping(path)
+
+    def test_non_object_root_rejected(self, tmp_path):
+        path = tmp_path / "bad.json"
+        path.write_text(json.dumps([1, 2, 3]), encoding="utf-8")
+        with pytest.raises(DeceptionKnowledgeError):
+            load_attack_deception_mapping(path)
+
+    def test_relations_immutable(self, tmp_path):
+        path = write_mapping(tmp_path, [make_relation()])
+        mapping = load_attack_deception_mapping(path)
+        with pytest.raises(TypeError):
+            mapping.relations[0]["attack_id"] = "T9999"
+
+
+class TestToSp1Mapping:
+    def test_reduces_to_technique_to_mechanisms_dict(self, tmp_path):
+        path = write_mapping(
+            tmp_path,
+            [
+                make_relation(attack_id="T1078", mechanism_id="D-001"),
+                make_relation(attack_id="T1078", mechanism_id="D-002"),
+                make_relation(attack_id="T1003", mechanism_id="D-001"),
+            ],
+        )
+        mapping = load_attack_deception_mapping(path)
+        sp1_mapping = to_sp1_mapping(mapping)
+        assert sp1_mapping == {"T1078": ["D-001", "D-002"], "T1003": ["D-001"]}
+
+    def test_validates_against_catalog_when_provided(self, tmp_path):
+        catalog_path = write_catalog(tmp_path, [make_mechanism_payload("D-001")])
+        kb = load_deception_catalog(catalog_path)
+        mapping_path = write_mapping(tmp_path, [make_relation(mechanism_id="D-001")])
+        mapping = load_attack_deception_mapping(mapping_path)
+        # Ne doit pas lever : D-001 appartient au catalogue.
+        assert to_sp1_mapping(mapping, kb) == {"T1078": ["D-001"]}
+
+    def test_unknown_mechanism_id_rejected_against_catalog(self, tmp_path):
+        catalog_path = write_catalog(tmp_path, [make_mechanism_payload("D-001")])
+        kb = load_deception_catalog(catalog_path)
+        mapping_path = write_mapping(tmp_path, [make_relation(mechanism_id="D-999-UNKNOWN")])
+        mapping = load_attack_deception_mapping(mapping_path)
+        with pytest.raises(UnknownDeceptionMechanismError):
+            to_sp1_mapping(mapping, kb)

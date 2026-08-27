@@ -1,0 +1,163 @@
+{
+  "schema": "sp1_admissibility_report",
+  "schema_version": "1.0",
+  "occurrences": {
+    "T1110.001@DC01": {
+      "is_terminal": false,
+      "D_i": [
+        "D3-DUC"
+      ],
+      "candidates": [
+        {
+          "occurrence_id": "T1110.001@DC01",
+          "mechanism_id": "D3-DF",
+          "location_id": "auth-store",
+          "mapping": "fail",
+          "Autorise": "not_evaluated",
+          "PrerequisSatisfaits": "not_evaluated",
+          "Pertinent": "not_evaluated",
+          "admissible": false,
+          "rejection_reason": "mapping=faux (mecanisme absent de D_i pour cette technique)"
+        },
+        {
+          "occurrence_id": "T1110.001@DC01",
+          "mechanism_id": "D3-DF",
+          "location_id": "shared-drive",
+          "mapping": "fail",
+          "Autorise": "not_evaluated",
+          "PrerequisSatisfaits": "not_evaluated",
+          "Pertinent": "not_evaluated",
+          "admissible": false,
+          "rejection_reason": "mapping=faux (mecanisme absent de D_i pour cette technique)"
+        },
+        {
+          "occurrence_id": "T1110.001@DC01",
+          "mechanism_id": "D3-DNR",
+          "location_id": "auth-store",
+          "mapping": "fail",
+          "Autorise": "not_evaluated",
+          "PrerequisSatisfaits": "not_evaluated",
+          "Pertinent": "not_evaluated",
+          "admissible": false,
+          "rejection_reason": "mapping=faux (mecanisme absent de D_i pour cette technique)"
+        },
+        {
+          "occurrence_id": "T1110.001@DC01",
+          "mechanism_id": "D3-DNR",
+          "location_id": "shared-drive",
+          "mapping": "fail",
+          "Autorise": "not_evaluated",
+          "PrerequisSatisfaits": "not_evaluated",
+          "Pertinent": "not_evaluated",
+          "admissible": false,
+          "rejection_reason": "mapping=faux (mecanisme absent de D_i pour cette technique)"
+        },
+        {
+          "occurrence_id": "T1110.001@DC01",
+          "mechanism_id": "D3-DUC",
+          "location_id": "auth-store",
+          "mapping": "pass",
+          "Autorise": "pass",
+          "PrerequisSatisfaits": "undetermined",
+          "Pertinent": "pass",
+          "admissible": false,
+          "rejection_reason": "PrerequisSatisfaits=undetermined"
+        },
+        {
+          "occurrence_id": "T1110.001@DC01",
+          "mechanism_id": "D3-DUC",
+          "location_id": "shared-drive",
+          "mapping": "pass",
+          "Autorise": "fail",
+          "PrerequisSatisfaits": "undetermined",
+          "Pertinent": "fail",
+          "admissible": false,
+          "rejection_reason": "Autorise=fail, PrerequisSatisfaits=undetermined, Pertinent=fail"
+        }
+      ],
+      "C_i_h": []
+    },
+    "T1039@FS01": {
+      "is_terminal": false,
+      "D_i": [
+        "D3-DNR"
+      ],
+      "candidates": [
+        {
+          "occurrence_id": "T1039@FS01",
+          "mechanism_id": "D3-DF",
+          "location_id": "auth-store",
+          "mapping": "fail",
+          "Autorise": "not_evaluated",
+          "PrerequisSatisfaits": "not_evaluated",
+          "Pertinent": "not_evaluated",
+          "admissible": false,
+          "rejection_reason": "mapping=faux (mecanisme absent de D_i pour cette technique)"
+        },
+        {
+          "occurrence_id": "T1039@FS01",
+          "mechanism_id": "D3-DF",
+          "location_id": "shared-drive",
+          "mapping": "fail",
+          "Autorise": "not_evaluated",
+          "PrerequisSatisfaits": "not_evaluated",
+          "Pertinent": "not_evaluated",
+          "admissible": false,
+          "rejection_reason": "mapping=faux (mecanisme absent de D_i pour cette technique)"
+        },
+        {
+          "occurrence_id": "T1039@FS01",
+          "mechanism_id": "D3-DNR",
+          "location_id": "auth-store",
+          "mapping": "pass",
+          "Autorise": "fail",
+          "PrerequisSatisfaits": "undetermined",
+          "Pertinent": "fail",
+          "admissible": false,
+          "rejection_reason": "Autorise=fail, PrerequisSatisfaits=undetermined, Pertinent=fail"
+        },
+        {
+          "occurrence_id": "T1039@FS01",
+          "mechanism_id": "D3-DNR",
+          "location_id": "shared-drive",
+          "mapping": "pass",
+          "Autorise": "pass",
+          "PrerequisSatisfaits": "undetermined",
+          "Pertinent": "pass",
+          "admissible": false,
+          "rejection_reason": "PrerequisSatisfaits=undetermined"
+        },
+        {
+          "occurrence_id": "T1039@FS01",
+          "mechanism_id": "D3-DUC",
+          "location_id": "auth-store",
+          "mapping": "fail",
+          "Autorise": "not_evaluated",
+          "PrerequisSatisfaits": "not_evaluated",
+          "Pertinent": "not_evaluated",
+          "admissible": false,
+          "rejection_reason": "mapping=faux (mecanisme absent de D_i pour cette technique)"
+        },
+        {
+          "occurrence_id": "T1039@FS01",
+          "mechanism_id": "D3-DUC",
+          "location_id": "shared-drive",
+          "mapping": "fail",
+          "Autorise": "not_evaluated",
+          "PrerequisSatisfaits": "not_evaluated",
+          "Pertinent": "not_evaluated",
+          "admissible": false,
+          "rejection_reason": "mapping=faux (mecanisme absent de D_i pour cette technique)"
+        }
+      ],
+      "C_i_h": []
+    }
+  },
+  "summary": {
+    "occurrence_count": 2,
+    "terminal_occurrence_count": 0,
+    "candidate_count": 12,
+    "admissible_count": 0,
+    "rejected_count": 12
+  }
+}

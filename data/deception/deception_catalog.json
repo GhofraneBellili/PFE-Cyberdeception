@@ -1,0 +1,246 @@
+{
+  "schema": "pfe_deception_catalog",
+  "schema_version": "1.0",
+  "catalog_version": "pfe-deception-catalog-1.0",
+  "generated_from": {
+    "d3fend_deception_seed": {
+      "path": "data\\deception\\staging\\d3fend_deception_seed_1.5.0.json",
+      "sha256": "276da497c95bdd6bde09888c6dd6247ab37c5e78e0ad0792c572d88686519864",
+      "release_version": "1.5.0"
+    },
+    "d3fend_attack_mapping_seed": {
+      "path": "data\\deception\\staging\\d3fend_attack_mapping_seed_1.5.0.json",
+      "sha256": "8fe61e44087731a4b989e4dfc74742fde3dded371fc24cbc39de4e50f49cb351",
+      "release_version": "1.5.0"
+    }
+  },
+  "excluded_concepts": [
+    {
+      "id": "D3-DO",
+      "name": "Decoy Object",
+      "reason": "concept parent/categorie (is_leaf=false) : jamais un mecanisme deployable, seuls ses enfants le sont"
+    },
+    {
+      "id": "D3-DP",
+      "name": "Decoy Persona",
+      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
+    },
+    {
+      "id": "D3-DST",
+      "name": "Decoy Session Token",
+      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
+    },
+    {
+      "id": "D3-DPR",
+      "name": "Decoy Public Release",
+      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
+    },
+    {
+      "id": "D3-DE",
+      "name": "Decoy Environment",
+      "reason": "concept parent/categorie (is_leaf=false) : jamais un mecanisme deployable, seuls ses enfants le sont"
+    },
+    {
+      "id": "D3-CHN",
+      "name": "Connected Honeynet",
+      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
+    },
+    {
+      "id": "D3-SHN",
+      "name": "Standalone Honeynet",
+      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
+    },
+    {
+      "id": "D3-IHN",
+      "name": "Integrated Honeynet",
+      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
+    }
+  ],
+  "mechanisms": [
+    {
+      "id": "D3-DF",
+      "name": "Decoy File",
+      "description": "A file created for the purposes of deceiving an adversary.",
+      "target_artifacts": [
+        "d3f:File"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "filesystem"
+      ],
+      "interaction_mechanism": "accesses, adds, creates, deletes, encrypts, executes, interprets, loads, may-access, may-add, may-create, may-execute, may-modify, may-transfer, modifies, obfuscates, produces, reads",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "d3fend:D3-DF:rdfs:label",
+          "passage": "Decoy File"
+        },
+        {
+          "source": "d3fend:D3-DF:d3f:definition",
+          "passage": "A file created for the purposes of deceiving an adversary."
+        },
+        {
+          "source": "d3fend:D3-DF:d3f:kb-article",
+          "passage": "## How it works\nThe decoy file is made available as a local or network resource. Accesses to the file may be monitored. The files may be configurations, documents, executables, or other file types.\n\n\n## Considerations\nProperties of the file such as cryptographic checksums, file creation date, file modified date, file size, file owner etc may be modified to improve the credibility of the file.\n\n## Example\n* A CSV file with decoy user credentials is placed on a system. The system or network is then monitored to detect any accesses to the decoy files."
+        },
+        {
+          "source": "d3fend:D3-DF:d3f:spoofs",
+          "passage": "d3f:File"
+        }
+      ],
+      "version": "1.5.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "filesystem"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "d3fend_source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyFile",
+        "d3fend_off_artifact_relations": [
+          "accesses",
+          "adds",
+          "creates",
+          "deletes",
+          "encrypts",
+          "executes",
+          "interprets",
+          "loads",
+          "may-access",
+          "may-add",
+          "may-create",
+          "may-execute",
+          "may-modify",
+          "may-transfer",
+          "modifies",
+          "obfuscates",
+          "produces",
+          "reads"
+        ],
+        "d3fend_attack_technique_count": 99
+      }
+    },
+    {
+      "id": "D3-DUC",
+      "name": "Decoy User Credential",
+      "description": "A Credential created for the purpose of deceiving an adversary.",
+      "target_artifacts": [
+        "d3f:Credential"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "credential_store"
+      ],
+      "interaction_mechanism": "accesses, adds, copies, creates, forges, may-access, may-create, uses",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "d3fend:D3-DUC:rdfs:label",
+          "passage": "Decoy User Credential"
+        },
+        {
+          "source": "d3fend:D3-DUC:d3f:definition",
+          "passage": "A Credential created for the purpose of deceiving an adversary."
+        },
+        {
+          "source": "d3fend:D3-DUC:d3f:kb-article",
+          "passage": "## How it works\nA detection analytic is developed to determine when a user uses decoy credentials. Subsequent actions by that user may be monitored or controlled by the defender.\n\nA credential may be:\n * Domain username and password\n * Local system username and password\n\n## Considerations\n* Decoy credentials should be integrated with a larger decoy environment to ensure that when decoy credentials are compromised, the credentials are used to interact with a decoy asset that is being monitored.\n* Continuous maintenance and updates are needed to ensure the legitimacy of the larger decoy environment and specifically the assets that utilize the decoy credentials."
+        },
+        {
+          "source": "d3fend:D3-DUC:d3f:spoofs",
+          "passage": "d3f:Credential"
+        }
+      ],
+      "version": "1.5.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "credential_store"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "d3fend_source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyUserCredential",
+        "d3fend_off_artifact_relations": [
+          "accesses",
+          "adds",
+          "copies",
+          "creates",
+          "forges",
+          "may-access",
+          "may-create",
+          "uses"
+        ],
+        "d3fend_attack_technique_count": 20
+      }
+    },
+    {
+      "id": "D3-DNR",
+      "name": "Decoy Network Resource",
+      "description": "Deploying a network resource for the purposes of deceiving an adversary.",
+      "target_artifacts": [
+        "d3f:NetworkResource"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_resource"
+      ],
+      "interaction_mechanism": "accesses, modifies, unmounts",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "d3fend:D3-DNR:rdfs:label",
+          "passage": "Decoy Network Resource"
+        },
+        {
+          "source": "d3fend:D3-DNR:d3f:definition",
+          "passage": "Deploying a network resource for the purposes of deceiving an adversary."
+        },
+        {
+          "source": "d3fend:D3-DNR:d3f:kb-article",
+          "passage": "## How it works\nDecoy network resources are deployed to web application servers, network file shares, or other network based sharing services.\n\nA \"honeypot\" may serve a variety of decoy network resources.\n\n## Considerations\n\n* Developing a deployment and placement strategy for the decoy network resource.\n* Personnel responsible for creation of decoy networks should consider the potential for resource exhaustion through denial of service attacks.\n\n## Examples\n* Honeypots are typically used to mimic a known system with fake vulnerabilities. This may attract attackers to the honeypot.\n* Decoy accounts are also used to scan for attempted logins. The decoy accounts can provide security analysts with the attacker's potential intents and strategies.\n* Tarpits are used to monitor unallocated IP space for unauthorized network activity."
+        },
+        {
+          "source": "d3fend:D3-DNR:d3f:spoofs",
+          "passage": "d3f:NetworkResource"
+        }
+      ],
+      "version": "1.5.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_resource"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "d3fend_source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyNetworkResource",
+        "d3fend_off_artifact_relations": [
+          "accesses",
+          "modifies",
+          "unmounts"
+        ],
+        "d3fend_attack_technique_count": 8
+      }
+    }
+  ]
+}

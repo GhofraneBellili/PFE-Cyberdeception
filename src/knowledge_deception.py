@@ -237,3 +237,98 @@ def validate_deception_ids(deception_ids: Iterable[str], kb: DeceptionKnowledgeB
         raise UnknownDeceptionMechanismError(
             "Unknown deception mechanisms: " + ", ".join(unknown_ids)
         )
+
+
+# ---------------------------------------------------------------------------
+# Mapping M_{i,d} — réf. "10.2 Étape 1 — Mapping attaque ↔ déception"
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class AttackDeceptionMapping:
+    """Réf. architecture : "10.2 Étape 1" — M_{i,d} déjà matérialisé et
+    versionné (`tools/deception_kb/mapping_builder.py`,
+    `data/deception/attack_deception_mapping.json`), chargé tel quel.
+
+    `relations` conserve chaque relation source (attack_id, mechanism_id,
+    evidence, origin) sans réinterprétation : la réduction vers la forme
+    `{technique_id: [mechanism_id, ...]}` attendue par
+    `src.admissibility.build_admissibility_report` est une opération
+    séparée (`to_sp1_mapping`), pour ne jamais perdre la provenance en
+    mémoire.
+    """
+
+    source_path: Path
+    mapping_version: str
+    relations: tuple[Mapping[str, Any], ...]
+    source_sha256: str
+
+
+def load_attack_deception_mapping(path: str | Path) -> AttackDeceptionMapping:
+    """Réf. architecture : "10.2 Étape 1" — charge M_{i,d} déjà
+    matérialisé (§9.1). Validation structurelle minimale : chaque
+    relation doit porter un `attack_id` et un `mechanism_id` non vides.
+    La provenance (`evidence`, `origin`) est conservée telle quelle, sans
+    normalisation ni interprétation supplémentaire.
+
+    Aucune valeur manquante n'est complétée automatiquement (§25.3) : un
+    JSON syntaxiquement invalide lève `json.JSONDecodeError`, un contenu
+    structurellement invalide lève `DeceptionKnowledgeError`.
+    """
+    file_path = Path(path)
+    raw_bytes = file_path.read_bytes()
+    source_sha256 = hashlib.sha256(raw_bytes).hexdigest()
+    raw_mapping = json.loads(raw_bytes.decode("utf-8"))
+
+    if not isinstance(raw_mapping, dict):
+        raise DeceptionKnowledgeError("La racine du mapping M_{i,d} doit être un objet JSON.")
+
+    mapping_version = raw_mapping.get("mapping_version")
+    if not isinstance(mapping_version, str) or not mapping_version.strip():
+        raise DeceptionKnowledgeError(
+            "'mapping_version' est obligatoire et doit être une chaîne non vide."
+        )
+
+    raw_relations = raw_mapping.get("relations")
+    if not isinstance(raw_relations, list):
+        raise DeceptionKnowledgeError("'relations' est obligatoire et doit être une liste.")
+
+    relations: list[Mapping[str, Any]] = []
+    for relation in raw_relations:
+        if not isinstance(relation, dict):
+            raise DeceptionKnowledgeError("Chaque relation de M_{i,d} doit être un objet JSON.")
+        attack_id = relation.get("attack_id")
+        mechanism_id = relation.get("mechanism_id")
+        if not isinstance(attack_id, str) or not attack_id.strip():
+            raise DeceptionKnowledgeError("Chaque relation de M_{i,d} doit porter un 'attack_id' non vide.")
+        if not isinstance(mechanism_id, str) or not mechanism_id.strip():
+            raise DeceptionKnowledgeError("Chaque relation de M_{i,d} doit porter un 'mechanism_id' non vide.")
+        relations.append(MappingProxyType(dict(relation)))
+
+    return AttackDeceptionMapping(
+        source_path=file_path,
+        mapping_version=mapping_version,
+        relations=tuple(relations),
+        source_sha256=source_sha256,
+    )
+
+
+def to_sp1_mapping(
+    mapping: AttackDeceptionMapping, kb: DeceptionKnowledgeBase | None = None
+) -> dict[str, list[str]]:
+    """Réf. architecture : "10.2 Étape 1" — réduit M_{i,d} à la forme
+    `{technique_id: [mechanism_id, ...]}` attendue par
+    `src.admissibility.build_admissibility_report`.
+
+    Si `kb` est fourni, vérifie d'abord que chaque `mechanism_id`
+    référence bien un mécanisme du catalogue fermé chargé (cohérence
+    mapping -> catalogue, réf. tâche §4/§5) — lève
+    `UnknownDeceptionMechanismError` sinon, avant toute réduction.
+    """
+    if kb is not None:
+        validate_deception_ids((relation["mechanism_id"] for relation in mapping.relations), kb)
+
+    grouped: dict[str, set[str]] = {}
+    for relation in mapping.relations:
+        grouped.setdefault(relation["attack_id"], set()).add(relation["mechanism_id"])
+    return {attack_id: sorted(mechanism_ids) for attack_id, mechanism_ids in grouped.items()}

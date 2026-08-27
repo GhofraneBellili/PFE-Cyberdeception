@@ -6,6 +6,7 @@ Tests unitaires de src/orchestrator.py (§25.4 : pytest obligatoire).
 """
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -255,3 +256,115 @@ class TestLlmOutOfExecutionPath:
         result = run_pipeline(**kwargs)
         admissible_count = result["admissibility_report"]["summary"]["admissible_count"]
         assert annotator.calls == admissible_count
+
+
+# ---------------------------------------------------------------------------
+# Pipeline avec le catalogue et le mapping REELS — réf. § tâche 12
+# ---------------------------------------------------------------------------
+
+
+class TestPipelineWithRealCatalogAndMapping:
+    """Réf. tâche 12 : "pipeline utilisant catalogue + mapping réels".
+
+    Charge data/deception/deception_catalog.json et
+    data/deception/attack_deception_mapping.json (construits par
+    tools/deception_kb/catalog_builder.py / mapping_builder.py) et fait
+    tourner l'orchestrateur complet dessus. Résultat honnête attendu
+    (documenté dans examples/sp1_real_example.py) : le catalogue réel ne
+    renseigne aucun required_asset_types/services/artifacts, donc
+    RequirementsSatisfied="undetermined" pour tout candidat -> aucun
+    candidat admissible -> plan de déploiement vide. Ce test vérifie que
+    le pipeline complet reste néanmoins robuste (ne plante pas) sur ce
+    cas réel, pas qu'il produit un plan non trivial.
+    """
+
+    def _real_instance(self):
+        t1110 = TechniqueOccurrence(
+            technique_id="T1110.001",
+            asset_id="DC01",
+            attributes=NodeAttributes(
+                tactics=["credential-access"],
+                outcomes=[],
+                q_local_success=0.6,
+                impact_confidentiality=0.5,
+                impact_integrity=0.1,
+                impact_availability=0.1,
+                critical_asset=False,
+                accessible_asset=True,
+            ),
+        )
+        t1003 = TechniqueOccurrence(
+            technique_id="T1003",
+            asset_id="DC01",
+            attributes=NodeAttributes(
+                tactics=["credential-access"],
+                outcomes=[],
+                q_local_success=0.65,
+                impact_confidentiality=0.9,
+                impact_integrity=0.2,
+                impact_availability=0.1,
+                critical_asset=False,
+                accessible_asset=True,
+            ),
+        )
+        graph = AttackGraph(nodes=[t1110, t1003], edges=[AttackGraphEdge(source_id="T1110.001@DC01", target_id="T1003@DC01")])
+        assets = [Asset(asset_id="DC01", asset_type="domain_controller", critical=False, accessible=True, properties={})]
+        locations = [Location(location_id="auth-store", location_type="credential_store", asset_id="DC01")]
+        return SystemInstance(graph=graph, si_inventory=SIInventory(assets=assets, locations=locations, topology_edges=[]))
+
+    def test_pipeline_completes_with_real_catalog_and_mapping(self, tmp_path):
+        from src.knowledge_deception import load_attack_deception_mapping, load_deception_catalog, to_sp1_mapping
+
+        catalog_path = Path("data/deception/deception_catalog.json")
+        mapping_path = Path("data/deception/attack_deception_mapping.json")
+        if not catalog_path.exists() or not mapping_path.exists():
+            pytest.skip("Catalogue/mapping réels non générés (tools/deception_kb/catalog_builder.py + mapping_builder.py).")
+
+        kb = load_deception_catalog(catalog_path)
+        attack_mapping = load_attack_deception_mapping(mapping_path)
+        sp1_mapping = to_sp1_mapping(attack_mapping, kb)
+
+        chunks = [
+            Chunk(
+                chunk_id="c1",
+                source_id="s1",
+                source_type="literature",
+                document_id="d1",
+                locator="l",
+                text="Decoy User Credential is a credential created to deceive an adversary.",
+                text_hash="hash1",
+            )
+        ]
+
+        result = run_pipeline(
+            run_id="run-real-catalog",
+            instance=self._real_instance(),
+            catalog=dict(kb.mechanisms_by_id),
+            mapping=sp1_mapping,
+            rag_index=build_index(chunks),
+            annotator=RuleBasedStubAnnotator(),
+            cost_inputs_by_mechanism={
+                mechanism_id: {
+                    "deployment": {"t_setup": 1.0, "w_eng": 50.0, "l_data": 1.0, "w_data": 20.0, "c_integration": 10.0},
+                    "resource": {"r_cpu": 0.1, "c_cpu": 0.02, "r_ram": 0.1, "c_ram": 0.01, "r_disk": 1.0, "c_disk": 0.001, "r_network": 0.1, "c_network": 0.05},
+                    "maintenance": {"t_monitoring": 0.05, "w_eng": 50.0, "s_logs": 0.1, "w_storage": 0.01, "c_updates": 0.1},
+                }
+                for mechanism_id in kb.mechanisms_by_id
+            },
+            horizon=168.0,
+            budget_total=1_000_000.0,
+            theta_c=0.85,
+            theta_i=0.85,
+            theta_a=0.85,
+            q_by_occurrence={"T1110.001@DC01": 0.6, "T1003@DC01": 0.65},
+            impact_by_occurrence={"T1110.001@DC01": 0.4, "T1003@DC01": 0.61},
+            annotation_set_version="test-real-catalog-v1",
+            output_root=tmp_path / "runs",
+        )
+
+        assert result["run_manifest"]["status"] == "completed"
+        # Réf. docstring de classe : résultat honnête, D_i réel mais C_i_h
+        # vide (RequirementsSatisfied="undetermined" partout).
+        assert result["admissibility_report"]["occurrences"]["T1110.001@DC01"]["D_i"] == ["D3-DUC"]
+        assert result["admissibility_report"]["summary"]["admissible_count"] == 0
+        assert result["deployment_plan"] == []

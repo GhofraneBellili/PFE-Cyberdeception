@@ -1,0 +1,2160 @@
+{
+  "schema": "pfe_attack_deception_mapping",
+  "schema_version": "1.0",
+  "mapping_version": "pfe-attack-deception-mapping-1.0",
+  "generated_from": {
+    "d3fend_attack_mapping_seed": {
+      "path": "data\\deception\\staging\\d3fend_attack_mapping_seed_1.5.0.json",
+      "sha256": "8fe61e44087731a4b989e4dfc74742fde3dded371fc24cbc39de4e50f49cb351",
+      "release_version": "1.5.0"
+    },
+    "deception_catalog": {
+      "path": "data\\deception\\deception_catalog.json",
+      "sha256": "d1f34f8c0d647b77ff5f5e0b7f47d128538586320126a8c57f8417b6d0ec8a58",
+      "catalog_version": "pfe-deception-catalog-1.0"
+    }
+  },
+  "relation_count": 127,
+  "relations": [
+    {
+      "attack_id": "T1003.003",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1003.005",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1003.007",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1003.008",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1003.008",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1005",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1014",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1016",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-execute"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1018",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-access"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1027.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1027.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "obfuscates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1027.004",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1033",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-access"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1036.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1036.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-create"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1036.005",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-create"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1036.006",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1037.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1037.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1037.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1037.003",
+      "mechanism_id": "D3-DNR",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Network Resource",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1037.004",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1039",
+      "mechanism_id": "D3-DNR",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Network Resource",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1041",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-transfer"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1048.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-transfer"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1053.004",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1055.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "loads"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "adds"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1055.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-add"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1055.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-add"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1055.009",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1055.014",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1059",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "executes"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1070.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1070.004",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "deletes"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1070.005",
+      "mechanism_id": "D3-DNR",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Network Resource",
+            "off_artifact_relation": "unmounts"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1071",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-transfer"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1071.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-transfer"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1072",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "adds"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1074.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-create"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1074.002",
+      "mechanism_id": "D3-DNR",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Network Resource",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1080",
+      "mechanism_id": "D3-DNR",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Network Resource",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1083",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1098.001",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1110.001",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1110.002",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1110.003",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1114.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "reads"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1119",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1127.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1134.001",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "copies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1134.002",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "copies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1134.003",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "copies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1137.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-add"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1137.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "adds"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1140",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-add"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1142",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1187",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1204.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "executes"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1213.001",
+      "mechanism_id": "D3-DNR",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Network Resource",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1213.002",
+      "mechanism_id": "D3-DNR",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Network Resource",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1218.005",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "interprets"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1218.011",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "loads"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1220",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "interprets"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "adds"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1486",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "encrypts"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1491.002",
+      "mechanism_id": "D3-DNR",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Network Resource",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1505.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "adds"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1528",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1534",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "produces"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1539",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1543.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1543.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-create"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1543.004",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1546.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1546.004",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1546.005",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-create"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1546.006",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1546.008",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1546.009",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "loads"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1546.010",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "loads"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1546.013",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1546.014",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-create"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1546.015",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "loads"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1547.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1547.006",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1547.007",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1547.008",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-create"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1547.009",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1547.011",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1548.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "executes"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1548.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1550.001",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "uses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1550.004",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "adds"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1552",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1552.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1552.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1555",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-access"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1555.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1556.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1556.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1558",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "may-access"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "may-create"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1558.001",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "forges"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1560",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1560.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1560.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1560.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1562.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1564.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1564.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1564.006",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1564.007",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1565.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1565.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1566.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "produces"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1566.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "produces"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1566.003",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "produces"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1573.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-transfer"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1574.001",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-create"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1574.002",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-create"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1574.004",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-create"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        },
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "may-modify"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1574.006",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "modifies"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1574.007",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1574.008",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1574.009",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "creates"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1574.012",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "adds"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1606",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "forges"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1606.001",
+      "mechanism_id": "D3-DUC",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "Credential",
+            "off_artifact_relation": "forges"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    },
+    {
+      "attack_id": "T1649",
+      "mechanism_id": "D3-DF",
+      "evidence": [
+        {
+          "relation_path": {
+            "def_artifact_relation": "spoofs",
+            "shared_artifact": "File",
+            "off_artifact_relation": "accesses"
+          },
+          "source": "d3fend-full-mappings.json",
+          "source_sha256": "684f0a1872868a64b9046e66111e28cb9f0dc46c08e8f044b803fd8b493260ba"
+        }
+      ],
+      "origin": "d3fend_inferred"
+    }
+  ]
+}
