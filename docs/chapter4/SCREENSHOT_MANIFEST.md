@@ -120,3 +120,9 @@ Condition de déblocage: REMPLIE — test_reference_example (ancre §11) est ver
   `docs/chapter4/outputs/optimizer_example.txt`) — conformément à la note
   ci-dessus, aucune capture C9 n'est créée pour lui : Pareto/`Y*` restent
   réservés au chapitre 5.
+- `src/orchestrator.py` (point d'entrée unique SP1 → RAG → annotation →
+  gel → coût → `(P)` → risque avant/après) est désormais implémenté et
+  testé (`tests/test_orchestrator.py`, 8 tests verts ; sortie réelle
+  `docs/chapter4/outputs/pipeline_example.txt`) — aucune capture dédiée
+  non plus : C8 couvre déjà « SP3 ou pipeline complet » et reste
+  attribuée à SP3 (section 9 du rapport).

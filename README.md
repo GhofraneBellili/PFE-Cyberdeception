@@ -1524,6 +1524,70 @@ elles-mêmes sont réelles et indépendantes de la source des scores.
 Orchestrateur du pipeline complet (`runs/<run_id>/...`), dernier module
 de l'ordre imposé.
 
+---
+
+### Étape 15 — Orchestrateur du pipeline complet (`src/orchestrator.py`)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Fournir un point d'entrée unique enchaînant SP1 → RAG → annotation →
+validation/agrégation/gel → coût → résolution de `(P)` → reporting
+avant/après (§19), dernier module de l'ordre imposé.
+
+#### Traitement réalisé
+
+`run_pipeline` appelle chaque module déjà testé indépendamment dans
+l'ordre du workflow : `build_admissibility_report` (SP1) ; pour chaque
+candidat admissible, `retrieve` (RAG) puis `annotator.annotate` — **une
+seule fois par candidat**, jamais rappelé ensuite ; `freeze_table`
+(validation + agrégats déterministes + gel) ; `compute_cost_by_mechanism`
+(coût) ; `optimizer.solve` (lit exclusivement la table figée, plus aucun
+appel à l'annotateur à partir d'ici) ; `propagate_risk` pour le risque
+avant/après de la configuration sélectionnée. Chaque étape est
+sérialisée dans `runs/<run_id>/*.json` (non versionné, régénérable).
+
+#### Sorties
+
+`docs/chapter4/outputs/pipeline_example.txt`, généré par
+`python -m examples.orchestrator_example` sur l'instance
+`(T1078@DC01 → T1003@DC01)` avec un index RAG réel (124 chunks) : 2
+candidats évalués, 1 admissible, 2 configurations énumérées et
+faisables, front de Pareto de taille 1, risque terminal réduit de 0.2974
+à 0.2864. `DE` provient du repli déterministe `rule_based_stub`.
+
+#### Fichiers concernés
+
+`src/orchestrator.py`, `tests/test_orchestrator.py`,
+`examples/orchestrator_example.py`.
+
+#### Tests et validation
+
+`tests/test_orchestrator.py` — 8 tests (tous les fichiers attendus
+créés, plan de déploiement cohérent avec la sélection de l'optimiseur,
+risque avec/sans déception présent, `DE` gelé cohérent avec le plan,
+manifeste de run lisible, budget invalide rejeté, **l'annotateur n'est
+appelé qu'une seule fois par candidat admissible** — invariant central du
+projet, vérifié par comptage). **503 tests** au total au moment de la
+validation. Détail complet : `docs/chapter4/IMPLEMENTATION_REPORT.md`,
+section 11.
+
+#### Limites actuelles
+
+Hérite des limites de chaque module (exploration exhaustive de
+l'optimiseur, repli LLM déterministe, vecteur RAG non sémantique, aucun
+catalogue de déception réel). Pas de `reporter.py` explicatif dédié :
+`deployment_plan.json`/`risks.json` restent des structures de données,
+pas un rapport rédigé avec justification textuelle par placement.
+
+#### Lien avec l'étape suivante
+
+Tous les modules de l'ordre imposé sont désormais implémentés. Travaux
+restants ouverts : `src/reporter.py` (rapport explicatif dédié),
+composition réelle du catalogue `\mathcal D` (OPEN_DECISION), intégration
+d'une API LLM réelle si elle devient disponible.
+
 ## OPEN_DECISION en cours
 
 Ces points sont volontairement non résolus et ne doivent pas l'être

@@ -45,7 +45,8 @@ déclaration d'intention) :
 | `src/risk_engine.py` | ~150 | **IMPLEMENTE** (SP3, `test_reference_example` vert) |
 | `src/cost_engine.py` | ~140 | **IMPLEMENTE** (Cost(d;H)) |
 | `src/optimizer.py` | ~270 | **IMPLEMENTE** (unicité, budget, Pareto, `test_reference_example`-style validation exhaustive) |
-| `src/reporter.py` | 8 (stub) | NON IMPLEMENTE |
+| `src/reporter.py` | 8 (stub) | NON IMPLEMENTE (rôle partiellement couvert par `src/orchestrator.py`, voir section 11) |
+| `src/orchestrator.py` | ~230 | **IMPLEMENTE** (point d'entrée unique, hors liste §26 — ajout spécifique à la tâche chapitre 4) |
 
 En complément, une couche **hors runtime** (`tools/deception_kb/`)
 construit, hors ligne et de façon déterministe, les sources documentaires
@@ -80,6 +81,11 @@ Y* (reporter.py)                      ← NON IMPLEMENTE (reporter dédié) ;
                                          matérialisation minimale de Y* déjà
                                          produite par optimizer.py
                                          (`Configuration.to_deployment_plan`)
+  ↓
+orchestrator.py (point d'entrée unique) ← IMPLEMENTE
+                                           (SP1 -> RAG -> annotation -> gel
+                                           -> cout -> (P) -> risque avant/après,
+                                           runs/<run_id>/*.json)
 ```
 
 ### Capture associée
@@ -952,9 +958,110 @@ interne pour ce document, pas de capture de chapitre 4.
 
 ## 11. Orchestration du pipeline
 
-**Status : NON IMPLEMENTE.**
+**Status : IMPLEMENTE.**
 
-Aucun point d'entrée `runs/<run_id>/...` n'existe encore.
+### Objectif
+
+Fournir un point d'entrée unique enchaînant SP1 → RAG → annotation →
+validation/agrégation/gel → coût → résolution de `(P)` → reporting
+avant/après, sur une instance déjà validée (§19).
+
+### Correspondance avec le chapitre 3
+
+CLAUDE.md §19 (« Workflow complet d'exécution ») ; §18.3 (« aucun appel
+LLM pendant l'optimisation », vérifié ici par construction : l'annotateur
+n'est appelé qu'une seule fois par candidat, avant le gel).
+
+### Fichiers concernés
+
+`src/orchestrator.py`, `tests/test_orchestrator.py`,
+`examples/orchestrator_example.py`. **Ce module n'appartient pas à la
+liste `§26` de CLAUDE.md** (`schemas`…`reporter`) : c'est un ajout
+spécifique à la tâche d'implémentation du chapitre 4, qui demande
+explicitement un point d'entrée unique — il ne remplace pas
+`src/reporter.py` (toujours un stub), dont il ne couvre qu'une partie du
+rôle (matérialisation de `Y*` et risque avant/après ; pas de rapport
+explicatif textuel par placement).
+
+### Classes / fonctions principales
+
+`run_pipeline` (orchestration complète), `OrchestratorError`.
+
+### Entrées
+
+Une `SystemInstance` déjà validée, un catalogue, un mapping `D_i`, un
+`RagIndex` déjà construit, un `AnnotationProvider` (le repli déterministe
+`RuleBasedStubAnnotator` dans les exemples), les paramètres de coût par
+mécanisme, l'horizon, le budget, les seuils `theta_*`, `q`/`I` par
+occurrence, une version d'ensemble d'annotations.
+
+### Traitement
+
+SP1 (`build_admissibility_report`) → pour chaque candidat admissible :
+RAG (`retrieve`) puis annotation (`annotator.annotate`, **une seule fois
+par candidat**) → gel (`freeze_table`) → coût
+(`compute_cost_by_mechanism`) → résolution de `(P)` (`optimizer.solve`,
+lit exclusivement `frozen_table.de_by_candidate()`, plus aucun appel à
+l'annotateur à partir d'ici) → propagation du risque avant/après pour la
+configuration sélectionnée (`risk_engine.propagate_risk`, reporting).
+Chaque étape est sérialisée en JSON dans `runs/<run_id>/` (non
+versionné, régénérable — voir `.gitignore`).
+
+### Sorties
+
+`runs/<run_id>/{input_manifest,candidates,retrieval,annotations_raw,
+annotations_frozen,costs,pareto,deployment_plan,risks,run_manifest}.json`
+et un résumé en mémoire pour usage programmatique immédiat.
+
+### Technologie utilisée
+
+Python pur (`json`, `pathlib`, `dataclasses`).
+
+### Commande réelle d'exécution
+
+```bash
+python -m examples.orchestrator_example
+```
+
+### Tests
+
+`tests/test_orchestrator.py` — 8 tests : tous les fichiers attendus sont
+créés, le plan de déploiement correspond exactement à la sélection de
+l'optimiseur, le risque avec/sans déception est présent, le `DE` gelé
+utilisé dans le plan correspond à celui de la table figée, le manifeste
+de run est lisible et cohérent, un budget invalide lève
+`OrchestratorError`, et **l'annotateur n'est appelé qu'une seule fois par
+candidat admissible** (compté explicitement, invariant central du
+projet). Tous verts.
+
+### Exemple réel disponible
+
+`docs/chapter4/outputs/pipeline_example.txt` — exécution réelle complète
+sur l'instance `(T1078@DC01 → T1003@DC01)` avec un index RAG réel (124
+chunks D3FEND/Engage/littérature) : 2 candidats évalués, 1 admissible, 2
+configurations énumérées et faisables, front de Pareto de taille 1,
+risque terminal réduit de 0.2974 à 0.2864 avec la déception sélectionnée.
+`DE` provient du repli déterministe `rule_based_stub` — pas un résultat
+expérimental du chapitre 5.
+
+### Capture associée
+
+Aucune capture dédiée : la liste fixe C1-C8 (§4/§5 de la tâche) réserve
+déjà C8 à « SP3 ou pipeline complet », et C8 est déjà attribuée à SP3
+(section 9). Cette sortie sert de preuve d'exécution bout-en-bout, pas de
+capture supplémentaire.
+
+### Limites
+
+- Pas de réduction ni de sélection Top-K de l'espace de décision (§24) :
+  hérite directement des limites d'`optimizer.py` (exploration
+  exhaustive, réservée aux petites instances).
+- Pas d'intégration avec un futur `reporter.py` explicatif (justification
+  textuelle par placement, preuves associées) : `deployment_plan.json` et
+  `risks.json` restent des structures de données, pas un rapport rédigé.
+- `runs/<run_id>/` n'est pas versionné (régénérable) — seule
+  `docs/chapter4/outputs/pipeline_example.txt` est retenue comme preuve
+  d'exécution pour le chapitre 4.
 
 ---
 
@@ -974,8 +1081,12 @@ jamais `src/annotator_llm.py`, `src/rag_indexer.py` ni
 `tests/test_annotation_validator.py::TestLlmOutOfExecutionPath` vérifient
 que `src/annotator_llm.py` et `src/annotation_validator.py` n'importent
 jamais `src/risk_engine.py` ni `src/optimizer.py` — **les deux sont
-verts**. Le volet reste à ajouter pour un futur `reporter.py`/
-orchestrateur dès qu'ils existeront.
+verts**. Au niveau de l'orchestrateur (`src/orchestrator.py`), l'invariant
+est reformulé et vérifié dynamiquement : l'annotateur n'est appelé
+**exactement une fois par candidat admissible**, jamais pendant le coût,
+le risque ou `(P)` (`tests/test_orchestrator.py::TestLlmOutOfExecutionPath`,
+comptage explicite des appels) — **vert**. Le volet reste à ajouter pour
+un futur `reporter.py` dès qu'il existera.
 
 ### Déterminisme du LLM
 
@@ -995,17 +1106,40 @@ température fixe (0) pour préserver cette reproductibilité.
 
 ## 13. Limites de l'implémentation
 
-- Seule la couche de préparation des connaissances est fonctionnelle à ce
-  stade (schémas, graphe, KB ATT&CK, KB déception + staging offline
-  D3FEND/Engage/littérature/normalisation). Aucun des modules SP1 → Y*
-  n'est encore implémenté.
-- Aucun `deception_catalog.json` n'existe : sa composition dépend d'une
-  OPEN_DECISION non résolue (quels concepts D3FEND/Engage/littérature
-  deviennent des mécanismes finaux de `\mathcal D`) — voir
-  `tools/deception_kb/README.md`, section OPEN_DECISION.
-- Le test de régression `test_reference_example` (ancre de validation du
-  cœur du système) n'existe pas encore : aucun module de risque ou
-  d'optimisation ne peut donc être considéré comme correct à ce stade.
+Tous les modules de l'ordre imposé (schémas → graphe → SP1 → SP3 → coût →
+optimiseur → RAG → annotation LLM → gel → orchestrateur) sont implémentés
+et testés (503 tests verts). Limites qui subsistent :
+
+- Aucun `deception_catalog.json` réel n'existe : sa composition dépend
+  d'une OPEN_DECISION non résolue (quels concepts D3FEND/Engage/
+  littérature deviennent des mécanismes finaux de `\mathcal D`) — voir
+  `tools/deception_kb/README.md`, section OPEN_DECISION. Tous les
+  exemples réels de ce document utilisent des mécanismes synthétiques
+  mais structurellement valides (mêmes champs qu'un `DeceptionMechanism`
+  réel issu de D3FEND).
+- **Aucune API LLM réelle n'est disponible dans cet environnement** :
+  `src/annotator_llm.py` utilise le repli déterministe
+  `RuleBasedStubAnnotator` (`model_version="rule_based_stub"`), qui
+  produit un score unique de chevauchement lexical appliqué
+  identiquement aux 11 sous-métriques — jamais une distinction sémantique
+  réelle. Toutes les valeurs `DE`/`Realisme`/`P_interaction`/
+  `P_engagement`/`Effet_prog` des exemples de ce document en dépendent
+  directement et ne doivent jamais être présentées comme un résultat
+  expérimental du chapitre 5.
+- Le vecteur RAG (`src/rag_indexer.py`) est un TF-IDF haché déterministe,
+  pas un embedding sémantique de modèle de langage (choix technique
+  documenté, pas une bibliothèque d'embeddings choisie).
+- L'optimiseur (`src/optimizer.py`) explore exhaustivement l'espace des
+  configurations (§23), sans réduction ni heuristique (§24) : réservé aux
+  petites instances de validation, pas dimensionné pour un SI de grande
+  taille.
+- Pas de `src/reporter.py` explicatif dédié (justification textuelle par
+  placement, preuves associées) : `src/orchestrator.py` produit des
+  structures de données (`deployment_plan.json`, `risks.json`), pas un
+  rapport rédigé.
+- `Pertinent` (SP1) reste simplifié à une relation topologique directe
+  (même actif ou arête à un saut), pas une analyse complète des chemins
+  vers les nœuds terminaux.
 
 ## 14. Matrice de correspondance chapitre 3 → implémentation
 

@@ -12,3 +12,9 @@ htmlcov/
 # data/deception/source_manifest.json, non versionnés. Le staging dérivé
 # (data/deception/staging/) et le manifest restent, eux, versionnés.
 data/deception/raw/
+
+# Sorties d'exécution de l'orchestrateur (src/orchestrator.py) : régénérables
+# via examples/orchestrator_example.py, pas des preuves versionnées — voir
+# docs/chapter4/outputs/pipeline_example.txt pour la preuve d'exécution réelle
+# retenue pour le chapitre 4.
+runs/
