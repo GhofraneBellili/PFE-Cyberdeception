@@ -54,7 +54,7 @@ def generate(output_path: Path = OUTPUT_PATH) -> Path:
         ("Description", mechanism["description"]),
         ("Artefact cible (target_artifacts)", ", ".join(mechanism["target_artifacts"])),
         ("Emplacement possible (possible_placements)", ", ".join(mechanism["possible_placements"])),
-        ("Type d'actif requis (required_asset_types)", ", ".join(profile["required_asset_types"])),
+        ("Type d'actif requis (héritage documentaire, non utilisé par SP1)", ", ".join(profile["required_asset_types"])),
         ("Mécanisme d'interaction (interaction_mechanism)", mechanism["interaction_mechanism"]),
         ("Version", mechanism["version"]),
     ]
@@ -119,9 +119,10 @@ def generate(output_path: Path = OUTPUT_PATH) -> Path:
 
     ax.text(
         margin, footer_height - 0.25,
-        "Note : required_asset_types renseigné après audit documentaire (§4.3.3 FINAL_TECHNICAL_REPORT.md) — "
-        "aucune valeur inventée, traçable au passage ci-dessus.",
-        fontsize=8, color=COLOR_TEXT_SECONDARY, family=FONT_SANS, va="bottom", ha="left", style="italic",
+        "Note (réf. tâche « separate knowledge and organization capabilities ») : admissibility_profile est un "
+        "champ hérité, conservé pour compatibilité mais plus consulté par SP1 (src/admissibility.py) — "
+        "Autorise/PrerequisSatisfaits viennent désormais du catalogue OPÉRATIONNEL de l'organisation (voir C3/C8).",
+        fontsize=8, color=COLOR_TEXT_SECONDARY, family=FONT_SANS, va="bottom", ha="left", style="italic", wrap=True,
     )
 
     save_figure(fig, output_path)

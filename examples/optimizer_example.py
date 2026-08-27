@@ -37,10 +37,10 @@ from src.schemas import (
     Asset,
     AttackGraph,
     AttackGraphEdge,
-    DeceptionAdmissibilityProfile,
     DeceptionMechanism,
     Location,
     NodeAttributes,
+    OrganizationDeceptionCapability,
     SIInventory,
     SITopologyEdge,
     SystemInstance,
@@ -109,17 +109,14 @@ def build_instance() -> SystemInstance:
 
 
 def build_catalog() -> dict[str, DeceptionMechanism]:
+    """Catalogue de CONNAISSANCES minimal (réf. tâche « separate knowledge
+    and organization capabilities »)."""
     duc = DeceptionMechanism(
         id="D3-DUC",
         name="Decoy User Credential",
         description="A Credential created for the purpose of deceiving an adversary.",
         interaction_mechanism="use credential",
         version="1.5.0",
-        admissibility_profile=DeceptionAdmissibilityProfile(
-            allowed_location_types=["credential_store"],
-            required_asset_types=["domain_controller"],
-            required_services=["ldap"],
-        ),
     )
     df = DeceptionMechanism(
         id="D3-DF",
@@ -127,18 +124,36 @@ def build_catalog() -> dict[str, DeceptionMechanism]:
         description="A file created for the purposes of deceiving an adversary.",
         interaction_mechanism="file access",
         version="1.5.0",
-        admissibility_profile=DeceptionAdmissibilityProfile(allowed_location_types=["filesystem"]),
     )
     return {"D3-DUC": duc, "D3-DF": df}
+
+
+def build_organization_catalog() -> dict[str, OrganizationDeceptionCapability]:
+    """Catalogue OPÉRATIONNEL d'une organisation d'exemple."""
+    return {
+        "D3-DUC": OrganizationDeceptionCapability(
+            mechanism_id="D3-DUC",
+            enabled=True,
+            allowed_location_types=["credential_store"],
+            allowed_asset_types=["domain_controller"],
+            required_services=["ldap"],
+        ),
+        "D3-DF": OrganizationDeceptionCapability(
+            mechanism_id="D3-DF",
+            enabled=True,
+            allowed_location_types=["filesystem"],
+        ),
+    }
 
 
 def main() -> None:
     instance = build_instance()
     catalog = build_catalog()
+    organization_catalog = build_organization_catalog()
     mapping = {"T1078": ["D3-DUC", "D3-DF"]}
 
     admissibility_report = build_admissibility_report(
-        instance, catalog, mapping, theta_c=THETA_C, theta_i=THETA_I, theta_a=THETA_A
+        instance, catalog, organization_catalog, mapping, theta_c=THETA_C, theta_i=THETA_I, theta_a=THETA_A
     )
 
     horizon = 720.0

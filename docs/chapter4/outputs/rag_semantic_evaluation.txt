@@ -1,16 +1,16 @@
 RAG - Evaluation lexicale (TF-IDF) vs semantique (embeddings) - reel
 ------------------------------------------------------------------------------
-Corpus : 124 chunks reels (data/deception/staging/*.json)
+Corpus : 149 chunks reels (data/deception/staging/*.json)
 Modele semantique : BAAI/bge-small-en-v1.5 (dim=384, backend=faiss)
 Requetes : 17 (data/rag/rag_eval_queries.json)
 Metrique top-k : 5
 ------------------------------------------------------------------------------
 Moteur                Recall@5    MRR@5       nDCG@5      
-Lexical (TF-IDF)      0.331       0.522       0.342       
-Semantique            0.396       0.578       0.400       
-Hybride (meilleur)    0.470       0.622       0.452         (alpha=0.8)
+Lexical (TF-IDF)      0.331       0.514       0.340       
+Semantique            0.352       0.549       0.360       
+Hybride (meilleur)    0.409       0.641       0.427         (alpha=0.5)
 ------------------------------------------------------------------------------
-Mode retenu (reel, calcule) : hybrid_alpha_0.8
+Mode retenu (reel, calcule) : hybrid_alpha_0.5
 ------------------------------------------------------------------------------
 Requete               Topic                     Recall@5 lex  Recall@5 sem  
 q01_credentials       credentials               0.750         0.500         
@@ -24,9 +24,9 @@ q08_web_application   web application           0.333         0.333
 q09_fake_service      fake service              0.333         0.333         
 q10_decoy_account     decoy account             0.250         0.500         
 q11_persistence       persistence               0.000         0.000         
-q12_discovery         discovery                 0.250         0.500         
+q12_discovery         discovery                 0.250         0.250         
 q13_data_collection   data collection           0.000         0.000         
-q14_exfiltration      exfiltration              0.500         1.000         
+q14_exfiltration      exfiltration              0.500         0.500         
 q15_attack_redirectionattack redirection        0.500         0.000         
 q16_honeytoken        honeytoken                0.000         0.333         
 q17_psychological_effectpsychological effect on a 0.000         0.000         

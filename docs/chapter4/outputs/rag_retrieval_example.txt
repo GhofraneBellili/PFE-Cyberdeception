@@ -1,12 +1,13 @@
 RAG - Resultat reel de recuperation (src/rag_retriever.py)
 ------------------------------------------------------------------------------
-Index : 124 chunks (44 D3FEND, 62 Engage, 18 litterature)
+Index : 149 chunks (44 D3FEND, 62 Engage, 43 litterature)
 Requete : 'decoy credential store to deceive an adversary on a domain controller'
 ------------------------------------------------------------------------------
 Rang Score   Type        chunk_id                     Extrait
-1    0.338   d3fend      d3fend:D3-DUC:0              Decoy User Credential
-2    0.296   engage      engage:EAC0022:long_descri.. Artifact Diversity means presenting multiple network and sys...
-3    0.288   engage      engage:EAC0019:long_descri.. To determine the system Baseline, the defender must identify...
-4    0.278   literature  doi_10.1145_3337772__ev001   we propose a taxonomy that defines six types of deception: p...
-5    0.272   d3fend      d3fend:D3-DUC:3              d3f:Credential
+1    0.342   d3fend      d3fend:D3-DUC:0              Decoy User Credential
+2    0.292   engage      engage:EAC0019:long_descri.. To determine the system Baseline, the defender must identify...
+3    0.288   engage      engage:EAC0022:long_descri.. Artifact Diversity means presenting multiple network and sys...
+4    0.280   d3fend      d3fend:D3-DUC:3              d3f:Credential
+5    0.257   d3fend      d3fend:D3-DUC:2              ## How it works
+A detection analytic is developed to determi...
 ------------------------------------------------------------------------------

@@ -42,7 +42,7 @@ from src.knowledge_deception import load_attack_deception_mapping, load_deceptio
 from src.rag_indexer import build_index, load_d3fend_chunks, load_engage_chunks, load_literature_chunks
 from src.rag_retriever import retrieve, to_deception_evidence
 from src.schemas import AnnotationContext, AttackOccurrenceRef, DeceptionRef, GraphContext
-from examples.sp1_real_example import CATALOG_PATH, MAPPING_PATH, build_example_instance
+from examples.sp1_real_example import CATALOG_PATH, MAPPING_PATH, build_example_instance, build_example_organization_catalog
 
 STAGING_DIR = Path("data/deception/staging")
 OUT_DIR = Path("docs/chapter4/outputs")
@@ -87,8 +87,11 @@ def main() -> None:
     sp1_mapping = to_sp1_mapping(attack_mapping, kb)
     instance = build_example_instance()
     catalog = dict(kb.mechanisms_by_id)
+    organization_catalog = build_example_organization_catalog()
 
-    report = build_admissibility_report(instance, catalog, sp1_mapping, theta_c=THETA, theta_i=THETA, theta_a=THETA)
+    report = build_admissibility_report(
+        instance, catalog, organization_catalog, sp1_mapping, theta_c=THETA, theta_i=THETA, theta_a=THETA
+    )
     candidate = find_first_admissible_candidate(report)
 
     if candidate is None:

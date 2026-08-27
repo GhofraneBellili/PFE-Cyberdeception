@@ -12,27 +12,41 @@
 > artefact/capture disponible, (L) formulation à NE PAS utiliser dans le
 > mémoire.
 >
-> État au moment de la rédaction (mise à jour post-upgrade RAG sémantique +
-> catalogue étendu, voir `docs/chapter4/BEFORE_UPGRADE_STATE.md` pour
-> l'état AVANT cette passe) : **664 tests verts** (+ 2 tests d'intégration
-> optionnels `pytest -m real_llm`), **RAG sémantique** (`sentence-transformers`
-> + FAISS) devenu le **moteur principal** — le TF-IDF haché
-> (`src/rag_indexer.py::RagIndex`/`retrieve`) reste disponible comme
-> **baseline lexicale expérimentale**, comparée quantitativement
-> (`docs/chapter4/outputs/rag_semantic_evaluation.*` : Recall@5 sémantique
-> 0.396 > lexical 0.331 ; mode hybride retenu, alpha=0.8, Recall@5=0.470,
-> gain mesuré, pas supposé). Catalogue réel de **26 mécanismes** (9
-> D3FEND, 15 MITRE Engage, 2 littérature — `docs/chapter4/CATALOG_AUDIT.md`),
+> État au moment de la rédaction (mise à jour post-upgrade « separate
+> knowledge and organization capabilities », voir
+> `docs/chapter4/BEFORE_UPGRADE_STATE.md` pour l'état avant la toute
+> première passe RAG/catalogue) : **697 tests verts** (+ 2 tests
+> d'intégration optionnels `pytest -m real_llm`). **RAG sémantique**
+> (`sentence-transformers` + FAISS) reste le **moteur principal** — le
+> TF-IDF haché reste une baseline lexicale expérimentale (Recall@5
+> sémantique 0.352 > lexical 0.331 sur le corpus actuel de 149 chunks ;
+> mode hybride retenu, alpha=0.5, Recall@5=0.409 —
+> `docs/chapter4/outputs/rag_semantic_evaluation.*`).
+>
+> **Catalogue de connaissances réel étendu à 51 mécanismes** (9 D3FEND, 15
+> MITRE Engage, 25 littérature — `docs/chapter4/CATALOG_AUDIT.md`),
 > mapping réel de **591 relations** (464 directes MITRE Engage + 127
 > dérivées D3FEND, 271 techniques ATT&CK couvertes —
-> `docs/chapter4/outputs/catalog_statistics.*`). Instance SP1 étendue :
-> **4 candidats réellement admissibles** sur 3042 candidats bruts, couvrant
-> 3 mécanismes distincts (`D3-DNR`, `EAC0009`, `EAC0021`) sur 2 occurrences
-> (`docs/chapter4/outputs/sp1_extended_real_example.*`) — voir section
-> 4.4.1 pour l'analyse de la cause structurelle (pas un manque de richesse
-> d'instance). État de l'exécution LLM réelle et des figures C5/C6/C7 :
-> voir la note de clôture, mise à jour séparément une fois cette phase
-> tranchée.
+> `docs/chapter4/outputs/catalog_statistics.*`).
+>
+> **Séparation connaissance/capacité organisationnelle** (réf. tâche
+> « separate knowledge and organization capabilities », voir section
+> « Préparation hors ligne vs exécution en ligne » ci-dessous) : SP1 est
+> désormais un module strictement RUNTIME — l'admissibilité
+> (Autorise/PrerequisSatisfaits) vient exclusivement d'un catalogue
+> OPÉRATIONNEL fourni par l'organisation
+> (`OrganizationDeceptionCapability`, jamais du catalogue de connaissances
+> D3FEND/Engage/littérature). Sur l'instance runtime représentative
+> (`examples/sp1_extended_real_example.py`, catalogue opérationnel
+> d'exemple 42 mécanismes référencés/30 activés) : **46 candidats
+> réellement admissibles** (contre 4 avec l'ancienne architecture fondée
+> sur D3FEND), couvrant **9 mécanismes distincts** sur les **9**
+> occurrences non terminales de l'instance — voir section 4.4.1 et
+> `docs/chapter4/outputs/sp1_runtime_statistics.*`.
+>
+> État de l'exécution LLM réelle et des figures C5/C6 : voir la note de
+> clôture — inchangé par cette passe (SP1/catalogue uniquement, aucune
+> exécution LLM effectuée ici).
 
 ---
 
@@ -92,9 +106,9 @@ reproductible, jamais un service tiers (Chroma/Pinecone/Weaviate).
 **B. Réellement implémenté.** Arborescence complète et stable :
 `src/` (18 modules, dont `semantic_embedder.py`/`vector_index.py` ajoutés
 pour le RAG sémantique), `tools/deception_kb/` (couche offline, catalogue
-étendu à 26 mécanismes), `data/deception/` (staging + catalogue + mapping
-réels) + `data/rag/` (jeu de requêtes d'évaluation RAG), `examples/` (15
-scripts exécutables), `tests/` (664 tests + 2 optionnels `real_llm`),
+étendu à 51 mécanismes), `data/deception/` (staging + catalogue + mapping
+réels) + `data/rag/` (jeu de requêtes d'évaluation RAG), `examples/` (17
+scripts exécutables), `tests/` (697 tests + 2 optionnels `real_llm`),
 `docs/chapter4/` (ce document + IMPLEMENTATION_REPORT.md +
 TECHNOLOGIES.md + SCREENSHOT_MANIFEST.md + ADMISSIBILITY_EVIDENCE_AUDIT.md
 + CATALOG_AUDIT.md + BEFORE_UPGRADE_STATE.md + outputs/ + screenshots/),
@@ -165,7 +179,7 @@ par un orchestrateur explicite qui appelle chaque sous-problème (SP1,
 SP2, SP3) dans l'ordre, mais chaque sous-problème reste un module Python
 séparé et testable isolément — pas une fonction monolithique.
 
-**J. Limites réelles.** Le catalogue réel (26 mécanismes, section 4.3.3)
+**J. Limites réelles.** Le catalogue réel (51 mécanismes, section 4.3.3)
 n'a de relation `M_{i,d}` tracée que pour 18 d'entre eux, et un prérequis
 d'admissibilité documenté (`required_*`) pour seulement 3 (`D3-DNR`,
 `EAC0009`, `EAC0021`, section 4.4.1) — l'espace de décision effectivement
@@ -318,7 +332,7 @@ catalogue coexistent, jamais confondues :
   relation ATT&CK directement tracée (`D3-DF`, `D3-DUC`, `D3-DNR`), 127
   relations M_{i,d} — conservée telle quelle comme base auditée.
 - `build_expanded_catalog()` (extension, réf. tâche « catalogue ≥25
-  mécanismes ») : **catalogue réel de 26 mécanismes** — les 3 ci-dessus +
+  mécanismes ») : **catalogue réel de 51 mécanismes** — les 3 ci-dessus +
   6 concepts D3FEND supplémentaires (feuilles réelles de la branche
   « Deceive », interaction_mechanism cité du kb-article faute de relation
   ATT&CK tracée) + **15 activités MITRE Engage** (« Engagement », jamais
@@ -397,7 +411,7 @@ officielles, `origin: "mitre_engage_v1.0"`), `literature_evidence_seed_1.2.json`
   — l'extension est additive (`build_expanded_catalog()`/
   `build_expanded_mapping()`), jamais une réécriture de la politique v1.
 - Distinction « aucun prérequis » (`known_none`) vs « prérequis inconnu »
-  (`unknown`) analysée explicitement pour les 26 mécanismes : seuls
+  (`unknown`) analysée explicitement pour les 51 mécanismes : seuls
   `D3-DNR`/`EAC0009`/`EAC0021` ont un cas `known_none` documenté — les 23
   autres restent `unknown` (liste vide → `undetermined`), jamais inventé.
 - Granularité honeypot/honeynet explicitement justifiée (§6 de l'audit) :
@@ -414,12 +428,16 @@ interaction_mechanism + non abstrait) pour décider QUELS concepts/activités
 deviennent des mécanismes — choix technique nécessaire, à assumer
 explicitement dans la rédaction.
 
-**J. Limites réelles.** 8 des 26 mécanismes (les 6 D3FEND étendus +
-2 littérature) n'ont encore aucune relation `M_{i,d}` tracée — aucun
-staging disponible ne l'établit, aucune relation n'a été fabriquée pour
-combler ce vide (limite documentée, `catalog_statistics.json`). Seuls 3
-mécanismes sur 26 ont un `required_*` documenté (`D3-DNR`, `EAC0009`,
-`EAC0021`).
+**J. Limites réelles.** 33 des 51 mécanismes (les 6 D3FEND étendus, réf.
+§6bis, et les 25 mécanismes littérature de la section 8) n'ont encore
+aucune relation `M_{i,d}` tracée — aucun staging disponible ne l'établit,
+aucune relation n'a été fabriquée pour combler ce vide (limite
+documentée, `catalog_statistics.json`). Le champ `admissibility_profile`/
+`required_*` du catalogue de connaissances est de toute façon devenu un
+champ hérité (réf. tâche « separate knowledge and organization
+capabilities », section 4.3.4) : les prérequis d'admissibilité viennent
+désormais exclusivement du catalogue OPÉRATIONNEL fourni par
+l'organisation, jamais du catalogue de connaissances.
 
 **K. Artefact/capture.** C2 (`AVAILABLE`, à régénérer pour refléter le
 catalogue étendu) —
@@ -428,16 +446,130 @@ généré par `tools/chapter4_figures/c2_mechanism.py`.
 
 **L. Formulation à ne pas utiliser.** Ne pas écrire « le catalogue de
 cyberdéception couvre l'ensemble des mécanismes documentés par D3FEND et
-MITRE Engage » — 26 mécanismes réels sur un total bien plus grand
+MITRE Engage » — 51 mécanismes réels sur un total bien plus grand
 (D3FEND/Engage documentent des dizaines de techniques hors du périmètre
-« Deceive »/« Engagement » retenu). Ne pas écrire « les prérequis de
-placement ont été extraits automatiquement par NLP/LLM » — extraction par
-relecture humaine (assistée) systématique et citation exacte, avec
-décision explicite INCLUDE/MERGE/EXCLUDE par mécanisme, jamais une
-extraction automatique. Ne pas écrire « toutes les relations M_{i,d} sont
-officiellement établies par MITRE » — 127 des 591 relations sont
-DÉRIVÉES (inférence SPARQL par artefact partagé), pas des relations
-officielles.
+« Deceive »/« Engagement » retenu, et la littérature scientifique en
+documente bien plus que les 25 retenus ici). Ne pas écrire « les
+prérequis de placement ont été extraits automatiquement par NLP/LLM » —
+extraction par relecture humaine (assistée) systématique et citation
+exacte, avec décision explicite INCLUDE/MERGE/EXCLUDE par mécanisme,
+jamais une extraction automatique. Ne pas écrire « toutes les relations
+M_{i,d} sont officiellement établies par MITRE » — 127 des 591 relations
+sont DÉRIVÉES (inférence SPARQL par artefact partagé), pas des relations
+officielles. Ne pas écrire « `admissibility_profile` (required_asset_types/
+required_services/required_artifacts) détermine l'admissibilité SP1 » —
+c'est désormais un champ hérité, non consulté par `src/admissibility.py`
+(voir section « Préparation hors ligne vs exécution en ligne » ci-dessous).
+
+---
+
+## 4.3.4 Préparation hors ligne vs exécution en ligne
+
+**A. Objectif.** Séparer explicitement, dans l'implémentation, ce qui
+relève de la CONNAISSANCE générale sur les mécanismes de cyberdéception
+(hors ligne, indépendant de toute organisation) de ce qui relève de la
+CAPACITÉ OPÉRATIONNELLE d'une organisation particulière (en ligne,
+propre à un déploiement réel) — réf. tâche « separate knowledge and
+organization capabilities ».
+
+**B. Réellement implémenté.** Deux catalogues distincts, jamais fusionnés :
+- **Catalogue de CONNAISSANCES** (`DeceptionMechanism`,
+  `data/deception/deception_catalog.json`, 51 mécanismes) : ce qu'EST un
+  mécanisme (identité, description, artefact cible, mécanisme
+  d'interaction, preuves, provenance, version, mapping ATT&CK si
+  disponible). Construit intégralement HORS LIGNE
+  (`tools/deception_kb/catalog_builder.py`), jamais recalculé au runtime.
+- **Catalogue OPÉRATIONNEL** (`OrganizationDeceptionCapability`/
+  `OrganizationDeceptionCatalog`, `src/schemas.py`,
+  `src/organization_catalog.py`) : ce qu'une organisation PARTICULIÈRE
+  active réellement (`enabled`), où elle l'autorise
+  (`allowed_asset_types`/`allowed_location_types`), quels prérequis
+  techniques elle exige (`required_services`/`required_artifacts`), et ce
+  qu'elle interdit explicitement (`forbidden_asset_types`/
+  `forbidden_locations`). Une ENTRÉE fournie par l'organisation — jamais
+  une vérité extraite de D3FEND/Engage/littérature. Référence le
+  catalogue de connaissances uniquement par `mechanism_id`, validé
+  explicitement (`validate_against_knowledge_catalog`, lève une erreur
+  listant tout `mechanism_id` orphelin).
+
+`SP1` (`src/admissibility.py::build_admissibility_report`) est un module
+strictement RUNTIME : il reçoit à CHAQUE appel le graphe d'attaque
+courant `G`, l'inventaire/topologie SI courants, le catalogue de
+connaissances, le catalogue opérationnel de l'organisation, et `M_{i,d}`
+— rien n'est mis en cache ni pré-calculé pendant la préparation hors
+ligne de la KB. `D_org` (mécanismes activés par l'organisation) et `D_i =
+{d ∈ D_org | M_{i,d}(T_i,d)=1}` sont recalculés à chaque appel.
+
+**C. Fichiers/classes/fonctions.** `src/schemas.py`
+(`OrganizationDeceptionCapability`, `OrganizationDeceptionCatalog`),
+`src/organization_catalog.py` (`load_organization_catalog`,
+`validate_against_knowledge_catalog`, `capabilities_by_id`,
+`enabled_mechanism_ids`), `src/admissibility.py`
+(`evaluate_allowed`, `evaluate_requirements_satisfied`,
+`build_admissibility_report`), `examples/build_organization_catalog_example.py`,
+`examples/data/organization_deception_catalog.json`.
+
+**D. Entrées.** OFFLINE : ATT&CK, D3FEND, Engage, littérature (déjà
+versionnés). ONLINE : catalogue de connaissances déjà chargé, catalogue
+opérationnel déjà chargé et validé, `M_{i,d}` déjà chargé, `SystemInstance`
+(graphe + inventaire SI + topologie) du déploiement courant.
+
+**E. Traitement algorithmique exact.** Réf. §17.6 tâche : `D_org =
+{mechanism_id | capability.enabled = True}` ; pour chaque occurrence non
+terminale, `D_i = {d ∈ D_org | mechanism_id ∈ mapping[technique_id]}` ;
+pour chaque `(mécanisme, emplacement)` de `D_i × L^{SI}` : `Autorise` =
+mécanisme non explicitement interdit sur cet emplacement ET type
+d'emplacement dans `allowed_location_types` (organisation) ;
+`PrerequisSatisfaits` = type d'actif non interdit, dans
+`allowed_asset_types` si renseigné, ET services/artefacts requis présents
+sur l'actif (inventaire SI) ; `Pertinent` = relation topologique directe
+(inchangé). `admissible = Autorise ∧ PrerequisSatisfaits ∧ Pertinent`.
+
+**F. Sorties.** `docs/chapter4/outputs/sp1_runtime_statistics.{json,txt}`
+(réduction complète `|D_knowledge|` → `|D_org|` → `|D_i|` par occurrence →
+rejets par critère → `C_i_h`), figure C8
+(`docs/chapter4/screenshots/01_architecture/offline_online_architecture.png`).
+
+**G. Technologies.** Python pur, Pydantic v2 (validation stricte du
+catalogue opérationnel).
+
+**H. Décisions techniques importantes.** `DeceptionMechanism.admissibility_profile`
+est conservé dans le schéma (compatibilité ascendante des fiches déjà
+versionnées) mais n'est plus consulté par `src/admissibility.py` — un
+choix délibéré de ne PAS supprimer le champ (éviter une migration
+destructive de `deception_catalog.json`) tout en cessant de l'utiliser
+comme source de vérité pour l'admissibilité. Le diagnostic SP1 gagne un
+tier explicite `organization` (en plus de `mapping`/`Autorise`/
+`PrerequisSatisfaits`/`Pertinent`), distinguant « mécanisme absent du
+catalogue organisationnel » de « mécanisme désactié » — deux causes de
+rejet différentes, toutes deux testées séparément
+(`tests/test_admissibility.py`, critères A/B de la tâche).
+
+**I. Écart modèle↔implémentation.** Le chapitre 3 (§10.2) définit `D_i =
+{d ∈ D | M_{i,d}=1}` sans préciser explicitement si `D` désigne le
+catalogue scientifique complet ou un sous-ensemble opérationnellement
+disponible. Cette implémentation choisit `D = D_org` (réf. tâche §5,
+« CLARIFIER LA SÉMANTIQUE DE D ») — une clarification explicite et
+documentée de cette ambiguïté, pas une modification de la formule
+elle-même.
+
+**J. Limites réelles.** Le catalogue opérationnel d'exemple
+(`examples/data/organization_deception_catalog.json`) reste une fixture
+de démonstration — aucune organisation réelle n'a été consultée pour le
+produire (réf. tâche §12 : le moteur `src/admissibility.py` lui-même ne
+code en dur aucun identifiant de ce fixture, vérifié par
+`tests/test_admissibility.py::TestGenericity`).
+
+**K. Artefact/capture.** C3 (`AVAILABLE`, refonte complète — entonnoir de
+réduction + candidats admissibles réels) et C8 (`AVAILABLE`, nouveau —
+diagramme OFFLINE/ONLINE).
+
+**L. Formulation à ne pas utiliser.** Ne pas écrire « SP1 pré-calcule
+`C_{i,h}` pendant la préparation de la KB » — SP1 s'exécute exclusivement
+au runtime, sur le graphe/SI courants. Ne pas écrire « un mécanisme sans
+prérequis documenté par D3FEND est inutilisable » — les prérequis
+viennent désormais du catalogue opérationnel de l'organisation, jamais de
+D3FEND.
 
 ---
 
@@ -449,93 +581,126 @@ officielles.
 déterministe et diagnostique (pas un simple booléen).
 
 **B. Réellement implémenté.** Diagnostic complet par candidat
-(`mapping`, `Autorise`, `PrerequisSatisfaits`, `Pertinent`, chacun
-`pass`/`fail`/`undetermined`/`not_evaluated`). Deux instances réelles
-publiées, sur le catalogue et le mapping étendus (26 mécanismes, 591
-relations) :
+(`mapping`, `organization`, `Autorise`, `PrerequisSatisfaits`, `Pertinent`,
+chacun `pass`/`fail`/`undetermined`/`not_evaluated`) — réf. section 4.3.4
+pour la séparation connaissance/organisation. Trois instances réelles
+publiées, sur le catalogue de connaissances réel (51 mécanismes, 591
+relations `M_{i,d}`) :
 - `examples/sp1_real_example.py` (petite instance, 2 occurrences, 2
-  emplacements, inchangée) : **1 candidat admissible**
-  (`T1039@FS01`/`D3-DNR`/`shared-drive`).
-- `examples/sp1_extended_real_example.py` (**réf. tâche « SP1 riche »**,
-  10 occurrences, 6 actifs, 13 emplacements, scénario cohérent
-  hameçonnage/exploitation → compromission d'identifiants → exécution →
-  découverte/collecte divergente → exfiltration terminale convergente) :
-  **4 candidats réellement admissibles** sur 3042 candidats bruts,
-  couvrant **3 mécanismes distincts** (`D3-DNR`, `EAC0009`, `EAC0021`)
-  sur **2 occurrences** (`T1566@WS01`, `T1039@FS01`).
+  emplacements, catalogue opérationnel minimal à 2 mécanismes) : **2
+  candidats admissibles** (`D3-DUC`, `D3-DNR`).
+- `examples/sp1_extended_real_example.py` (**réf. tâche « SP1 riche » puis
+  « separate knowledge and organization capabilities »**, 10 occurrences,
+  6 actifs, 13 emplacements, scénario cohérent hameçonnage/exploitation →
+  compromission d'identifiants → exécution → découverte/collecte
+  divergente → exfiltration terminale convergente ; catalogue opérationnel
+  d'exemple `examples/data/organization_deception_catalog.json`, 42
+  mécanismes référencés/30 activés) : **46 candidats réellement
+  admissibles** sur 5967 candidats bruts, couvrant **9 mécanismes
+  distincts** (`D3-DF`, `D3-DNR`, `EAC0005`, `EAC0008`, `EAC0009`,
+  `EAC0011`, `EAC0014`, `EAC0021`, `EAC0022`) sur les **9** occurrences
+  non terminales de l'instance (couverture complète).
+- `examples/sp1_runtime_statistics.py` : statistiques de réduction
+  complètes (`docs/chapter4/outputs/sp1_runtime_statistics.{json,txt}`) —
+  entonnoir séquentiel réel `5967` couples évalués → `481` après mapping
+  → `416` après organization → `134` après Autorise → `87` après
+  PrerequisSatisfaits → `46` admissibles.
 
 **C. Fichiers/classes/fonctions.** `src/admissibility.py`
 (`evaluate_allowed`, `evaluate_requirements_satisfied`,
-`evaluate_relevant`, `build_admissibility_report`),
-`examples/sp1_real_example.py`, `examples/sp1_extended_real_example.py`.
+`evaluate_relevant`, `enabled_mechanism_ids`, `build_admissibility_report`),
+`src/organization_catalog.py`, `examples/sp1_real_example.py`,
+`examples/sp1_extended_real_example.py`,
+`examples/sp1_runtime_statistics.py`,
+`examples/build_organization_catalog_example.py`.
 
-**D. Entrées.** `SystemInstance` validée, catalogue
-`dict[str, DeceptionMechanism]` (réel, 26 mécanismes), mapping M_{i,d}
-`dict[str, list[str]]` (réel, réduit de 591 relations), seuils
-`theta_c`/`theta_i`/`theta_a`.
+**D. Entrées.** `SystemInstance` validée, catalogue de CONNAISSANCES
+`dict[str, DeceptionMechanism]` (réel, 51 mécanismes), catalogue
+OPÉRATIONNEL `dict[str, OrganizationDeceptionCapability]` (réel, fixture
+d'exemple), mapping M_{i,d} `dict[str, list[str]]` (réel, réduit de 591
+relations), seuils `theta_c`/`theta_i`/`theta_a`.
 
-**E. Traitement algorithmique exact.** Pour chaque occurrence non
-terminale × chaque mécanisme du catalogue × chaque emplacement du SI :
-1. `mapping` : `mechanism.id ∈ D_i` (issu de `M_{i,d}`) ? Sinon
+**E. Traitement algorithmique exact.** Réf. section 4.3.4 pour le détail
+complet. Pour chaque occurrence non terminale × chaque mécanisme du
+catalogue de connaissances × chaque emplacement du SI :
+1. `mapping` : `mechanism.id ∈ M_{i,d}(technique_id)` ? Sinon
    court-circuit (`not_evaluated` pour les 3 critères suivants).
-2. `Autorise` : `location.location_type ∈ mechanism.admissibility_profile.allowed_location_types` ;
-   liste vide → `undetermined`.
-3. `PrerequisSatisfaits` : `asset.asset_type ∈ required_asset_types`
-   (+ services/artifacts si renseignés) ; si les trois listes requises
-   sont vides → `undetermined` (jamais `pass` par défaut) ; sinon évalué
-   réellement `pass`/`fail`.
-4. `Pertinent` : relation topologique directe (même actif, ou arête à un
-   saut).
-5. `admissible = (Autorise="pass") ∧ (PrerequisSatisfaits="pass") ∧ (Pertinent="pass")`.
+2. `organization` : mécanisme référencé ET `enabled=True` dans le
+   catalogue OPÉRATIONNEL de l'organisation ? Sinon court-circuit (avec
+   une raison distincte : « absent du catalogue » vs « désactivé »).
+3. `Autorise` : emplacement non explicitement interdit
+   (`forbidden_locations`) ET `location.location_type ∈
+   capability.allowed_location_types` (organisation) ; liste vide →
+   `undetermined`.
+4. `PrerequisSatisfaits` : `asset.asset_type` non interdit
+   (`forbidden_asset_types`), dans `allowed_asset_types` si renseigné, ET
+   services/artefacts requis (`required_services`/`required_artifacts`,
+   organisation) présents sur l'actif ; si les trois listes pertinentes
+   sont vides → `undetermined` (jamais `pass` par défaut).
+5. `Pertinent` : relation topologique directe (même actif, ou arête à un
+   saut) — inchangé.
+6. `admissible = (Autorise="pass") ∧ (PrerequisSatisfaits="pass") ∧ (Pertinent="pass")`.
 
-**F. Sorties.** Rapport structuré : par occurrence, `D_i`, `candidates`
-(diagnostic complet par couple), `C_{i,h}`, résumé (`candidate_count`,
+**F. Sorties.** Rapport structuré : par occurrence, `D_i` (= `D_org ∩
+M_{i,d}(technique_id)`), `candidates` (diagnostic complet par couple, 5
+critères), `C_{i,h}`, résumé (`d_org_size`, `candidate_count`,
 `admissible_count`, `rejected_count`).
 
-**G. Technologies.** Python pur.
+**G. Technologies.** Python pur, Pydantic v2.
 
 **H. Décisions techniques importantes.** Politique prudente (OPEN_DECISION
-4) : une liste de prérequis vide n'est JAMAIS traitée comme « aucun
-prérequis » — toujours `undetermined`, exclusion par défaut. **Analyse de
-la cause racine (réf. tâche « si un seul candidat admissible, analyser la
-cause, ne pas relâcher SP1 »)** : avant cette passe, seul `D3-DNR`
-disposait d'un `required_asset_types` documenté — AUCUN autre mécanisme
-ne pouvait structurellement jamais devenir admissible, quelle que soit la
-richesse de l'instance. Ce n'était donc pas un manque de richesse
-d'instance, mais un manque de preuve documentaire de prérequis. Après
-relecture ciblée (section 4.3.3), 2 mécanismes supplémentaires
-(`EAC0009`, `EAC0021`) ont un `required_services` documenté — portant à 3
-sur 26 le nombre de mécanismes pouvant réellement atteindre
-`PrerequisSatisfaits = "pass"`. C'est cette limite structurelle,
-combinée à l'audit documentaire, qui explique pourquoi 3038 des 3042
-candidats bruts de l'instance étendue restent rejetés malgré `Autorise`/
-`Pertinent` passant pour beaucoup d'entre eux.
+4) conservée à l'identique, mais RE-SOURCÉE : une liste de prérequis vide
+(désormais côté catalogue OPÉRATIONNEL, jamais côté connaissance)
+n'est JAMAIS traitée comme « aucun prérequis » — toujours `undetermined`.
+**Analyse de la cause racine (réf. tâche « separate knowledge and
+organization capabilities » §1-§2)** : avant cette passe, l'admissibilité
+dépendait de `DeceptionMechanism.admissibility_profile` — une source
+scientifique (D3FEND) ne peut pourtant jamais savoir qu'une organisation
+PARTICULIÈRE autorise un mécanisme sur un emplacement précis de SON SI.
+Une fois cette dépendance supprimée et remplacée par un catalogue
+opérationnel réaliste (42 mécanismes référencés, 30 activés, prérequis
+organisationnels cohérents avec les `target_artifacts` déjà documentés
+par chaque mécanisme), le nombre de candidats admissibles passe de 4 à
+**46**, et le nombre de mécanismes admissibles distincts de 3 à **9** —
+la limite précédente n'était donc pas un manque de richesse d'instance
+ni une limite intrinsèque du modèle, mais un mélange de deux catégories
+d'information qui ne devaient jamais être confondues.
 
-**I. Écart modèle↔implémentation.** Le chapitre 3 (§10.4) laisse
-`RequirementsSatisfied(d,ℓ)` comme une fonction booléenne abstraite sans
-préciser le traitement d'une information manquante. L'implémentation
-comble cet écart par un troisième état explicite (`undetermined`,
-OPEN_DECISION 4) — une décision d'implémentation nécessaire, documentée,
-pas une invention du modèle.
+**I. Écart modèle↔implémentation.** Le chapitre 3 (§10.2, §10.4) définit
+`D_i = {d ∈ D | M_{i,d}=1}` et laisse `RequirementsSatisfied(d,ℓ)` comme
+une fonction booléenne abstraite, sans préciser explicitement si `D`
+désigne le catalogue scientifique complet ou un sous-ensemble
+opérationnel, ni le traitement d'une information manquante.
+L'implémentation résout ces deux ambiguïtés explicitement : `D = D_org`
+(réf. section 4.3.4) et un troisième état `undetermined` (OPEN_DECISION
+4) — des clarifications documentées, jamais des inventions du modèle.
 
 **J. Limites réelles.** `Pertinent` simplifié à une relation topologique
 directe (pas une analyse complète des chemins vers les nœuds terminaux,
-que §10.4 permettrait en principe). `C_{i,h}` reste vide pour 23 des 26
-mécanismes du catalogue étendu (aucun `required_*` documenté pour eux) —
-limite documentée, pas masquée.
+que §10.4 permettrait en principe). `C_{i,h}` reste vide pour les
+mécanismes non référencés ou désactivés par l'organisation d'exemple (21
+sur 51), et `PrerequisSatisfaits` reste `undetermined` pour les
+mécanismes activés dont l'organisation n'a pas renseigné de prérequis
+concret — limite organisationnelle documentée (`sp1_runtime_statistics.json`),
+plus jamais présentée comme une limite scientifique D3FEND.
 
-**K. Artefact/capture.** C3 (`AVAILABLE`, à régénérer pour l'instance
-étendue) — `docs/chapter4/screenshots/03_sp1/sp1_real_result.png`,
-généré par `tools/chapter4_figures/c3_sp1.py` depuis
-`docs/chapter4/outputs/sp1_extended_real_example.json`/`.txt`.
+**K. Artefact/capture.** C3 (`AVAILABLE`, refonte complète — entonnoir de
+réduction + candidats admissibles réels) —
+`docs/chapter4/screenshots/03_sp1/sp1_real_result.png`, généré par
+`tools/chapter4_figures/c3_sp1.py` depuis
+`docs/chapter4/outputs/sp1_runtime_statistics.json` et
+`sp1_extended_real_example.json`. C8 (`AVAILABLE`, nouveau) — diagramme
+OFFLINE/ONLINE, réf. section 4.3.4.
 
 **L. Formulation à ne pas utiliser.** Ne pas écrire « SP1 sélectionne le
 meilleur mécanisme » — SP1 ne classe ni ne sélectionne, il filtre
 uniquement l'admissibilité (rôle de l'optimiseur, section 4.4.4). Ne pas
 écrire « le catalogue étendu permet de couvrir la majorité des scénarios
-d'attaque » — 4 candidats admissibles sur l'instance riche testée, avec
-un catalogue de 26 mécanismes dont seulement 3 ont un prérequis
-d'admissibilité documenté.
+d'attaque » — 46 candidats admissibles sur l'instance riche testée, avec
+un catalogue de connaissances de 51 mécanismes dont 30 sont activés par
+l'organisation d'exemple. Ne pas écrire « un mécanisme sans prérequis
+documenté par D3FEND est inutilisable » — les prérequis viennent
+désormais exclusivement du catalogue opérationnel de l'organisation.
 
 ### 4.4.2 SP2 — RAG + LLM
 
@@ -548,7 +713,7 @@ et produire les 11 sous-métriques annotées pour un candidat admissible.
 désormais le **moteur principal** ; `RagIndex` (TF-IDF haché) reste une
 **baseline lexicale expérimentale**, comparée quantitativement (voir E).
 `retrieve_hybrid` (fusion alpha-pondérée) existe et est le mode RETENU
-pour la relecture finale (alpha=0.8, gain mesuré, réf. tâche §3).
+pour la relecture finale (alpha=0.5, gain mesuré, réf. tâche §3).
 Orchestrateur (`src/orchestrator.py::run_pipeline`) dispatché sur les
 trois moteurs sans casser la compatibilité des runs lexicaux existants.
 Annotation : repli déterministe `RuleBasedStubAnnotator` (opérationnel,
@@ -589,14 +754,17 @@ budget).
   L2 → index vectoriel FAISS `IndexFlatIP` (produit scalaire normalisé =
   cosinus ; repli NumPy pur si FAISS n'est pas installable) → top-k.
   Évaluation réelle sur 17 requêtes à vérité terrain relue humainement
-  (`data/rag/rag_eval_queries.json`) contre les 124 chunks réels : Recall@5
-  = 0.396 (sémantique) vs 0.331 (lexical), MRR@5 = 0.578 vs 0.522, nDCG@5 =
-  0.400 vs 0.342 — gain mesuré, jamais supposé
+  (`data/rag/rag_eval_queries.json`) contre les 149 chunks réels du corpus
+  actuel (44 D3FEND + 62 Engage + 43 littérature) : Recall@5
+  = 0.352 (sémantique) vs 0.331 (lexical), MRR@5 = 0.549 vs 0.514, nDCG@5 =
+  0.360 vs 0.340 — gain mesuré, jamais supposé, recalculé après chaque
+  évolution réelle du corpus
   (`docs/chapter4/outputs/rag_semantic_evaluation.json`).
 - RAG hybride : `score = alpha·score_sémantique + (1-alpha)·score_lexical`
-  — alpha testé parmi {0.5, 0.7, 0.8, 0.9}, retenu à 0.8 (Recall@5=0.470,
-  meilleur que le sémantique seul) : implémenté UNIQUEMENT parce que
-  l'évaluation démontre ce gain réel (réf. tâche §3), pas un choix
+  — alpha testé parmi {0.5, 0.7, 0.8, 0.9}, retenu à 0.5 sur le corpus
+  actuel (Recall@5=0.409, meilleur que le sémantique seul) : implémenté
+  UNIQUEMENT parce que l'évaluation démontre ce gain réel (réf. tâche §3),
+  pas un choix
   arbitraire.
 - LLM réel : construction du prompt (JSON structuré demandé, 11
   sous-métriques exactement, `evidence_ids` limités aux preuves
@@ -884,18 +1052,19 @@ annotation LLM réelle.
 | Affirmation possible dans le chapitre 4 | Preuve dans le code | Preuve dans les données | Sortie reproductible | Capture | Statut |
 |---|---|---|---|---|---|
 | « SP1 construit `C_{i,h}` de manière déterministe » | `src/admissibility.py` | catalogue + mapping réels étendus | `sp1_extended_real_example.json` | C3 | **VALIDÉ** |
-| « Le catalogue réel contient 26 mécanismes tracés depuis D3FEND/Engage/littérature » | `tools/deception_kb/catalog_builder.py::build_expanded_catalog` | `deception_catalog.json` | `python -c "from tools.deception_kb.catalog_builder import *; write_catalog(build_expanded_catalog())"` | C2 | **VALIDÉ** |
+| « Le catalogue réel contient 51 mécanismes tracés depuis D3FEND/Engage/littérature » | `tools/deception_kb/catalog_builder.py::build_expanded_catalog` | `deception_catalog.json` | `python -c "from tools.deception_kb.catalog_builder import *; write_catalog(build_expanded_catalog())"` | C2 | **VALIDÉ** |
 | « Le mapping `M_{i,d}` réel comporte 591 relations (464 directes + 127 dérivées) tracées » | `tools/deception_kb/mapping_builder.py::build_expanded_mapping` | `attack_deception_mapping.json` | `python -c "from tools.deception_kb.mapping_builder import *; write_mapping(build_expanded_mapping())"` | — | **VALIDÉ** |
 | « Un audit documentaire a permis d'enrichir des propriétés d'admissibilité sans en inventer » | `catalog_builder.py` (`ADDITIONAL_LOCATION_TYPES`, `REQUIRED_ASSET_TYPES`, `ENGAGE_REQUIRED_SERVICES`) | `ADMISSIBILITY_EVIDENCE_AUDIT.md`, `CATALOG_AUDIT.md` §6bis | régénération du catalogue | C2 | **VALIDÉ** |
-| « Plusieurs candidats sont réellement admissibles sur une instance riche avec le catalogue et le mapping étendus » | `src/admissibility.py` | `sp1_extended_real_example.json` | `python -m examples.sp1_extended_real_example` | C3 | **VALIDÉ** (4 candidats, 3 mécanismes distincts : `D3-DNR`, `EAC0009`, `EAC0021`) |
-| « Le RAG sémantique (embeddings) récupère des passages D3FEND/Engage/littérature, avec un Recall@5 supérieur au RAG lexical » | `src/semantic_embedder.py`/`src/vector_index.py`/`src/rag_indexer.py`/`src/rag_retriever.py` | staging (124 chunks), 17 requêtes réelles (`data/rag/rag_eval_queries.json`) | `rag_semantic_evaluation.json` | C4 | **VALIDÉ** (Recall@5 sémantique 0.396 > lexical 0.331 ; hybride alpha=0.8 : 0.470) |
+| « Plusieurs candidats sont réellement admissibles sur une instance riche, catalogue de connaissances + catalogue opérationnel + mapping réels » | `src/admissibility.py`, `src/organization_catalog.py` | `sp1_extended_real_example.json`, `sp1_runtime_statistics.json` | `python -m examples.sp1_extended_real_example` | C3 | **VALIDÉ** (46 candidats, 9 mécanismes distincts, 9/9 occurrences couvertes) |
+| « SP1 dépend réellement du graphe/SI courants (module runtime, pas pré-calculé) » | `src/admissibility.py::build_admissibility_report` | — | `tests/test_admissibility.py::TestAdmissibilityReport::test_criterion_j_same_organization_different_graph_different_c_i_h` | — | **VALIDÉ** (même D_org + M, graphes différents ⇒ C_i_h différents) |
+| « Le RAG sémantique (embeddings) récupère des passages D3FEND/Engage/littérature, avec un Recall@5 supérieur au RAG lexical » | `src/semantic_embedder.py`/`src/vector_index.py`/`src/rag_indexer.py`/`src/rag_retriever.py` | staging (149 chunks), 17 requêtes réelles (`data/rag/rag_eval_queries.json`) | `rag_semantic_evaluation.json` | C4 | **VALIDÉ** (Recall@5 sémantique 0.352 > lexical 0.331 ; hybride alpha=0.5 : 0.409) |
 | « Le LLM réel produit les 11 sous-métriques » | `RealLlmAnnotator` | preuves RAG | `llm_annotation_real.json` | C5 | **NON VALIDÉ** — code prêt et testé (mocks), aucune exécution réelle dans cet environnement |
 | « Le repli déterministe produit les 11 sous-métriques sans LLM réel » | `RuleBasedStubAnnotator` | preuves RAG | `llm_annotation_example.json` | — | **VALIDÉ** (explicitement marqué `rule_based_stub`) |
 | « Les agrégats `Realisme`/`P_interaction`/`P_engagement`/`Effet_prog`/`DE` sont calculés par code, jamais par le LLM » | `src/annotation_validator.py` | 11 `Annotation` (stub ou réel) | `frozen_annotations_example.csv` | C6 (stub) | **VALIDÉ** (formules) ; table figée à partir d'un LLM réel **NON VALIDÉE** |
 | « Le moteur SP3 reproduit exactement l'ancre de validation du chapitre 3 » | `src/risk_engine.py` | scénario analytique CLAUDE.md §20 | `test_reference_example` | — (chapitre 5) | **VALIDÉ** (tolérance `1e-3`) |
 | « L'optimiseur résout `(P)` par énumération exhaustive avec front de Pareto » | `src/optimizer.py` | `C_{i,h}` + coûts | `optimizer_example.txt` | — (chapitre 5) | **VALIDÉ** |
 | « L'orchestrateur exécute le pipeline complet de bout en bout » | `src/orchestrator.py` | catalogue/mapping réels + RAG réel | `pipeline_example.txt` | C7 | **VALIDÉ** (avec repli déterministe, pas de LLM réel) |
-| « Aucun appel LLM ni aucune dépendance RAG n'a lieu pendant le calcul du risque ou l'optimisation » | tests `ast` dédiés sur `risk_engine.py`/`optimizer.py`/`reporter.py` (incluant `semantic_embedder.py`/`vector_index.py` depuis cette passe) | — | `pytest -v` (664 tests + 2 optionnels `real_llm`) | — | **VALIDÉ** |
+| « Aucun appel LLM ni aucune dépendance RAG n'a lieu pendant le calcul du risque ou l'optimisation » | tests `ast` dédiés sur `risk_engine.py`/`optimizer.py`/`reporter.py` (incluant `semantic_embedder.py`/`vector_index.py` depuis cette passe) | — | `pytest -v` (697 tests + 2 optionnels `real_llm`) | — | **VALIDÉ** |
 
 ---
 

@@ -43,20 +43,23 @@ Graphe d'attaque
 **Tous les blocs de cette chaîne sont désormais implémentés** (branche
 `implementation/chapter4`) : schémas de données, graphe d'attaque, deux
 bases de connaissances structurées, une couche offline de construction
-de données pour la KB déception (staging, **catalogue réel étendu à 26
-mécanismes et mapping réel de 591 relations**, voir Étape 17 puis Étape
-20), SP1 (instance riche : 4 candidats admissibles réels, voir Étape 20),
-RAG (**moteur sémantique `sentence-transformers`+FAISS principal, TF-IDF
-haché en baseline lexicale expérimentale**, voir Étape 20), annotation
-LLM (repli déterministe `rule_based_stub` **et provider LLM réel testé
-par mocks**, voir Étape 18 et la suite du journal pour le statut
-d'exécution réelle), gel des annotations (SP2 déterministe), coût, SP3,
-optimiseur, reporter, et un orchestrateur qui enchaîne l'ensemble
-(dispatché sur les trois moteurs RAG). Ce qui reste hors périmètre :
-composition finale exhaustive de `\mathcal D` (OPEN_DECISION non
-résolue — 26 mécanismes réels, pas une clôture définitive du catalogue)
-et le statut de l'exécution LLM réelle (voir la fin du journal pour
-l'état le plus à jour).
+de données pour la KB déception (staging, **catalogue de connaissances
+réel étendu à 51 mécanismes et mapping réel de 591 relations**, voir
+Étape 17, 20 puis 21), SP1 (**module runtime**, séparé du catalogue de
+connaissances — l'admissibilité vient exclusivement d'un catalogue
+OPÉRATIONNEL fourni par l'organisation, voir Étape 21 : instance riche,
+46 candidats admissibles réels sur 9 mécanismes distincts), RAG (**moteur
+sémantique `sentence-transformers`+FAISS principal, TF-IDF haché en
+baseline lexicale expérimentale**, voir Étape 20), annotation LLM (repli
+déterministe `rule_based_stub` **et provider LLM réel testé par
+mocks**, voir Étape 18 et la suite du journal pour le statut d'exécution
+réelle), gel des annotations (SP2 déterministe), coût, SP3, optimiseur,
+reporter, et un orchestrateur qui enchaîne l'ensemble (dispatché sur les
+trois moteurs RAG, catalogue opérationnel obligatoire). Ce qui reste hors
+périmètre : composition finale exhaustive de `\mathcal D` (OPEN_DECISION
+non résolue — 51 mécanismes réels, pas une clôture définitive du
+catalogue) et le statut de l'exécution LLM réelle (voir la fin du
+journal pour l'état le plus à jour).
 
 ## 2. Architecture logicielle
 
@@ -67,8 +70,9 @@ l'état le plus à jour).
 | `src/knowledge_attack.py` | KB structurée MITRE ATT&CK | Validé |
 | `src/knowledge_deception.py` | Catalogue cyberdéception + mapping \(M_{i,d}\) (chargement) | Validé (catalogue et mapping réels chargeables) |
 | `tools/deception_kb/d3fend_seed_builder.py` | Staging offline D3FEND (branche Deceive) | Validé |
-| `tools/deception_kb/catalog_builder.py` / `mapping_builder.py` | Construction du catalogue \(D\) et du mapping \(M_{i,d}\) réels | Validé (26 mécanismes, 591 relations — v1 3 mécanismes/127 relations conservée inchangée) |
-| `src/admissibility.py` | SP1 — espace admissible \(C_{i,h}\) | Validé (instance riche : 4 candidats admissibles) |
+| `tools/deception_kb/catalog_builder.py` / `mapping_builder.py` | Construction du catalogue \(D\) et du mapping \(M_{i,d}\) réels | Validé (51 mécanismes, 591 relations — v1 3 mécanismes/127 relations conservée inchangée) |
+| `src/organization_catalog.py` | Catalogue OPÉRATIONNEL d'une organisation (chargement/validation) | Validé (nouveau, Étape 21) |
+| `src/admissibility.py` | SP1 — espace admissible \(C_{i,h}\), module RUNTIME | Validé (instance riche : 46 candidats admissibles, 9 mécanismes distincts) |
 | `src/rag_indexer.py` / `src/rag_retriever.py` / `src/semantic_embedder.py` / `src/vector_index.py` | RAG (chunks tracés, moteur sémantique principal + baseline TF-IDF haché + fusion hybride) | Validé |
 | `src/annotator_llm.py` / `src/llm_provider.py` | Annotation des 11 sous-métriques | Validé (repli `rule_based_stub` + provider réel Ollama/OpenAI-compatible testé, non exécuté ici) |
 | `src/annotation_validator.py` | SP2 déterministe (Realisme/P_interaction/P_engagement/Effet_prog/DE) + gel | Validé |
@@ -80,7 +84,7 @@ l'état le plus à jour).
 
 CI GitHub Actions : verte sur `implementation/chapter4` à chaque commit
 documenté ci-dessous (`.github/workflows/tests.yml`, déclenchée sur
-`push`/`pull_request`). 664 tests (+ 2 optionnels `pytest -m real_llm`,
+`push`/`pull_request`). 697 tests (+ 2 optionnels `pytest -m real_llm`,
 exclus par défaut) au moment de ce document.
 
 ## 3. Étapes techniques validées
@@ -2026,6 +2030,137 @@ candidats admissibles réels produits par `examples.sp1_extended_real_example`,
 gel des annotations réelles, rejeu complet du pipeline avec RAG sémantique
 + LLM réel, mise à jour finale des figures C1-C7. Chapitre 5 explicitement
 hors périmètre.
+
+### Étape 21 — Séparation connaissance/capacité organisationnelle, catalogue étendu à 51 mécanismes
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Corriger une confusion architecturale identifiée dans SP1 : l'admissibilité
+(`Autorise`, `PrerequisSatisfaits`) dépendait de
+`DeceptionMechanism.admissibility_profile`, c'est-à-dire de ce que D3FEND
+documente — or une source scientifique ne peut jamais savoir qu'une
+organisation PARTICULIÈRE autorise un mécanisme sur un emplacement précis
+de SON système d'information. Réf. tâche « separate knowledge and
+organization capabilities ». Le modèle scientifique du chapitre 3 reste
+strictement inchangé (aucune équation, aucune formule SP2/SP3, aucune
+contrainte de `(P)` modifiée).
+
+#### Traitement réalisé
+
+**Nouveaux modèles** (`src/schemas.py`) : `OrganizationDeceptionCapability`
+(mechanism_id, enabled, allowed_asset_types, allowed_location_types,
+required_services, required_artifacts, forbidden_asset_types,
+forbidden_locations, operational_parameters, cost_profile_id, notes) et
+`OrganizationDeceptionCatalog` — une ENTRÉE fournie par l'organisation,
+jamais une vérité extraite de D3FEND/Engage/littérature. Nouveau module
+`src/organization_catalog.py` (chargement, validation contre le catalogue
+de connaissances — aucun `mechanism_id` orphelin toléré, réduction en
+table indexée, calcul de `D_org`).
+
+**Réécriture de `src/admissibility.py`** : `evaluate_allowed`/
+`evaluate_requirements_satisfied` ne consultent plus
+`DeceptionMechanism.admissibility_profile` (champ conservé pour
+compatibilité ascendante, mais devenu un champ hérité, jamais lu) —
+Autorise/PrerequisSatisfaits viennent exclusivement du catalogue
+opérationnel. `D_i = D_org ∩ M_{i,d}(technique_id)` (réf. tâche §5,
+clarification explicite de la sémantique de `D`, pas une modification de
+la formule). Nouveau tier de diagnostic `organization`, distinguant
+« mécanisme absent du catalogue organisationnel » de « mécanisme
+désactivé ». `run_pipeline` (`src/orchestrator.py`) gagne un paramètre
+`organization_catalog` obligatoire. Aucun `mechanism_id`/`attack_id`/
+`asset_id`/`location_id` codé en dur dans `src/admissibility.py` — vérifié
+par un test dédié (`tests/test_admissibility.py::TestGenericity`).
+
+**Extension du catalogue de connaissances à 51 mécanismes** (objectif
+`|D_knowledge| >= 50`) : D3FEND (branche « Deceive », 11 concepts) et
+MITRE Engage (23 activités « Engagement ») étaient déjà épuisés par la
+première extension (26 mécanismes, Étape 20) — 25 mécanismes
+supplémentaires extraits de deux surveys déjà dans le registre
+bibliographique mais sous-exploités (Han/Kheir/Balzarotti 2018, ACM
+CSUR — 2 passages déjà cités ; Zhang/Thing 2021, Computers & Security —
+1 passage déjà cité). Chaque nouveau passage vérifié programmatiquement
+(page précise, verbatim après normalisation des espaces) par
+`tools/deception_kb/literature_seed_builder.py` avant d'être accepté —
+`literature_evidence_seed_1.2.json` passe de 18 à 43 passages. Décision
+INCLUDE/MERGE/EXCLUDE et raisonnement de déduplication documentés
+mécanisme par mécanisme dans `docs/chapter4/CATALOG_AUDIT.md` (section 8).
+
+**Fixture organisationnelle d'exemple**
+(`examples/build_organization_catalog_example.py` →
+`examples/data/organization_deception_catalog.json`) : politique simple
+et documentée (pas arbitraire) référençant 42 des 51 mécanismes (9 exclus
+faute d'infrastructure pertinente : OT/ICS, contrôle bas niveau du
+pilote réseau, chaîne de compilation, SDN, PR/marketing, honeynet
+multi-niveaux), dont 30 activés (12 référencés mais désactivés, chacun
+avec une raison opérationnelle explicite).
+
+`examples/sp1_extended_real_example.py` reconstruit sur cette nouvelle
+architecture ; `examples/sp1_runtime_statistics.py` (nouveau) produit
+l'entonnoil de réduction complet.
+
+#### Résultat réel
+
+Sur l'instance runtime représentative (10 occurrences, 6 actifs, 13
+emplacements) : **46 candidats réellement admissibles** (contre 4 avec
+l'ancienne architecture fondée sur D3FEND), couvrant **9 mécanismes
+distincts** (`D3-DF`, `D3-DNR`, `EAC0005`, `EAC0008`, `EAC0009`,
+`EAC0011`, `EAC0014`, `EAC0021`, `EAC0022`) sur les **9** occurrences non
+terminales (couverture complète, contre 2/9 auparavant). Entonnoir
+séquentiel réel : 5967 couples évalués → 481 après mapping → 416 après
+organization → 134 après Autorise → 87 après PrerequisSatisfaits → 46
+admissibles. Test dédié démontrant que SP1 dépend réellement du graphe
+courant (même `D_org`+`M`, deux graphes différents ⇒ `C_i_h` différents) :
+`tests/test_admissibility.py::TestAdmissibilityReport::test_criterion_j_same_organization_different_graph_different_c_i_h`.
+
+#### Sorties
+
+`examples/data/organization_deception_catalog.json`,
+`docs/chapter4/outputs/sp1_extended_real_example.{json,txt}`,
+`docs/chapter4/outputs/sp1_runtime_statistics.{json,txt}`,
+`data/deception/deception_catalog.json`/`attack_deception_mapping.json`
+régénérés (51 mécanismes, 591 relations inchangées), `docs/chapter4/CATALOG_AUDIT.md`
+section 8, figure C3 refondue (entonnoir de réduction), nouvelle figure
+C8 (`docs/chapter4/screenshots/01_architecture/offline_online_architecture.png`).
+
+#### Fichiers concernés
+
+`src/schemas.py`, `src/organization_catalog.py` (nouveau),
+`src/admissibility.py`, `src/orchestrator.py`,
+`tools/deception_kb/catalog_builder.py`,
+`data/deception/literature/evidence_candidates.json`,
+`examples/build_organization_catalog_example.py` (nouveau),
+`examples/sp1_example.py`, `examples/sp1_real_example.py`,
+`examples/sp1_extended_real_example.py`,
+`examples/sp1_runtime_statistics.py` (nouveau),
+`examples/annotator_llm_real_example.py`, `examples/orchestrator_example.py`,
+`examples/freeze_example.py`, `examples/optimizer_example.py`,
+`tools/chapter4_figures/c2_mechanism.py`, `tools/chapter4_figures/c3_sp1.py`,
+`tools/chapter4_figures/c8_offline_online.py` (nouveau),
+`tests/test_admissibility.py` (réécrit), `tests/test_organization_catalog.py`
+(nouveau), `tests/test_orchestrator.py`, `tests/test_catalog_builder.py`.
+
+#### Tests et validation
+
+**697 tests verts** (+ 2 optionnels `pytest -m real_llm`). Aucune
+régression : tous les exemples exécutables (`examples/*.py`) relancés
+individuellement et vérifiés fonctionnels.
+
+#### Limites actuelles
+
+Le catalogue opérationnel d'exemple reste une fixture de démonstration
+(aucune organisation réelle consultée). 33 des 51 mécanismes de
+connaissance n'ont encore aucune relation `M_{i,d}` tracée (aucun
+staging disponible ne l'établit). Aucun service LLM réel exécuté durant
+cette passe (hors périmètre explicite, réf. tâche §23).
+
+#### Lien avec l'étape suivante
+
+Exécution réelle du LLM une fois qu'un provider est configuré par
+l'utilisateur (Ollama ou endpoint OpenAI-compatible), sur les candidats
+admissibles réels produits par la nouvelle architecture SP1. Chapitre 5
+explicitement hors périmètre.
 
 ## OPEN_DECISION en cours
 

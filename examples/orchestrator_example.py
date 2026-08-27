@@ -34,10 +34,10 @@ from src.schemas import (
     Asset,
     AttackGraph,
     AttackGraphEdge,
-    DeceptionAdmissibilityProfile,
     DeceptionMechanism,
     Location,
     NodeAttributes,
+    OrganizationDeceptionCapability,
     SIInventory,
     SITopologyEdge,
     SystemInstance,
@@ -104,19 +104,30 @@ def build_instance() -> SystemInstance:
 
 
 def build_catalog() -> dict[str, DeceptionMechanism]:
+    """Catalogue de CONNAISSANCES minimal (réf. tâche « separate knowledge
+    and organization capabilities »)."""
     duc = DeceptionMechanism(
         id="D3-DUC",
         name="Decoy User Credential",
         description="A Credential created for the purpose of deceiving an adversary.",
         interaction_mechanism="use credential",
         version="1.5.0",
-        admissibility_profile=DeceptionAdmissibilityProfile(
-            allowed_location_types=["credential_store"],
-            required_asset_types=["domain_controller"],
-            required_services=["ldap"],
-        ),
     )
     return {"D3-DUC": duc}
+
+
+def build_organization_catalog() -> dict[str, OrganizationDeceptionCapability]:
+    """Catalogue OPÉRATIONNEL d'une organisation d'exemple — seule source
+    des décisions Autorise/PrerequisSatisfaits de SP1."""
+    return {
+        "D3-DUC": OrganizationDeceptionCapability(
+            mechanism_id="D3-DUC",
+            enabled=True,
+            allowed_location_types=["credential_store"],
+            allowed_asset_types=["domain_controller"],
+            required_services=["ldap"],
+        )
+    }
 
 
 def build_rag_index():
@@ -133,6 +144,7 @@ def main() -> None:
         run_id="chapter4-example",
         instance=build_instance(),
         catalog=build_catalog(),
+        organization_catalog=build_organization_catalog(),
         mapping={"T1078": ["D3-DUC"]},
         rag_index=build_rag_index(),
         annotator=RuleBasedStubAnnotator(),
