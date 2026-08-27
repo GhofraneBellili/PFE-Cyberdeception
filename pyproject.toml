@@ -15,6 +15,14 @@ dev = [
 docs = [
     "matplotlib>=3.8,<4",
 ]
+rag = [
+    "numpy>=1.26,<3",
+    "sentence-transformers>=3,<4",
+    "faiss-cpu>=1.8,<2",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+markers = [
+    "real_llm: integration test requiring a real configured LLM provider (skipped by default, run with -m real_llm)",
+]

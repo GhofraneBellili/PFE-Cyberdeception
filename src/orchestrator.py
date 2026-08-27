@@ -39,8 +39,8 @@ from src.annotation_validator import freeze_table
 from src.annotator_llm import AnnotationProvider
 from src.cost_engine import compute_cost_by_mechanism
 from src.optimizer import OptimizerError, solve
-from src.rag_indexer import RagIndex
-from src.rag_retriever import retrieve, to_deception_evidence
+from src.rag_indexer import RagIndex, SemanticRagIndex
+from src.rag_retriever import DEFAULT_HYBRID_ALPHA, retrieve, retrieve_hybrid, retrieve_semantic, to_deception_evidence
 from src.reporter import build_deployment_report
 from src.risk_engine import propagate_risk
 from src.schemas import (
@@ -77,7 +77,10 @@ def run_pipeline(
     instance: SystemInstance,
     catalog: dict[str, DeceptionMechanism],
     mapping: dict[str, list[str]],
-    rag_index: RagIndex,
+    rag_index: RagIndex | SemanticRagIndex,
+    rag_hybrid_lexical_index: RagIndex | None = None,
+    rag_hybrid_alpha: float = DEFAULT_HYBRID_ALPHA,
+    rag_embedder: object | None = None,
     annotator: AnnotationProvider,
     cost_inputs_by_mechanism: dict[str, dict],
     horizon: float,
@@ -95,12 +98,40 @@ def run_pipeline(
     gel -> coût -> `(P)` -> reporting avant/après, et sauvegarde chaque
     étape dans `runs/<run_id>/`.
 
+    Trois moteurs RAG possibles pour `rag_index`, réf. tâche « RAG
+    sémantique » / §3 « fusion hybride » :
+    - `RagIndex` (lexical TF-IDF, baseline) ;
+    - `SemanticRagIndex` seul (moteur principal) ;
+    - `SemanticRagIndex` + `rag_hybrid_lexical_index` (fusion hybride,
+      `DEFAULT_HYBRID_ALPHA` déterminé par
+      `docs/chapter4/outputs/rag_semantic_evaluation.json`) — mode retenu
+      pour la relecture finale car il obtient le meilleur Recall@5 mesuré.
+
+    `rag_embedder` : embedder déjà chargé (`src.semantic_embedder.load_embedder`),
+    réutilisé pour CHAQUE requête sémantique/hybride de la boucle
+    d'annotation — évite de recharger un modèle `sentence-transformers`
+    candidat par candidat. Ignoré si `rag_index` est un `RagIndex` lexical
+    pur. `None` par défaut : `retrieve_semantic`/`retrieve_hybrid`
+    rechargent alors le modèle déclaré par l'index à chaque appel (utile
+    en test avec un embedder factice injecté directement dans l'index).
+
     Retourne un résumé en mémoire (mêmes données que les fichiers écrits)
     pour usage programmatique immédiat, en plus de la persistance sur
     disque.
     """
     run_dir = Path(output_root) / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
+
+    if rag_hybrid_lexical_index is not None and not isinstance(rag_index, SemanticRagIndex):
+        raise OrchestratorError(
+            "rag_hybrid_lexical_index n'est utilisable qu'avec rag_index de type SemanticRagIndex (fusion hybride)."
+        )
+    if rag_hybrid_lexical_index is not None:
+        rag_engine_label = f"hybrid_alpha_{rag_hybrid_alpha}"
+    elif isinstance(rag_index, SemanticRagIndex):
+        rag_engine_label = "semantic"
+    else:
+        rag_engine_label = "lexical_tfidf"
 
     input_manifest = {
         "run_id": run_id,
@@ -115,6 +146,7 @@ def run_pipeline(
         "theta_a": theta_a,
         "annotation_set_version": annotation_set_version,
         "rag_index_size": len(rag_index),
+        "rag_engine": rag_engine_label,
     }
     _write_json(run_dir / "input_manifest.json", input_manifest)
 
@@ -137,7 +169,14 @@ def run_pipeline(
             mechanism = catalog[entry["mechanism_id"]]
             location_id = entry["location_id"]
             query = f"{mechanism.name} {mechanism.description}"
-            results = retrieve(rag_index, query, top_k=top_k_evidence)
+            if rag_hybrid_lexical_index is not None:
+                results = retrieve_hybrid(
+                    rag_hybrid_lexical_index, rag_index, query, top_k=top_k_evidence, alpha=rag_hybrid_alpha, embedder=rag_embedder
+                )
+            elif isinstance(rag_index, SemanticRagIndex):
+                results = retrieve_semantic(rag_index, query, top_k=top_k_evidence, embedder=rag_embedder)
+            else:
+                results = retrieve(rag_index, query, top_k=top_k_evidence)
             retrieval_log.append(
                 {
                     "occurrence_id": occurrence_id,

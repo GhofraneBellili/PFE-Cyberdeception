@@ -6,27 +6,32 @@ Réf. architecture : "9.1 Pipeline de construction de la KB déception"
 Ingestion des documents déjà versionnés hors ligne
 (`tools/deception_kb/*`, `data/deception/staging/*.json`), découpage en
 chunks tracés (chunk_id, source_id, source_type, document_id,
-page/locator, text, hash, metadata), calcul d'un vecteur déterministe par
-chunk et construction d'un index en mémoire (§9.1 étapes 2, 3, 7).
+page/locator, text, hash, metadata), calcul de vecteurs et construction
+d'un index (§9.1 étapes 2, 3, 7).
 
-**Choix technique explicite (pas une décision scientifique) :** en
-l'absence de bibliothèque d'embeddings choisie pour ce PFE (§ « Ce qui
-n'est pas encore utilisé » de `docs/chapter4/TECHNOLOGIES.md`), ce module
-calcule un vecteur déterministe TF-IDF avec « hashing trick »
-(`embed_text`) plutôt que d'appeler une API externe ou d'ajouter une
-dépendance ML non décidée. Ce n'est PAS un embedding sémantique au sens
-d'un modèle de langage : c'est un choix technique simple, standard en
-recherche d'information, déterministe, testable et générique (voir
-Limites, `docs/chapter4/IMPLEMENTATION_REPORT.md`, section 5). Il peut
-être remplacé plus tard par un modèle réel sans changer la forme de
-`Chunk`/`RagIndex`/`RetrievalResult`. La pondération IDF (fréquence
-documentaire inverse), calculée sur le corpus indexé, est nécessaire pour
-que la similarité distingue les termes spécifiques (« credential »,
-« decoy ») des mots génériques très fréquents dans tous les documents —
-une simple fréquence de termes brute (sans IDF) produit un classement peu
-discriminant sur ce corpus.
+**Deux moteurs de vectorisation, réf. tâche « remplacer le TF-IDF par un
+vrai RAG sémantique » :**
 
-Ce module n'appelle jamais de LLM et ne dépend d'aucun réseau.
+1. **`RagIndex` / `embed_text` / `build_index` (TF-IDF haché, ce
+   module)** — désormais une **baseline lexicale expérimentale**
+   (§9.1), comparée explicitement au retrieval sémantique
+   (`docs/chapter4/outputs/rag_semantic_evaluation.*`). Reste
+   entièrement fonctionnelle et testée : déterministe, sans dépendance,
+   utile en test unitaire et comme point de comparaison quantitatif.
+   Ce n'est PAS un embedding sémantique au sens d'un modèle de langage.
+2. **`SemanticRagIndex` / `build_semantic_index` (ce module) — moteur
+   PRINCIPAL** du RAG à partir de cette tâche : vecteurs produits par un
+   modèle `sentence-transformers` réel (`src/semantic_embedder.py`,
+   configurable via `RAG_EMBEDDING_MODEL`), indexés par
+   `src/vector_index.py` (FAISS si disponible, repli NumPy sinon).
+
+Les deux index restent compatibles avec les mêmes `Chunk` et le même
+`RetrievalResult`/`DeceptionEvidence` en aval (`src/rag_retriever.py`).
+
+Ce module n'appelle jamais de LLM. Le chargement d'un modèle sémantique
+(`build_semantic_index`) nécessite le modèle déjà téléchargé/en cache
+localement — jamais appelé pendant `pytest` (tests unitaires mockés, voir
+`tests/test_rag_indexer.py`).
 
 Convention : identifiants de code en anglais, commentaires et docstrings
 en français (§25.1).
@@ -303,3 +308,93 @@ def embed_query(index: RagIndex, text: str) -> tuple[float, ...]:
         num_documents=index.num_documents,
         dimension=index.dimension,
     )
+
+
+# ---------------------------------------------------------------------------
+# Index sémantique — moteur RAG principal, réf. tâche « RAG sémantique »
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class SemanticRagIndex:
+    """Réf. §9.1 étape 7 — index sémantique : chunks + vecteurs
+    `sentence-transformers` (normalisés L2) + index vectoriel
+    (`src/vector_index.py`, FAISS ou repli NumPy). `embedding_model`
+    reflète le modèle RÉELLEMENT utilisé (préféré ou repli, jamais
+    supposé) — traçabilité de la requête (§28) : `embed_query` doit
+    utiliser le même modèle."""
+
+    chunks: tuple[Chunk, ...]
+    vectors: "object"  # numpy.ndarray (n, d) — typé Any pour ne pas imposer numpy en import top-niveau des consommateurs légers
+    vector_index: object
+    backend: str  # "faiss" ou "numpy"
+    embedding_model: str
+    dimension: int
+
+    def __len__(self) -> int:
+        return len(self.chunks)
+
+
+def build_semantic_index(chunks: list[Chunk], *, embedder: "EmbeddingBackend | None" = None) -> SemanticRagIndex:
+    """Réf. tâche « nouvelle chaîne : documents -> chunks tracés ->
+    embeddings sémantiques -> normalisation -> index vectoriel ». Encode
+    tous les chunks avec `embedder` (`src.semantic_embedder.load_embedder`
+    par défaut si non fourni — un modèle réel, jamais un faux vecteur),
+    construit l'index vectoriel (`src.vector_index.build_vector_index`).
+
+    `embedder` est injectable : les tests unitaires passent un embedder
+    déterministe factice (dimension fixe, pas de téléchargement de
+    modèle) — jamais `sentence-transformers` pendant `pytest` (réf. tâche
+    §18, « aucune dépendance ne doit télécharger un modèle pendant la
+    CI »)."""
+    import numpy as np
+
+    from src.semantic_embedder import load_embedder
+    from src.vector_index import build_vector_index
+
+    seen_ids: set[str] = set()
+    for chunk in chunks:
+        if chunk.chunk_id in seen_ids:
+            raise RagIndexerError(f"chunk_id dupliqué : '{chunk.chunk_id}'.")
+        seen_ids.add(chunk.chunk_id)
+
+    if embedder is None:
+        embedder = load_embedder()
+
+    if not chunks:
+        vectors = np.zeros((0, embedder.dimension), dtype=np.float32)
+    else:
+        vectors = embedder.encode([chunk.text for chunk in chunks])
+        if vectors.shape[1] != embedder.dimension:
+            raise RagIndexerError(
+                f"Dimension d'embedding incohérente : embedder.dimension={embedder.dimension}, "
+                f"vecteurs produits de dimension {vectors.shape[1]}."
+            )
+
+    vector_index, backend = build_vector_index(vectors)
+    return SemanticRagIndex(
+        chunks=tuple(chunks),
+        vectors=vectors,
+        vector_index=vector_index,
+        backend=backend,
+        embedding_model=embedder.model_name,
+        dimension=embedder.dimension,
+    )
+
+
+def embed_query_semantic(index: SemanticRagIndex, text: str, *, embedder: "EmbeddingBackend | None" = None):
+    """Réf. §28 (traçabilité) : encode une requête avec le MÊME modèle que
+    celui utilisé pour construire l'index (`index.embedding_model`) — un
+    `embedder` explicite doit porter le même `model_name`, sinon
+    `RagIndexerError` (jamais une comparaison silencieusement incohérente
+    entre deux espaces vectoriels différents)."""
+    from src.semantic_embedder import load_embedder
+
+    if embedder is None:
+        embedder = load_embedder(index.embedding_model)
+    if embedder.model_name != index.embedding_model:
+        raise RagIndexerError(
+            f"Modèle d'embedding incohérent : index construit avec '{index.embedding_model}', "
+            f"requête encodée avec '{embedder.model_name}'."
+        )
+    return embedder.encode([text])[0]

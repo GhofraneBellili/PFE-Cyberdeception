@@ -12,7 +12,7 @@ import pytest
 
 from src.annotator_llm import RuleBasedStubAnnotator
 from src.orchestrator import OrchestratorError, run_pipeline
-from src.rag_indexer import Chunk, build_index
+from src.rag_indexer import Chunk, build_index, build_semantic_index
 from src.schemas import (
     Asset,
     AttackGraph,
@@ -96,8 +96,8 @@ def make_catalog() -> dict[str, DeceptionMechanism]:
     return {"D3-DUC": duc}
 
 
-def make_rag_index() -> object:
-    chunks = [
+def make_rag_chunks() -> list[Chunk]:
+    return [
         Chunk(
             chunk_id="c1",
             source_id="s1",
@@ -108,7 +108,34 @@ def make_rag_index() -> object:
             text_hash="hash1",
         )
     ]
-    return build_index(chunks)
+
+
+def make_rag_index() -> object:
+    return build_index(make_rag_chunks())
+
+
+class FakeEmbedder:
+    """Embedder déterministe factice — aucune dépendance réseau pendant
+    `pytest` (réf. tâche §18)."""
+
+    model_name = "fake-embedder-test-v1"
+    dimension = 4
+
+    def encode(self, texts):
+        import numpy as np
+
+        vectors = []
+        for text in texts:
+            seed = sum(ord(c) for c in text) or 1
+            rng = np.random.default_rng(seed)
+            vector = rng.normal(size=self.dimension).astype(np.float32)
+            norm = np.linalg.norm(vector)
+            vectors.append(vector / norm if norm > 0 else vector)
+        return np.asarray(vectors, dtype=np.float32)
+
+
+def make_semantic_rag_index() -> object:
+    return build_semantic_index(make_rag_chunks(), embedder=FakeEmbedder())
 
 
 def make_cost_inputs() -> dict[str, dict]:
@@ -233,6 +260,40 @@ class TestRunPipeline:
     def test_budget_too_low_raises_orchestrator_error(self, tmp_path):
         with pytest.raises(OrchestratorError):
             run_pipeline(**run_kwargs("run-007", tmp_path, budget_total=-1.0))
+
+
+class TestRunPipelineRagEngineDispatch:
+    """Réf. tâche « RAG sémantique » / §3 « fusion hybride » : run_pipeline
+    doit fonctionner avec les trois moteurs RAG, sans jamais télécharger de
+    modèle pendant pytest (embedder factice injecté)."""
+
+    def test_lexical_engine_reported_in_manifest(self, tmp_path):
+        result = run_pipeline(**run_kwargs("run-rag-lexical", tmp_path))
+        assert result["input_manifest"]["rag_engine"] == "lexical_tfidf"
+
+    def test_semantic_engine_completes_and_is_reported(self, tmp_path):
+        kwargs = run_kwargs("run-rag-semantic", tmp_path)
+        kwargs["rag_index"] = make_semantic_rag_index()
+        kwargs["rag_embedder"] = FakeEmbedder()
+        result = run_pipeline(**kwargs)
+        assert result["input_manifest"]["rag_engine"] == "semantic"
+        assert result["run_manifest"]["status"] == "completed"
+
+    def test_hybrid_engine_completes_and_is_reported(self, tmp_path):
+        kwargs = run_kwargs("run-rag-hybrid", tmp_path)
+        kwargs["rag_index"] = make_semantic_rag_index()
+        kwargs["rag_hybrid_lexical_index"] = make_rag_index()
+        kwargs["rag_hybrid_alpha"] = 0.8
+        kwargs["rag_embedder"] = FakeEmbedder()
+        result = run_pipeline(**kwargs)
+        assert result["input_manifest"]["rag_engine"] == "hybrid_alpha_0.8"
+        assert result["run_manifest"]["status"] == "completed"
+
+    def test_hybrid_lexical_index_with_lexical_only_rag_index_rejected(self, tmp_path):
+        kwargs = run_kwargs("run-rag-invalid", tmp_path)
+        kwargs["rag_hybrid_lexical_index"] = make_rag_index()  # rag_index reste lexical (make_rag_index())
+        with pytest.raises(OrchestratorError):
+            run_pipeline(**kwargs)
 
 
 class TestLlmOutOfExecutionPath:

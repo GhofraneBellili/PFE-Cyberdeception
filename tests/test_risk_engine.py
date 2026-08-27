@@ -332,5 +332,11 @@ class TestLlmOutOfExecutionPath:
             elif isinstance(node, ast.ImportFrom) and node.module:
                 imported_modules.add(node.module)
 
-        forbidden = {"src.annotator_llm", "src.rag_indexer", "src.rag_retriever"}
+        forbidden = {
+            "src.annotator_llm",
+            "src.rag_indexer",
+            "src.rag_retriever",
+            "src.semantic_embedder",
+            "src.vector_index",
+        }
         assert not (imported_modules & forbidden), f"import interdit trouvé : {imported_modules & forbidden}"

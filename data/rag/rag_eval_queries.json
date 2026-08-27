@@ -1,0 +1,154 @@
+{
+  "version": "1.0",
+  "description": "Réf. tâche « comparer RAG lexical (TF-IDF) vs RAG sémantique (embeddings) ». Jeu de requêtes d'évaluation du retrieval, avec vérité terrain (chunk_id attendus) établie par relecture humaine directe des 124 chunks réels du corpus (data/deception/staging/*.json). Aucun chunk n'est inventé : chaque expected_chunk_id existe dans le corpus au moment de la construction de ce fichier.",
+  "corpus_reference": {
+    "staging_files": [
+      "data/deception/staging/d3fend_deception_seed_1.5.0.json",
+      "data/deception/staging/engage_activity_seed_1.0.json",
+      "data/deception/staging/literature_evidence_seed_1.2.json"
+    ],
+    "chunk_count_at_construction": 124,
+    "chunk_count_by_source": {"d3fend": 44, "engage": 62, "literature": 18}
+  },
+  "notes": [
+    "Certains sujets imposés par la tâche (persistence, discovery, lateral movement, ...) ne correspondent à aucun mécanisme documenté de manière aussi directe que 'credentials' ou 'honeypot' : la vérité terrain reste honnête (meilleur(s) chunk(s) réellement disponible(s) et pertinent(s)), même si le rappel attendu sur ces requêtes est plus faible. Ce n'est pas une erreur de construction, c'est une limite réelle du corpus documentée en Phase 2.",
+    "Une requête peut avoir plusieurs chunk_id attendus lorsque plusieurs passages du même concept D3FEND/Engage/littérature sont tous pertinents (ex. les 4 chunks d'un même concept D3FEND : label, définition, mode opératoire, type)."
+  ],
+  "queries": [
+    {
+      "query_id": "q01_credentials",
+      "topic": "credentials",
+      "query": "decoy credential created to deceive an attacker who steals passwords",
+      "expected_chunk_ids": ["d3fend:D3-DUC:0", "d3fend:D3-DUC:1", "d3fend:D3-DUC:2", "d3fend:D3-DUC:3"],
+      "justification": "D3-DUC (Decoy User Credential) est le concept D3FEND qui correspond exactement à une fausse information d'identification déployée pour tromper un attaquant."
+    },
+    {
+      "query_id": "q02_network_deception",
+      "topic": "network deception",
+      "query": "decoy network resource deployed on the network to mislead an adversary",
+      "expected_chunk_ids": ["d3fend:D3-DNR:0", "d3fend:D3-DNR:1", "d3fend:D3-DNR:2", "d3fend:D3-DNR:3"],
+      "justification": "D3-DNR (Decoy Network Resource) décrit explicitement le déploiement d'une ressource réseau leurre."
+    },
+    {
+      "query_id": "q03_honeypot",
+      "topic": "honeypot",
+      "query": "what is a honeypot used to distract and monitor an attacker on the network",
+      "expected_chunk_ids": [
+        "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+        "d3fend:D3-DE:3",
+        "d3fend:D3-CHN:1",
+        "d3fend:D3-CHN:2",
+        "doi_10.1109_csac.2003.1254322__ev001"
+      ],
+      "justification": "Définition explicite du honeypot (littérature Provos), le terme apparaît comme synonyme direct de D3-DE (Decoy Environment), et D3-CHN (Connected Honeynet) décrit un honeypot connecté au réseau d'entreprise."
+    },
+    {
+      "query_id": "q04_decoy_file",
+      "topic": "decoy file",
+      "query": "decoy file placed on a system or file server to entice an adversary to open it",
+      "expected_chunk_ids": [
+        "d3fend:D3-DF:0",
+        "d3fend:D3-DF:1",
+        "d3fend:D3-DF:2",
+        "d3fend:D3-DF:3",
+        "doi_10.1109_iaw.2004.1437806__ev001",
+        "doi_10.1007_978-3-642-05284-2_4__ev001"
+      ],
+      "justification": "D3-DF (Decoy File) est le concept D3FEND direct ; les deux passages littérature décrivent des variantes concrètes (honeyfile, decoy documents générés automatiquement)."
+    },
+    {
+      "query_id": "q05_lateral_movement",
+      "topic": "lateral movement",
+      "query": "lure an attacker moving across the network toward other connected systems",
+      "expected_chunk_ids": ["d3fend:D3-CHN:1", "d3fend:D3-CHN:2", "d3fend:D3-DNR:0", "d3fend:D3-DNR:1", "d3fend:D3-DST:1"],
+      "justification": "Aucun mécanisme n'est étiqueté 'lateral movement' explicitement dans le corpus : le meilleur rapprochement réel est le honeynet connecté au réseau d'entreprise (D3-CHN, rencontré lors d'un déplacement latéral) et la ressource réseau leurre (D3-DNR), complétés par le jeton de session leurre (D3-DST) qui trace un attaquant se déplaçant avec des identifiants volés."
+    },
+    {
+      "query_id": "q06_credential_dumping",
+      "topic": "credential dumping",
+      "query": "counter an adversary dumping credentials from memory or a credential store",
+      "expected_chunk_ids": ["d3fend:D3-DUC:0", "d3fend:D3-DUC:1", "d3fend:D3-DUC:2", "d3fend:D3-DST:0", "d3fend:D3-DST:1"],
+      "justification": "Les identifiants et jetons de session leurres (D3-DUC, D3-DST) sont les artefacts que l'attaquant récupérerait lors d'un dumping de credentials ; leur usage déclenche une détection."
+    },
+    {
+      "query_id": "q07_network_share",
+      "topic": "network share",
+      "query": "decoy resource placed on a network file share",
+      "expected_chunk_ids": ["d3fend:D3-DNR:2", "d3fend:D3-DNR:0", "d3fend:D3-DNR:1"],
+      "justification": "D3-DNR:2 mentionne explicitement 'network file shares' comme lieu de déploiement des ressources réseau leurres."
+    },
+    {
+      "query_id": "q08_web_application",
+      "topic": "web application",
+      "query": "decoy deployed on a web application server",
+      "expected_chunk_ids": ["d3fend:D3-DNR:2", "d3fend:D3-DNR:0", "d3fend:D3-DNR:1"],
+      "justification": "D3-DNR:2 mentionne explicitement 'web application servers' comme lieu de déploiement."
+    },
+    {
+      "query_id": "q09_fake_service",
+      "topic": "fake service",
+      "query": "fake or decoy service presented to the adversary among real installed services",
+      "expected_chunk_ids": ["d3fend:D3-CHN:1", "engage:EAC0006:description", "engage:EAC0006:long_description"],
+      "justification": "D3-CHN:1 parle explicitement d'un 'decoy service' ; EAC0006 (Application Diversity) présente délibérément plusieurs services/logiciels à l'adversaire."
+    },
+    {
+      "query_id": "q10_decoy_account",
+      "topic": "decoy account",
+      "query": "fake user account or identity created to interact with an adversary",
+      "expected_chunk_ids": ["d3fend:D3-DP:0", "d3fend:D3-DP:1", "d3fend:D3-DP:2", "engage:EAC0022:long_description"],
+      "justification": "D3-DP (Decoy Persona) est directement une fausse identité utilisateur ; EAC0022 (Artifact Diversity) cite explicitement les comptes ('accounts') parmi les artefacts présentés."
+    },
+    {
+      "query_id": "q11_persistence",
+      "topic": "persistence",
+      "query": "deception technique that keeps an adversary engaged with a believable long-lived environment",
+      "expected_chunk_ids": ["engage:EAC0008:description", "engage:EAC0008:long_description", "d3fend:D3-IHN:1", "d3fend:D3-IHN:2"],
+      "justification": "Aucun mécanisme du corpus ne cible directement la tactique ATT&CK Persistence. Meilleur rapprochement documenté : Burn-In (EAC0008, génération d'artefacts système crédibles sur la durée) et le honeynet intégré en environnement de production (D3-IHN). Requête volontairement difficile — rappel attendu plus faible, à documenter tel quel."
+    },
+    {
+      "query_id": "q12_discovery",
+      "topic": "discovery",
+      "query": "decoy artifacts encountered by an adversary scanning and enumerating the environment",
+      "expected_chunk_ids": ["d3fend:D3-DO:0", "d3fend:D3-DO:1", "engage:EAC0007:description", "engage:EAC0007:long_description"],
+      "justification": "D3-DO (Decoy Object, concept générique) est ce qu'un attaquant rencontre lors d'une découverte/énumération ; EAC0007 (Network Diversity) vise explicitement à convaincre l'adversaire de la légitimité du réseau observé lors de cette phase."
+    },
+    {
+      "query_id": "q13_data_collection",
+      "topic": "data collection",
+      "query": "decoy data planted on a system for an adversary to collect",
+      "expected_chunk_ids": ["engage:EAC0011:description", "engage:EAC0011:long_description", "engage:EAC0022:long_description"],
+      "justification": "EAC0011 (Pocket Litter) est explicitement de la donnée placée sur un système pour être découverte/collectée par l'adversaire ; EAC0022 cite fichiers/logs/historique de navigation comme artefacts collectables."
+    },
+    {
+      "query_id": "q14_exfiltration",
+      "topic": "exfiltration",
+      "query": "detect or bait data exfiltration traffic leaving the network",
+      "expected_chunk_ids": ["engage:EAC0004:description", "engage:EAC0004:long_description"],
+      "justification": "EAC0004 (Network Analysis) mentionne explicitement 'data exfiltration traffic' comme trafic analysé."
+    },
+    {
+      "query_id": "q15_attack_redirection",
+      "topic": "attack redirection",
+      "query": "redirect an adversary's malicious action toward a decoy system for continued engagement",
+      "expected_chunk_ids": ["engage:EAC0021:description", "engage:EAC0021:long_description"],
+      "justification": "EAC0021 (Migrate Attack Vector) décrit explicitement le déplacement d'un élément malveillant vers un système leurre — correspond directement à l'effet de progression 'redirect' (§12.6 CLAUDE.md)."
+    },
+    {
+      "query_id": "q16_honeytoken",
+      "topic": "honeytoken",
+      "query": "honeytoken embedded in a system as a trap to detect an intruder",
+      "expected_chunk_ids": ["doi_10.1145_3678890.3678897__ev001", "d3fend:D3-DUC:0", "d3fend:D3-DST:0"],
+      "justification": "Passage littérature mentionnant explicitement les honeytokens ; les concepts D3FEND les plus proches sont les identifiants et jetons leurres."
+    },
+    {
+      "query_id": "q17_psychological_effect",
+      "topic": "psychological effect on attacker",
+      "query": "psychological effect of deception on an attacker's behavior and decision making",
+      "expected_chunk_ids": [
+        "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy__ev001",
+        "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy__ev002"
+      ],
+      "justification": "Étude empirique dédiée (red teamers) sur l'effet psychologique des leurres sur le comportement de l'attaquant."
+    }
+  ]
+}

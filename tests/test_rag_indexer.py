@@ -13,14 +13,18 @@ présentée comme un document réel.
 import json
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from src.rag_indexer import (
     EMBEDDING_DIMENSION,
+    Chunk,
     RagIndexerError,
     build_index,
+    build_semantic_index,
     compute_document_frequencies,
     embed_query,
+    embed_query_semantic,
     embed_text,
     load_d3fend_chunks,
     load_engage_chunks,
@@ -34,6 +38,38 @@ STAGING_DIR = REPO_ROOT / "data" / "deception" / "staging"
 
 def load_json(name: str) -> dict:
     return json.loads((STAGING_DIR / name).read_text(encoding="utf-8"))
+
+
+class FakeEmbedder:
+    """Embedder déterministe factice — aucune dépendance à
+    `sentence-transformers`, aucun téléchargement de modèle pendant
+    `pytest` (réf. tâche §18)."""
+
+    def __init__(self, model_name: str = "fake-embedder-test-v1", dimension: int = 4):
+        self.model_name = model_name
+        self.dimension = dimension
+
+    def encode(self, texts):
+        vectors = []
+        for text in texts:
+            seed = sum(ord(c) for c in text) or 1
+            rng = np.random.default_rng(seed)
+            vector = rng.normal(size=self.dimension).astype(np.float32)
+            norm = np.linalg.norm(vector)
+            vectors.append(vector / norm if norm > 0 else vector)
+        return np.asarray(vectors, dtype=np.float32)
+
+
+def _chunk(chunk_id: str, text: str, source_type: str = "literature") -> Chunk:
+    return Chunk(
+        chunk_id=chunk_id,
+        source_id="s",
+        source_type=source_type,
+        document_id="doc",
+        locator="l",
+        text=text,
+        text_hash="hash",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -265,7 +301,99 @@ class TestRealStagingFiles:
 
 
 # ---------------------------------------------------------------------------
-# E. Invariant LLM hors du chemin d'exécution
+# E. Index sémantique — moteur RAG principal, réf. tâche « RAG sémantique »
+# ---------------------------------------------------------------------------
+
+
+class TestBuildSemanticIndex:
+    def test_index_has_one_vector_per_chunk(self):
+        chunks = [_chunk("c1", "decoy credential store"), _chunk("c2", "network segment topology")]
+        index = build_semantic_index(chunks, embedder=FakeEmbedder())
+        assert len(index) == 2
+        assert index.vectors.shape == (2, 4)
+        assert index.dimension == 4
+        assert index.embedding_model == "fake-embedder-test-v1"
+
+    def test_backend_is_explicitly_reported(self):
+        index = build_semantic_index([_chunk("c1", "decoy file")], embedder=FakeEmbedder())
+        assert index.backend in ("faiss", "numpy")
+
+    def test_duplicate_chunk_id_rejected(self):
+        chunks = [_chunk("dup", "a"), _chunk("dup", "b")]
+        with pytest.raises(RagIndexerError):
+            build_semantic_index(chunks, embedder=FakeEmbedder())
+
+    def test_empty_chunk_list_produces_empty_index(self):
+        index = build_semantic_index([], embedder=FakeEmbedder())
+        assert len(index) == 0
+        assert index.vectors.shape == (0, 4)
+
+    def test_inconsistent_embedder_dimension_rejected(self):
+        class BrokenEmbedder(FakeEmbedder):
+            def encode(self, texts):
+                # Retourne une dimension différente de `self.dimension` déclarée.
+                return np.zeros((len(texts), self.dimension + 1), dtype=np.float32)
+
+        with pytest.raises(RagIndexerError):
+            build_semantic_index([_chunk("c1", "decoy")], embedder=BrokenEmbedder())
+
+    def test_deterministic_for_a_given_index(self):
+        chunks = [_chunk("c1", "decoy credential store"), _chunk("c2", "network segment")]
+        index_a = build_semantic_index(chunks, embedder=FakeEmbedder())
+        index_b = build_semantic_index(chunks, embedder=FakeEmbedder())
+        assert np.array_equal(index_a.vectors, index_b.vectors)
+
+    def test_provenance_fields_preserved_on_chunks(self):
+        chunks = [_chunk("c1", "decoy credential store", source_type="d3fend")]
+        index = build_semantic_index(chunks, embedder=FakeEmbedder())
+        assert index.chunks[0].chunk_id == "c1"
+        assert index.chunks[0].source_type == "d3fend"
+
+    def test_default_embedder_used_when_none_injected_raises_without_network(self, monkeypatch):
+        """Sans embedder injecté, `load_embedder()` (réel) est appelé — en
+        environnement sans modèle en cache ni réseau autorisé pendant
+        `pytest`, on vérifie seulement que l'échec est propre
+        (`RagIndexerError`/`SemanticEmbedderError`), jamais un vecteur
+        fabriqué silencieusement."""
+        from src import semantic_embedder as se
+
+        def always_fails(model_name):
+            raise se.SemanticEmbedderError("réseau/modèle indisponible (simulé, isolation CI)")
+
+        monkeypatch.setattr(se, "_try_load", always_fails)
+        with pytest.raises(se.SemanticEmbedderError):
+            build_semantic_index([_chunk("c1", "decoy")])
+
+
+class TestEmbedQuerySemantic:
+    def test_uses_same_model_as_index_by_default(self, monkeypatch):
+        from src import semantic_embedder as se
+
+        loaded_with = []
+
+        def fake_load_embedder(model_name=None, **kwargs):
+            loaded_with.append(model_name)
+            return FakeEmbedder(model_name=model_name or "fake-embedder-test-v1")
+
+        monkeypatch.setattr(se, "load_embedder", fake_load_embedder)
+        index = build_semantic_index([_chunk("c1", "decoy credential")], embedder=FakeEmbedder())
+        embed_query_semantic(index, "decoy credential")
+        assert loaded_with == [index.embedding_model]
+
+    def test_mismatched_embedder_model_name_rejected(self):
+        index = build_semantic_index([_chunk("c1", "decoy credential")], embedder=FakeEmbedder())
+        mismatched = FakeEmbedder(model_name="a-different-model")
+        with pytest.raises(RagIndexerError):
+            embed_query_semantic(index, "decoy credential", embedder=mismatched)
+
+    def test_query_vector_has_index_dimension(self):
+        index = build_semantic_index([_chunk("c1", "decoy credential")], embedder=FakeEmbedder())
+        query_vector = embed_query_semantic(index, "decoy credential", embedder=FakeEmbedder())
+        assert len(query_vector) == index.dimension
+
+
+# ---------------------------------------------------------------------------
+# F. Invariant LLM hors du chemin d'exécution
 # ---------------------------------------------------------------------------
 
 
