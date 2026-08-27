@@ -7,122 +7,116 @@ capture d'écran automatisé n'est disponible dans cet environnement, donc
 aucun statut `AVAILABLE` (PNG déjà produit) n'est déclaré tant qu'une
 capture n'a pas été prise manuellement par l'utilisateur.
 
-## Capture C1 — Architecture / arborescence simplifiée du projet
+**Renumérotation (réf. tâche « captures utiles au chapitre 4 »)** : la
+liste est désormais **C1–C7** (auparavant C1–C8). SP3 détaillé, front de
+Pareto, réduction de risque et `Y*` restent prioritairement pour le
+chapitre 5 — aucune capture dédiée ne leur est réservée ici, même si les
+modules correspondants (`risk_engine.py`, `optimizer.py`) sont
+implémentés et testés (voir `IMPLEMENTATION_REPORT.md`, section 4.4.3 et
+4.4.4).
+
+## Capture C1 — Organisation réelle du projet
 
 ```
 Status: READY_FOR_SCREENSHOT
 Module: (aucun module de code — structure du dépôt)
 Fichier de sortie: docs/chapter4/outputs/architecture_tree.txt
-Commande: voir docs/chapter4/outputs/architecture_tree.txt (généré depuis un script Python ponctuel listant récursivement le dépôt, répertoires .git/.venv/__pycache__ exclus, répertoires de données volumineuses résumés par un nombre de fichiers)
+Commande: voir docs/chapter4/outputs/architecture_tree.txt (généré depuis un script Python ponctuel listant récursivement le dépôt, répertoires .git/.venv/.claude/__pycache__ exclus, répertoires de données volumineuses résumés par un nombre de fichiers)
 Capture: docs/chapter4/screenshots/01_architecture/architecture_tree.png (à produire manuellement à partir du fichier texte)
-Ce qui doit être visible: src/ (modules implémentés vs stubs), tools/deception_kb/ (couche offline), data/deception/ (staging + registre littérature), tests/.
-Rôle dans le chapitre 4: Section 4.2 — Architecture logicielle.
+Ce qui doit être visible: src/ (tous modules implémentés), tools/deception_kb/ (couche offline, y compris catalog_builder.py/mapping_builder.py), data/deception/ (staging + catalogue + mapping réels), examples/, tests/.
+Rôle dans le chapitre 4: Section 4.1.2 — Organisation du projet.
 ```
 
-## Capture C2 — Exemple d'une fiche réelle de mécanisme de cyberdéception
+## Capture C2 — Fiche d'un mécanisme réel du catalogue
 
 ```
-Status: NOT_IMPLEMENTED
-Module: src/knowledge_deception.py (chargeur implémenté et testé, mais aucun catalogue réel à charger)
-Fichier de sortie: (absent)
-Commande: (absente)
-Capture: (absente)
-Ce qui doit être visible: un DeceptionMechanism réel (name, description, target_artifacts, ...).
-Rôle dans le chapitre 4: Section 4.3 — Préparation des données et connaissances.
-Raison du blocage: data/deception/deception_catalog.json n'existe pas encore — sa composition dépend d'une OPEN_DECISION non résolue (voir tools/deception_kb/README.md). Ne pas fabriquer un exemple synthétique présenté comme réel (règle anti-fabrication).
+Status: READY_FOR_SCREENSHOT
+Module: data/deception/deception_catalog.json (tools/deception_kb/catalog_builder.py)
+Fichier de sortie: data/deception/deception_catalog.json (mécanisme "D3-DUC")
+Commande: python -m tools.deception_kb.catalog_builder
+Capture: docs/chapter4/screenshots/02_knowledge/deception_mechanism.png (à produire manuellement — se limiter à un seul mécanisme, ex. D3-DUC, pas les 3 ni les preuves complètes)
+Ce qui doit être visible: id, name, description, target_artifacts, interaction_mechanism (dérivé des relations ATT&CK réelles), admissibility_profile.allowed_location_types, un extrait d'evidence (source + passage), version.
+Rôle dans le chapitre 4: Section 4.3.3 — Base de connaissances de cyberdéception.
+Note: catalogue v1 volontairement restreint à 3 mécanismes (D3-DF, D3-DNR, D3-DUC) — seuls les concepts-feuilles D3FEND avec une relation ATT&CK directement tracée dans le staging ; voir IMPLEMENTATION_REPORT.md pour la justification complète (aucune valeur inventée).
 ```
 
-## Capture C3 — Résultat réel de SP1
+## Capture C3 — Résultat SP1 réel
 
 ```
 Status: READY_FOR_SCREENSHOT
 Module: src/admissibility.py
-Fichier de sortie: docs/chapter4/outputs/sp1_example.txt (résumé) + docs/chapter4/outputs/sp1_candidates.json (complet)
-Commande: python -m examples.sp1_example
-Capture: docs/chapter4/screenshots/03_sp1/sp1_result.png (à produire manuellement depuis sp1_example.txt)
-Ce qui doit être visible: Occurrence ; Mecanisme ; Emplacement ; Decision (ADMISSIBLE/REJETE avec raison Autorise/PrerequisSatisfaits/Pertinent) ; compteurs Candidats bruts/Admissibles/Rejetes.
-Rôle dans le chapitre 4: Section 4.4 — Implémentation de SP1.
+Fichier de sortie: docs/chapter4/outputs/sp1_real_example.txt (résumé) + sp1_real_example.json (complet) — catalogue et mapping RÉELS
+Commande: python -m examples.sp1_real_example
+Capture: docs/chapter4/screenshots/03_sp1/sp1_real_result.png (à produire manuellement depuis sp1_real_example.txt)
+Ce qui doit être visible: D_i réellement peuplé depuis le mapping M_{i,d} matérialisé, décision par candidat (Autorise/PrerequisSatisfaits/Pertinent), et la synthèse (candidats bruts, admissibles, rejetés).
+Rôle dans le chapitre 4: Section 4.4.1 — Construction du domaine admissible (SP1).
+Note pédagogique: RequirementsSatisfied="undetermined" pour tout candidat avec ce catalogue réel (aucune preuve documentaire ne justifie required_asset_types/services/artifacts) — C_{i,h} vide, résultat honnête et attendu, pas un bug. La capture doit montrer ce diagnostic complet, pas seulement un résultat "vide".
 ```
 
-## Capture C4 — Exemple de chunks / preuves disponibles pour le RAG
-
-```
-Status: READY_FOR_SCREENSHOT
-Module: src/rag_indexer.py
-Fichier de sortie: docs/chapter4/outputs/rag_chunks_example.json
-Commande: python -m examples.rag_example
-Capture: docs/chapter4/screenshots/04_rag/rag_chunks.png (à produire manuellement depuis rag_chunks_example.json)
-Ce qui doit être visible: chunk_id, source_id, source_type, document_id, locator, text, text_hash, metadata — un chunk D3FEND (ex. "Decoy Object"), un chunk Engage, un chunk littérature (passage page_verified).
-Rôle dans le chapitre 4: Section 4.5 — Implémentation du LLM et du RAG.
-```
-
-## Capture C5 — Résultat réel du retrieval
+## Capture C4 — Récupération documentaire RAG
 
 ```
 Status: READY_FOR_SCREENSHOT
-Module: src/rag_retriever.py
-Fichier de sortie: docs/chapter4/outputs/rag_retrieval_example.txt
+Module: src/rag_indexer.py / src/rag_retriever.py
+Fichier de sortie: docs/chapter4/outputs/rag_retrieval_example.txt (résultat de récupération) + rag_chunks_example.json (structure des chunks)
 Commande: python -m examples.rag_example
 Capture: docs/chapter4/screenshots/04_rag/rag_retrieval.png (à produire manuellement depuis rag_retrieval_example.txt)
-Ce qui doit être visible: la requête, un index réel de 124 chunks (44 D3FEND, 62 Engage, 18 littérature), et le classement Rang/Score/Type/chunk_id/Extrait — premier résultat "d3fend:D3-DUC:0" (Decoy User Credential), pertinent pour la requête sur les credentials leurres.
-Rôle dans le chapitre 4: Section 4.5 — Implémentation du LLM et du RAG.
+Ce qui doit être visible: la requête, un index réel de 124 chunks (44 D3FEND, 62 Engage, 18 littérature), le classement Rang/Score/Type/chunk_id/Extrait — premier résultat "d3fend:D3-DUC:0" (Decoy User Credential), pertinent pour la requête.
+Rôle dans le chapitre 4: Section 4.4.2 — Évaluation contextuelle par RAG et LLM (SP2).
 ```
 
-## Capture C6 — Exemple réel d'annotation structurée du LLM
+## Capture C5 — Annotation structurée provenant du vrai LLM
 
 ```
-Status: READY_FOR_SCREENSHOT
-Module: src/annotator_llm.py
-Fichier de sortie: docs/chapter4/outputs/llm_annotation_example.json
-Commande: python -m examples.annotator_llm_example
-Capture: docs/chapter4/screenshots/05_llm/llm_annotation.png (à produire manuellement depuis llm_annotation_example.json — se limiter à 1-2 sous-métriques dans la capture, pas les 11)
-Ce qui doit être visible: metric, score, confidence, evidence, justification pour au moins une sous-métrique, ainsi que le champ model_version="rule_based_stub" et la mention explicite que ce n'est pas un résultat LLM réel.
-Rôle dans le chapitre 4: Section 4.5 — Implémentation du LLM et du RAG.
-Avertissement: repli déterministe rule_based_stub (aucune API LLM réelle disponible dans cet environnement) — à présenter au jury comme tel, jamais comme une annotation sémantique réelle ni un résultat expérimental du chapitre 5 (§20 anti-fabrication).
+Status: NOT_AVAILABLE
+Module: src/annotator_llm.py (RealLlmAnnotator — code implémenté et testé par mocks HTTP, tests/test_annotator_llm.py::TestRealLlmAnnotator, jamais exécuté contre un service réel)
+Fichier de sortie attendu: docs/chapter4/outputs/llm_annotation_real.json (NON généré dans cet environnement)
+Commande pour produire cette capture: voir IMPLEMENTATION_REPORT.md section 4.4.2 ("Commande réelle d'exécution — provider réel") — ex. LLM_PROVIDER=ollama LLM_MODEL=<modele_local> python -m examples.annotator_llm_real_example
+Rôle dans le chapitre 4: Section 4.4.2 — Évaluation contextuelle par RAG et LLM (SP2).
+Raison du blocage: aucun provider LLM réel n'est exploitable dans cet environnement (ni Ollama local, ni endpoint OpenAI-compatible configuré — voir TECHNOLOGIES.md). examples/annotator_llm_real_example.py détecte cette absence et n'écrit AUCUN fichier (anti-fabrication, §20) : produire cette capture nécessite une exécution locale par l'utilisateur avec un vrai service LLM configuré.
+Repli documenté (PAS cette capture) : docs/chapter4/outputs/llm_annotation_example.json, produit par le repli déterministe rule_based_stub (examples/annotator_llm_example.py) — explicitement marqué comme tel, jamais présenté comme cette capture C5.
 ```
 
-## Capture C7 — Table réelle des annotations figées / DE
+## Capture C6 — Table figée résultant de cette annotation
 
 ```
-Status: READY_FOR_SCREENSHOT
-Module: src/annotation_validator.py
-Fichier de sortie: docs/chapter4/outputs/frozen_annotations_example.csv
-Commande: python -m examples.freeze_example
-Capture: docs/chapter4/screenshots/06_sp2/frozen_annotations.png (à produire manuellement depuis frozen_annotations_example.csv — limiter aux colonnes annotation_id/occurrence_id/mechanism_id/location_id/Realisme/P_interaction/P_engagement/Effet_prog/DE, pas les 11 sous-métriques brutes dans la capture)
-Ce qui doit être visible: une ligne figée réelle (T1078@DC01/D3-DUC/auth-store) avec Realisme, P_interaction, P_engagement, Effet_prog, DE calculés par code (src/annotation_validator.py), model="rule_based_stub".
-Rôle dans le chapitre 4: Section 4.6 — Moteurs déterministes et optimisation.
-Avertissement: les scores bruts proviennent du repli déterministe rule_based_stub (section LLM) — les FORMULES d'agrégation sont réelles, pas les scores sémantiques sous-jacents.
+Status: NOT_AVAILABLE
+Module: src/annotation_validator.py (freeze_table — code réel, non exécuté avec une annotation LLM réelle)
+Fichier de sortie attendu: docs/chapter4/outputs/frozen_annotations_real.csv / .json (NON générés dans cet environnement)
+Commande pour produire cette capture: enchaîner examples/annotator_llm_real_example.py (une fois un provider réel disponible) avec annotation_validator.freeze_table — voir IMPLEMENTATION_REPORT.md section 4.5.2.
+Rôle dans le chapitre 4: Section 4.5.2 — Conservation des annotations et des preuves.
+Raison du blocage: dépend directement de C5 (aucune annotation LLM réelle disponible dans cet environnement).
+Repli documenté (PAS cette capture) : docs/chapter4/outputs/frozen_annotations_example.csv, qui gèle des annotations produites par le repli déterministe rule_based_stub — les FORMULES d'agrégation (Realisme/P_interaction/P_engagement/Effet_prog/DE) y sont réelles, mais pas les scores sémantiques sous-jacents.
 ```
 
-## Capture C8 — Sortie simple du moteur SP3
+## Capture C7 — Orchestration / artefacts d'un run complet
 
 ```
 Status: READY_FOR_SCREENSHOT
-Module: src/risk_engine.py
-Fichier de sortie: docs/chapter4/outputs/risk_example.txt (résumé) + docs/chapter4/outputs/risk_example.csv (complet, deux scénarios)
-Commande: python -m examples.sp3_example
-Capture: docs/chapter4/screenshots/07_risk/sp3_result.png (à produire manuellement depuis risk_example.txt)
-Ce qui doit être visible: table Noeud/A/Gamma/P/I/R pour les deux scénarios (avec/sans déception), et la synthèse R_avec_deception=0.0208 / R_sans_deception=0.0365 / réduction=42.9% — valeurs identiques à l'ancre de validation test_reference_example.
-Rôle dans le chapitre 4: Section 4.6 — Moteurs déterministes et optimisation.
-Condition de déblocage: REMPLIE — test_reference_example (ancre §11) est vert (tests/test_risk_engine.py::TestReferenceExample).
+Module: src/orchestrator.py
+Fichier de sortie: docs/chapter4/outputs/pipeline_example.txt + runs/chapter4-example/*.json (régénérable, non versionné)
+Commande: python -m examples.orchestrator_example
+Capture: docs/chapter4/screenshots/09_pipeline/pipeline_result.png (à produire manuellement depuis pipeline_example.txt)
+Ce qui doit être visible: run_id, liste des fichiers écrits (input_manifest, candidates, retrieval, annotations_raw/frozen, costs, pareto, deployment_plan, deployment_report, risks, run_manifest), et le rapport Y* (occurrence/mécanisme/emplacement/coût/DE/risque avant-après).
+Rôle dans le chapitre 4: Section 4.5.1 — Enchaînement des traitements.
+Note: cette exécution utilise le repli déterministe rule_based_stub (aucun provider LLM réel disponible) — sert à démontrer l'intégration technique bout-en-bout, pas un résultat expérimental du chapitre 5.
 ```
 
 ## Notes de suivi
 
 - Ce manifeste est mis à jour à chaque module réellement livré (code +
   tests + sortie réelle), jamais en anticipation.
-- Le front de Pareto et le plan de déploiement `Y*` final sont
-  volontairement réservés au chapitre 5 (résultats/validation), même une
-  fois l'optimiseur implémenté, sauf besoin ponctuel de illustrer un
-  mécanisme technique au chapitre 4.
-- `src/optimizer.py` est désormais implémenté et testé
-  (`tests/test_optimizer.py`, 22 tests verts ; sortie réelle
-  `docs/chapter4/outputs/optimizer_example.txt`) — conformément à la note
-  ci-dessus, aucune capture C9 n'est créée pour lui : Pareto/`Y*` restent
-  réservés au chapitre 5.
-- `src/orchestrator.py` (point d'entrée unique SP1 → RAG → annotation →
-  gel → coût → `(P)` → risque avant/après) est désormais implémenté et
-  testé (`tests/test_orchestrator.py`, 8 tests verts ; sortie réelle
-  `docs/chapter4/outputs/pipeline_example.txt`) — aucune capture dédiée
-  non plus : C8 couvre déjà « SP3 ou pipeline complet » et reste
-  attribuée à SP3 (section 9 du rapport).
+- Le front de Pareto et le plan de déploiement `Y*` détaillé (analyse
+  quantitative), la réduction de risque et SP3 détaillé restent
+  volontairement réservés au chapitre 5 (résultats/validation) — non
+  couverts par C1–C7, même si les modules correspondants sont
+  implémentés et testés.
+- C5 et C6 resteront `NOT_AVAILABLE` tant qu'une exécution locale avec un
+  vrai provider LLM (Ollama ou endpoint OpenAI-compatible) n'aura pas été
+  effectuée par l'utilisateur — le code est prêt, testé, et documenté
+  (`IMPLEMENTATION_REPORT.md`, section 4.4.2) ; seule l'exécution manque.
+- Historique : l'ancienne numérotation (C1–C8, avec C4=chunks/C5=retrieval
+  séparées, C6=annotation stub, C7=table figée stub, C8=SP3) est
+  remplacée par celle ci-dessus. Les sorties de l'ancienne C6/C7 restent
+  documentées dans le corps du rapport (repli `rule_based_stub`,
+  explicitement non présentées comme C5/C6 réelles).

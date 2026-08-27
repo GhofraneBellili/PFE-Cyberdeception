@@ -43,13 +43,16 @@ Graphe d'attaque
 **Tous les blocs de cette chaîne sont désormais implémentés** (branche
 `implementation/chapter4`) : schémas de données, graphe d'attaque, deux
 bases de connaissances structurées, une couche offline de construction
-de données pour la KB déception, SP1, RAG, annotation LLM (repli
-déterministe `rule_based_stub`, aucune API LLM réelle disponible dans cet
-environnement — voir Étape 13), gel des annotations (SP2 déterministe),
-coût, SP3, optimiseur, reporter, et un orchestrateur qui enchaîne
-l'ensemble. Ce qui reste hors périmètre : un catalogue de déception réel
-(`data/deception/deception_catalog.json` n'existe pas — OPEN_DECISION non
-résolue) et une API LLM réelle (repli déterministe utilisé à la place).
+de données pour la KB déception (staging **et désormais catalogue +
+mapping réels**, voir Étape 17), SP1, RAG, annotation LLM (repli
+déterministe `rule_based_stub` **et provider LLM réel testé mais non
+exécuté dans cet environnement**, voir Étape 18), gel des annotations
+(SP2 déterministe), coût, SP3, optimiseur, reporter, et un orchestrateur
+qui enchaîne l'ensemble. Ce qui reste hors périmètre : un catalogue de
+déception plus large que les 3 mécanismes réels actuels (composition
+finale de `\mathcal D` = OPEN_DECISION non résolue) et une exécution LLM
+réelle (aucun service Ollama/OpenAI-compatible disponible dans cet
+environnement — le code est prêt, testé par mocks HTTP, et documenté).
 
 ## 2. Architecture logicielle
 
@@ -58,11 +61,12 @@ résolue) et une API LLM réelle (repli déterministe utilisé à la place).
 | `src/schemas.py` | Modèles Pydantic (contrats de données) | Validé |
 | `src/graph_builder.py` | Construction/navigation du graphe d'attaque | Validé |
 | `src/knowledge_attack.py` | KB structurée MITRE ATT&CK | Validé |
-| `src/knowledge_deception.py` | Moteur du catalogue cyberdéception normalisé | Validé (chargeur ; catalogue réel absent) |
-| `tools/deception_kb/d3fend_seed_builder.py` | Staging offline D3FEND (branche Deceive) | Validé (staging uniquement, pas le catalogue final) |
+| `src/knowledge_deception.py` | Catalogue cyberdéception + mapping \(M_{i,d}\) (chargement) | Validé (catalogue et mapping réels chargeables) |
+| `tools/deception_kb/d3fend_seed_builder.py` | Staging offline D3FEND (branche Deceive) | Validé |
+| `tools/deception_kb/catalog_builder.py` / `mapping_builder.py` | Construction du catalogue \(D\) et du mapping \(M_{i,d}\) réels | Validé (3 mécanismes, 127 relations) |
 | `src/admissibility.py` | SP1 — espace admissible \(C_{i,h}\) | Validé |
 | `src/rag_indexer.py` / `src/rag_retriever.py` | RAG (chunks tracés, TF-IDF haché, retrieval) | Validé |
-| `src/annotator_llm.py` | Annotation des 11 sous-métriques | Validé (repli déterministe `rule_based_stub`, pas d'API LLM réelle) |
+| `src/annotator_llm.py` / `src/llm_provider.py` | Annotation des 11 sous-métriques | Validé (repli `rule_based_stub` + provider réel Ollama/OpenAI-compatible testé, non exécuté ici) |
 | `src/annotation_validator.py` | SP2 déterministe (Realisme/P_interaction/P_engagement/Effet_prog/DE) + gel | Validé |
 | `src/cost_engine.py` | Calcul du coût \(Cost(d;H)\) | Validé |
 | `src/risk_engine.py` | SP3 — propagation du risque | Validé (`test_reference_example` vert) |
@@ -72,7 +76,7 @@ résolue) et une API LLM réelle (repli déterministe utilisé à la place).
 
 CI GitHub Actions : verte sur `implementation/chapter4` à chaque commit
 documenté ci-dessous (`.github/workflows/tests.yml`, déclenchée sur
-`push`/`pull_request`). 515 tests au moment de ce document.
+`push`/`pull_request`). 583 tests au moment de ce document.
 
 ## 3. Étapes techniques validées
 
@@ -1666,6 +1670,146 @@ désormais implémentés. Travaux restants ouverts : composition réelle du
 catalogue `\mathcal D` (OPEN_DECISION), intégration d'une API LLM réelle
 si elle devient disponible, justification textuelle narrative pour
 `reporter.py`.
+
+---
+
+### Étape 17 — Catalogue et mapping réels de cyberdéception (`tools/deception_kb/catalog_builder.py` / `mapping_builder.py`)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Construire `data/deception/deception_catalog.json` (catalogue fermé `D`)
+et `data/deception/attack_deception_mapping.json` (\(M_{i,d}\)) à partir
+du staging D3FEND déjà versionné, sans jamais inventer de propriété
+manquante, et les charger dans `src/knowledge_deception.py` pour usage
+réel par SP1.
+
+#### Traitement réalisé
+
+Un concept D3FEND devient un mécanisme du catalogue seulement s'il est
+une feuille (`is_leaf=True`) ET possède au moins une relation ATT&CK
+directe dans le staging (nécessaire pour renseigner `interaction_mechanism`,
+champ requis, sans l'inventer). Sur D3FEND 1.5.0, exactement 3 des 9
+feuilles satisfont ces conditions : D3-DF, D3-DUC, D3-DNR. Les 6 autres
+feuilles et les 2 concepts parents sont explicitement exclus avec raison
+tracée. `admissibility_profile.allowed_location_types` et
+`interaction_mechanism` sont dérivés de transformations déterministes et
+documentées (artefact D3FEND → type d'emplacement ; relations
+`off_artifact_relation` observées) — jamais une valeur inventée par
+mécanisme. `required_asset_types`/`services`/`artifacts` restent vides,
+faute de preuve. Le mapping \(M_{i,d}\) (127 relations) est filtré sur
+les seuls mécanismes du catalogue final ; Engage reste hors périmètre v1
+(OPEN_DECISION non résolue sur le rapprochement D3FEND/Engage).
+
+#### Sorties
+
+`data/deception/deception_catalog.json` (3 mécanismes réels),
+`data/deception/attack_deception_mapping.json` (127 relations, 125
+techniques ATT&CK distinctes),
+`docs/chapter4/outputs/sp1_real_example.json`/`.txt` (SP1 exécuté sur ce
+catalogue et ce mapping réels).
+
+#### Fichiers concernés
+
+`tools/deception_kb/catalog_builder.py`,
+`tools/deception_kb/mapping_builder.py`, ajouts à
+`src/knowledge_deception.py` (`load_attack_deception_mapping`,
+`to_sp1_mapping`), `examples/sp1_real_example.py`.
+
+#### Tests et validation
+
+`tests/test_catalog_builder.py` (12 tests, sur le staging réel),
+`tests/test_mapping_builder.py` (10 tests, idem), 9 tests ajoutés à
+`tests/test_knowledge_deception.py`, 1 test d'intégration ajouté à
+`tests/test_orchestrator.py` (pipeline complet avec catalogue et mapping
+réels). **583 tests** au total au moment de la validation. Détail
+complet : `docs/chapter4/IMPLEMENTATION_REPORT.md`, section 4.3.3.
+
+#### Résultat honnête (documenté, pas un bug)
+
+Avec ce catalogue réel, `RequirementsSatisfied="undetermined"` pour tout
+candidat (aucune preuve ne justifie les champs requis) → `C_{i,h}=∅`
+systématiquement. Vérifié par `examples/sp1_real_example.py` sur deux
+occurrences réelles (`T1110.001@DC01`, `T1039@FS01`) : `D_i` correctement
+peuplé, `Autorise`/`Pertinent` passent, mais 0 candidat admissible sur 12.
+
+#### Limites actuelles
+
+Catalogue non exhaustif (3 mécanismes) ; Engage hors périmètre v1 ;
+composition finale de `\mathcal D` reste une OPEN_DECISION.
+
+#### Lien avec l'étape suivante
+
+Provider LLM réel (`src/llm_provider.py`), pour clore l'intégration
+complète du pipeline avec des données réelles à chaque étape.
+
+---
+
+### Étape 18 — Provider LLM réel (`src/llm_provider.py` / `src/annotator_llm.RealLlmAnnotator`)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Ajouter un véritable provider LLM (Ollama local ou endpoint
+OpenAI-compatible), configuré exclusivement par variables
+d'environnement, produisant les 11 sous-métriques réelles, tout en
+conservant `RuleBasedStubAnnotator` comme repli explicite (tests et
+environnements sans API LLM).
+
+#### Traitement réalisé
+
+`src/llm_provider.py` gère le transport HTTP (`urllib.request`,
+bibliothèque standard — pas de nouvelle dépendance) vers Ollama
+(`POST /api/chat`, `format=json`) ou un endpoint OpenAI-compatible
+(`POST /chat/completions`, `response_format=json_object`),
+`temperature=0`, retries limités. `RealLlmAnnotator`
+(`src/annotator_llm.py`) construit le prompt (excluant explicitement
+`system_context`, protection anti-budget supplémentaire), appelle le
+provider, puis **valide strictement** la sortie : les 11 sous-métriques
+exactement, scores/confiances dans `[0,1]`, et `evidence_ids`
+référençant réellement des preuves récupérées — toute non-conformité
+lève `LlmOutputValidationError`, jamais une valeur inventée en
+remplacement. `detect_provider()` sélectionne automatiquement entre
+provider réel et repli selon ce qui est réellement exploitable (CAS
+A/B/C), sans jamais fabriquer un résultat.
+
+#### Résultat dans cet environnement
+
+Aucun provider LLM réel disponible (ni Ollama local, ni endpoint
+OpenAI-compatible configuré). `examples/annotator_llm_real_example.py`
+détecte cette absence et **n'écrit aucun fichier**
+`llm_annotation_real.json` (anti-fabrication) : il affiche la commande
+exacte à exécuter localement.
+
+#### Fichiers concernés
+
+`src/llm_provider.py`, ajouts à `src/annotator_llm.py`
+(`RealLlmAnnotator`, `LlmOutputValidationError`, `detect_provider`),
+`examples/annotator_llm_real_example.py`.
+
+#### Tests et validation
+
+`tests/test_llm_provider.py` (15 tests), 21 tests ajoutés à
+`tests/test_annotator_llm.py` (`RealLlmAnnotator` : réponse valide,
+métrique manquante/dupliquée, score hors bornes, evidence_id inconnu,
+JSON malformé, retries, provider OpenAI-compatible ; `detect_provider` :
+CAS A/B/C). **Aucun test n'appelle un service réel** (transport HTTP
+toujours mocké). **583 tests** au total au moment de la validation.
+Détail complet : `docs/chapter4/IMPLEMENTATION_REPORT.md`, section 4.4.2.
+
+#### Limites actuelles
+
+Code jamais exercé contre un vrai service LLM dans cet environnement —
+seulement contre des mocks HTTP déterministes en test.
+
+#### Lien avec l'étape suivante
+
+Tous les modules et données prévus par la tâche de finalisation du
+chapitre 4 sont désormais en place. Reste ouvert : exécution locale
+réelle du provider LLM par l'utilisateur (commande documentée),
+élargissement du catalogue de déception.
 
 ## OPEN_DECISION en cours
 
