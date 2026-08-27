@@ -18,10 +18,14 @@ from src.annotator_llm import (
     ELEVEN_METRICS,
     AnnotationCache,
     AnnotatorLlmError,
+    LlmOutputValidationError,
+    RealLlmAnnotator,
     RuleBasedStubAnnotator,
     annotate_with_cache,
+    detect_provider,
     deterministic_annotation_id,
 )
+from src.llm_provider import LlmProviderConfig, LlmProviderError
 from src.schemas import (
     AttackOccurrenceRef,
     DeceptionEvidence,
@@ -202,3 +206,238 @@ class TestNeverComputesAggregates:
             elif isinstance(node, ast.ImportFrom) and node.module:
                 imported_modules.add(node.module)
         assert not (imported_modules & {"src.risk_engine", "src.optimizer"})
+
+
+# ---------------------------------------------------------------------------
+# E. RealLlmAnnotator — réf. § tâche « intégrer un véritable provider LLM »
+#
+# AUCUN de ces tests n'appelle un service réel (§ tâche 12) : le transport
+# HTTP est toujours une fonction mock déterministe injectée.
+# ---------------------------------------------------------------------------
+
+import json as _json  # noqa: E402 (import local, groupe de tests dédié)
+
+
+def _valid_llm_payload(evidence_ids=("chunk_0",)):
+    return {
+        "annotations": [
+            {
+                "metric": metric,
+                "score": 0.5,
+                "confidence": 0.8,
+                "justification": f"justification reelle pour {metric}",
+                "evidence_ids": list(evidence_ids),
+            }
+            for metric in ELEVEN_METRICS
+        ]
+    }
+
+
+def ollama_transport(response_body: dict):
+    def transport(url, payload, headers, timeout):
+        return {"message": {"content": _json.dumps(response_body)}}
+
+    return transport
+
+
+def failing_then_succeeding_transport(response_body: dict, *, fail_times: int):
+    calls = {"count": 0}
+
+    def transport(url, payload, headers, timeout):
+        calls["count"] += 1
+        if calls["count"] <= fail_times:
+            raise LlmProviderError("erreur transitoire simulee")
+        return {"message": {"content": _json.dumps(response_body)}}
+
+    transport.calls = calls
+    return transport
+
+
+def ollama_config(**overrides):
+    defaults = dict(provider="ollama", model="llama3", base_url="http://localhost:11434", max_retries=1)
+    defaults.update(overrides)
+    return LlmProviderConfig(**defaults)
+
+
+class TestRealLlmAnnotator:
+    def test_valid_response_produces_eleven_annotations(self):
+        annotator = RealLlmAnnotator(config=ollama_config(), transport=ollama_transport(_valid_llm_payload()))
+        annotations = annotator.annotate(make_context(), now=FIXED_NOW)
+        assert len(annotations) == 11
+        assert {a.metric for a in annotations} == set(ELEVEN_METRICS)
+        assert all(a.model_version == "llama3" for a in annotations)
+
+    def test_no_evidence_raises_before_calling_transport(self):
+        called = {"count": 0}
+
+        def transport(url, payload, headers, timeout):
+            called["count"] += 1
+            return {"message": {"content": _json.dumps(_valid_llm_payload())}}
+
+        annotator = RealLlmAnnotator(config=ollama_config(), transport=transport)
+        with pytest.raises(AnnotatorLlmError):
+            annotator.annotate(make_context(evidence_passages=()), now=FIXED_NOW)
+        assert called["count"] == 0
+
+    def test_missing_metric_rejected(self):
+        payload = _valid_llm_payload()
+        payload["annotations"] = payload["annotations"][:-1]  # retire S_delay
+        annotator = RealLlmAnnotator(config=ollama_config(max_retries=0), transport=ollama_transport(payload))
+        with pytest.raises(LlmProviderError):
+            annotator.annotate(make_context(), now=FIXED_NOW)
+
+    def test_duplicate_metric_rejected(self):
+        payload = _valid_llm_payload()
+        payload["annotations"].append(dict(payload["annotations"][0]))
+        annotator = RealLlmAnnotator(config=ollama_config(max_retries=0), transport=ollama_transport(payload))
+        with pytest.raises(LlmProviderError):
+            annotator.annotate(make_context(), now=FIXED_NOW)
+
+    def test_out_of_bounds_score_rejected(self):
+        payload = _valid_llm_payload()
+        payload["annotations"][0]["score"] = 1.5
+        annotator = RealLlmAnnotator(config=ollama_config(max_retries=0), transport=ollama_transport(payload))
+        with pytest.raises(LlmProviderError):
+            annotator.annotate(make_context(), now=FIXED_NOW)
+
+    def test_unknown_evidence_id_rejected(self):
+        payload = _valid_llm_payload(evidence_ids=("chunk_that_does_not_exist",))
+        annotator = RealLlmAnnotator(config=ollama_config(max_retries=0), transport=ollama_transport(payload))
+        with pytest.raises(LlmProviderError):
+            annotator.annotate(make_context(), now=FIXED_NOW)
+
+    def test_malformed_json_rejected(self):
+        def transport(url, payload, headers, timeout):
+            return {"message": {"content": "not valid json {"}}
+
+        annotator = RealLlmAnnotator(config=ollama_config(max_retries=0), transport=transport)
+        with pytest.raises(LlmProviderError):
+            annotator.annotate(make_context(), now=FIXED_NOW)
+
+    def test_missing_annotations_key_rejected(self):
+        def transport(url, payload, headers, timeout):
+            return {"message": {"content": _json.dumps({"wrong_key": []})}}
+
+        annotator = RealLlmAnnotator(config=ollama_config(max_retries=0), transport=transport)
+        with pytest.raises(LlmProviderError):
+            annotator.annotate(make_context(), now=FIXED_NOW)
+
+    def test_never_invents_a_replacement_value(self):
+        """Réf. § tâche 1 : une sortie invalide est REJETEE, jamais
+        remplacee silencieusement -- l'exception doit porter l'erreur
+        de validation reelle, pas un resultat de repli deguise."""
+        payload = _valid_llm_payload()
+        payload["annotations"][0]["evidence_ids"] = []
+        annotator = RealLlmAnnotator(config=ollama_config(max_retries=0), transport=ollama_transport(payload))
+        with pytest.raises(LlmProviderError) as exc_info:
+            annotator.annotate(make_context(), now=FIXED_NOW)
+        assert "evidence_ids" in str(exc_info.value)
+        assert isinstance(exc_info.value.__cause__, LlmOutputValidationError)
+
+    def test_transient_error_retried_then_succeeds(self):
+        transport = failing_then_succeeding_transport(_valid_llm_payload(), fail_times=1)
+        annotator = RealLlmAnnotator(config=ollama_config(max_retries=2), transport=transport)
+        annotations = annotator.annotate(make_context(), now=FIXED_NOW)
+        assert len(annotations) == 11
+        assert transport.calls["count"] == 2
+
+    def test_retries_exhausted_raises(self):
+        transport = failing_then_succeeding_transport(_valid_llm_payload(), fail_times=99)
+        annotator = RealLlmAnnotator(config=ollama_config(max_retries=1), transport=transport)
+        with pytest.raises(LlmProviderError):
+            annotator.annotate(make_context(), now=FIXED_NOW)
+        assert transport.calls["count"] == 2  # 1 tentative initiale + 1 retry
+
+    def test_openai_compatible_provider_uses_choices_shape(self):
+        config = LlmProviderConfig(provider="openai_compatible", model="gpt-x", base_url="https://api.example.com", max_retries=0)
+
+        def transport(url, payload, headers, timeout):
+            return {"choices": [{"message": {"content": _json.dumps(_valid_llm_payload())}}]}
+
+        annotator = RealLlmAnnotator(config=config, transport=transport)
+        annotations = annotator.annotate(make_context(), now=FIXED_NOW)
+        assert len(annotations) == 11
+        assert all(a.model_version == "gpt-x" for a in annotations)
+
+    def test_never_calls_a_real_network_service(self, monkeypatch):
+        """Garde-fou explicite : si le code appelait jamais
+        urllib.request.urlopen malgre le transport injecte, ce test
+        echouerait -- verifie que le transport mock est bien exclusif."""
+        import urllib.request
+
+        def forbidden(*args, **kwargs):
+            raise AssertionError("Aucun appel reseau reel ne doit avoir lieu pendant les tests (§ tache 12).")
+
+        monkeypatch.setattr(urllib.request, "urlopen", forbidden)
+        annotator = RealLlmAnnotator(config=ollama_config(), transport=ollama_transport(_valid_llm_payload()))
+        annotations = annotator.annotate(make_context(), now=FIXED_NOW)
+        assert len(annotations) == 11
+
+
+# ---------------------------------------------------------------------------
+# F. detect_provider — réf. § tâche 2 (CAS A/B/C)
+# ---------------------------------------------------------------------------
+
+
+class TestDetectProvider:
+    def test_cas_c_no_configuration_falls_back_to_stub(self):
+        result = detect_provider({})
+        assert result.annotation_type == "rule_based_stub"
+        assert isinstance(result.provider, RuleBasedStubAnnotator)
+
+    def test_cas_b_openai_compatible_configured_selects_real_provider(self):
+        result = detect_provider(
+            {"LLM_PROVIDER": "openai_compatible", "LLM_MODEL": "gpt-x", "LLM_BASE_URL": "https://api.example.com"}
+        )
+        assert result.annotation_type == "real_llm"
+        assert isinstance(result.provider, RealLlmAnnotator)
+        assert result.details["model"] == "gpt-x"
+
+    def test_cas_a_ollama_model_available_selects_real_provider(self):
+        result = detect_provider(
+            {"LLM_PROVIDER": "ollama", "LLM_MODEL": "llama3"},
+            list_ollama_models=lambda base_url, timeout: ["llama3", "mistral"],
+        )
+        assert result.annotation_type == "real_llm"
+        assert result.details["model"] == "llama3"
+
+    def test_cas_a_ollama_model_not_available_falls_back_to_stub(self):
+        result = detect_provider(
+            {"LLM_PROVIDER": "ollama", "LLM_MODEL": "nonexistent-model"},
+            list_ollama_models=lambda base_url, timeout: ["llama3"],
+        )
+        assert result.annotation_type == "rule_based_stub"
+        assert "nonexistent-model" in result.reason
+
+    def test_cas_a_ollama_no_model_specified_picks_first_available(self):
+        result = detect_provider(
+            {"LLM_PROVIDER": "ollama"},
+            list_ollama_models=lambda base_url, timeout: ["mistral", "llama3"],
+        )
+        assert result.annotation_type == "real_llm"
+        assert result.details["model"] == "mistral"
+
+    def test_cas_a_ollama_unreachable_falls_back_to_stub(self):
+        def raise_unreachable(base_url, timeout):
+            raise LlmProviderError("connexion refusee (mock)")
+
+        result = detect_provider({"LLM_PROVIDER": "ollama", "LLM_MODEL": "llama3"}, list_ollama_models=raise_unreachable)
+        assert result.annotation_type == "rule_based_stub"
+        assert "injoignable" in result.reason
+
+    def test_cas_a_ollama_no_models_available_falls_back_to_stub(self):
+        result = detect_provider({"LLM_PROVIDER": "ollama"}, list_ollama_models=lambda base_url, timeout: [])
+        assert result.annotation_type == "rule_based_stub"
+
+    def test_detect_provider_never_calls_real_network(self, monkeypatch):
+        import urllib.request
+
+        def forbidden(*args, **kwargs):
+            raise AssertionError("Aucun appel reseau reel ne doit avoir lieu pendant les tests (§ tache 12).")
+
+        monkeypatch.setattr(urllib.request, "urlopen", forbidden)
+        result = detect_provider(
+            {"LLM_PROVIDER": "ollama", "LLM_MODEL": "llama3"},
+            list_ollama_models=lambda base_url, timeout: ["llama3"],
+        )
+        assert result.annotation_type == "real_llm"
