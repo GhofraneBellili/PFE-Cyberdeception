@@ -71,9 +71,14 @@ Rôle dans le chapitre 4: Section 4.5 — Implémentation du LLM et du RAG.
 ## Capture C6 — Exemple réel d'annotation structurée du LLM
 
 ```
-Status: NOT_IMPLEMENTED
-Module: src/annotator_llm.py (stub, non implémenté)
+Status: READY_FOR_SCREENSHOT
+Module: src/annotator_llm.py
+Fichier de sortie: docs/chapter4/outputs/llm_annotation_example.json
+Commande: python -m examples.annotator_llm_example
+Capture: docs/chapter4/screenshots/05_llm/llm_annotation.png (à produire manuellement depuis llm_annotation_example.json — se limiter à 1-2 sous-métriques dans la capture, pas les 11)
+Ce qui doit être visible: metric, score, confidence, evidence, justification pour au moins une sous-métrique, ainsi que le champ model_version="rule_based_stub" et la mention explicite que ce n'est pas un résultat LLM réel.
 Rôle dans le chapitre 4: Section 4.5 — Implémentation du LLM et du RAG.
+Avertissement: repli déterministe rule_based_stub (aucune API LLM réelle disponible dans cet environnement) — à présenter au jury comme tel, jamais comme une annotation sémantique réelle ni un résultat expérimental du chapitre 5 (§20 anti-fabrication).
 ```
 
 ## Capture C7 — Table réelle des annotations figées / DE

@@ -10,7 +10,7 @@ effectivement importées par du code réel sont incluses.
 | Python | ≥ 3.11 (`pyproject.toml`) | Langage d'implémentation unique du projet | tous |
 | Pydantic | 2.x (`pydantic>=2,<3`) | Modèles de données validés (occurrences `T_{i,h}`, graphe, mécanisme de déception, annotation, contexte d'annotation, instance système) | `src/schemas.py` |
 | NetworkX | 3.x (`networkx>=3,<4`) | Représentation du graphe d'attaque comme `DiGraph`, utilitaires de parcours (parents/enfants) | `src/graph_builder.py` |
-| pytest | ≥ 8.0 (dépendance `dev`) | Suite de tests (461 tests au moment de ce document) | `tests/` |
+| pytest | ≥ 8.0 (dépendance `dev`) | Suite de tests (474 tests au moment de ce document) | `tests/` |
 
 ## Technologies explicitement NON utilisées à ce stade
 
@@ -21,17 +21,12 @@ base SQL, Redis, Kafka, MongoDB.
 
 ## Technologies attendues mais NON ENCORE utilisées
 
-Ces technologies seront introduites uniquement lorsque le module
-correspondant sera réellement implémenté (voir `IMPLEMENTATION_REPORT.md`,
-statut `NON IMPLEMENTE`) :
-
 | Technologie prévue | Rôle prévu | Module prévu | Statut |
 |---|---|---|---|
-| API LLM (à choisir) | Annotation structurée des 11 sous-métriques | `src/annotator_llm.py` | NON IMPLEMENTE |
+| API LLM réelle (à choisir) | Annotation sémantique réelle des 11 sous-métriques | `src/annotator_llm.py` | NON IMPLEMENTE — repli déterministe `RuleBasedStubAnnotator` (`model_version="rule_based_stub"`) utilisé à la place, faute d'accès à une API LLM dans cet environnement (voir `IMPLEMENTATION_REPORT.md`, section 6) |
 
-Aucun choix définitif n'est fait pour cette ligne tant que le module
-correspondant n'est pas atteint dans l'ordre d'implémentation imposé —
-consigner ce choix ici uniquement lorsqu'il est réellement fait et codé.
+Aucun choix définitif n'est fait pour cette ligne tant qu'une API LLM
+réelle n'est pas effectivement intégrée et codée.
 
 ## Choix techniques déterministes réalisés (pas de nouvelle dépendance)
 

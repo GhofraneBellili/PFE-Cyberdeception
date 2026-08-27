@@ -7,7 +7,9 @@ Récupération des passages pertinents d'un `RagIndex`
 (`src/rag_indexer.py`) pour une requête contextuelle donnée — réf. §11.2
 « Entrées du LLM » : ce module fournit les preuves, il ne les interprète
 pas et ne calcule aucune sous-métrique sémantique (rôle réservé à
-`annotator_llm.py`, non implémenté).
+`annotator_llm.py`). `to_deception_evidence` relie un `RetrievalResult` au
+format attendu par `AnnotationContext.retrieved_evidence`
+(`src/schemas.DeceptionEvidence`).
 
 **Invariant central du projet (LLM hors du chemin d'exécution)** : ce
 module n'importe jamais `src/annotator_llm.py`. Il ne fait aucun appel
@@ -24,6 +26,7 @@ import math
 from dataclasses import dataclass
 
 from src.rag_indexer import Chunk, RagIndex, SourceType, embed_query
+from src.schemas import DeceptionEvidence
 
 
 class RagRetrieverError(Exception):
@@ -73,3 +76,10 @@ def retrieve(
     ]
     candidates.sort(key=lambda result: result.score, reverse=True)
     return candidates[:top_k]
+
+
+def to_deception_evidence(result: RetrievalResult) -> DeceptionEvidence:
+    """Réf. §27 : convertit un `RetrievalResult` en `DeceptionEvidence`
+    (`source`=chunk_id, `passage`=texte du chunk), format attendu par
+    `AnnotationContext.retrieved_evidence` (`src/annotator_llm.py`)."""
+    return DeceptionEvidence(source=result.chunk.chunk_id, passage=result.chunk.text)

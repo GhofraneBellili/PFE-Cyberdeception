@@ -39,8 +39,8 @@ déclaration d'intention) :
 | `src/knowledge_deception.py` | 239 | **IMPLEMENTE** |
 | `src/admissibility.py` | ~250 | **IMPLEMENTE** (SP1, périmètre petite instance) |
 | `src/rag_indexer.py` | ~250 | **IMPLEMENTE** (chunks tracés + vecteurs TF-IDF hachés) |
-| `src/rag_retriever.py` | ~65 | **IMPLEMENTE** (similarité cosinus, top-k) |
-| `src/annotator_llm.py` | 8 (stub) | NON IMPLEMENTE |
+| `src/rag_retriever.py` | ~70 | **IMPLEMENTE** (similarité cosinus, top-k) |
+| `src/annotator_llm.py` | ~215 | **IMPLEMENTE** (11 sous-métriques, repli déterministe `rule_based_stub`, cache) |
 | `src/annotation_validator.py` | 8 (stub) | NON IMPLEMENTE |
 | `src/risk_engine.py` | ~150 | **IMPLEMENTE** (SP3, `test_reference_example` vert) |
 | `src/cost_engine.py` | ~140 | **IMPLEMENTE** (Cost(d;H)) |
@@ -61,9 +61,9 @@ SP1 (admissibility.py)               ← IMPLEMENTE (petite instance)
   ↓
 RAG (rag_indexer.py / rag_retriever.py)   ← IMPLEMENTE (chunks reels D3FEND/Engage/litterature, TF-IDF hache)
   ↓
-LLM structured annotation (annotator_llm.py)  ← NON IMPLEMENTE
+LLM structured annotation (annotator_llm.py)  ← IMPLEMENTE (repli deterministe rule_based_stub, cache)
   ↓
-validation (annotation_validator.py)  ← NON IMPLEMENTE
+validation (annotation_validator.py)  ← NON IMPLEMENTE (bornage deja assure par Pydantic/Annotation)
   ↓
 deterministic SP2 aggregation         ← NON IMPLEMENTE
   ↓
@@ -438,9 +438,115 @@ CAPTURE 4 (chunks) et CAPTURE 5 (retrieval) — voir
 
 ## 6. Implémentation de l'annotation LLM
 
-**Status : NON IMPLEMENTE.**
+**Status : IMPLEMENTE — repli déterministe `rule_based_stub` (aucune API
+LLM réelle disponible dans cet environnement). Voir Limites : ceci n'est
+PAS une annotation sémantique réelle.**
 
-`src/annotator_llm.py` est un stub de 8 lignes.
+### Objectif
+
+Produire les 11 `Annotation` brutes (§11.3) pour un candidat `(T_{i,h},
+d, l)` déjà décrit par un `AnnotationContext`, sans jamais calculer les
+agrégats SP2 (§11.5).
+
+### Correspondance avec le chapitre 3
+
+CLAUDE.md §11.2 (entrées, interdiction du budget — déjà garantie par le
+validateur Pydantic d'`AnnotationContext`), §11.3 (11 sous-métriques),
+§11.4 (format minimum de sortie), §11.5 (ce que le LLM ne calcule
+jamais). Politique de déterminisme/reproductibilité de la tâche
+d'implémentation (cache par contexte/modèle/version de prompt).
+
+### Fichiers concernés
+
+`src/annotator_llm.py`, `src/rag_retriever.py` (fonction
+`to_deception_evidence`, pont RAG → contexte d'annotation),
+`tests/test_annotator_llm.py`, `examples/annotator_llm_example.py`.
+
+### Classes / fonctions principales
+
+`AnnotationProvider` (interface), `RuleBasedStubAnnotator` (repli
+déterministe), `AnnotationCache`, `annotate_with_cache`,
+`deterministic_annotation_id`.
+
+### Entrées
+
+Un `AnnotationContext` déjà construit (occurrence, référence de
+mécanisme, emplacement, contexte graphe, `retrieved_evidence` — non vide,
+sinon `AnnotatorLlmError` explicite, aucune preuve n'est jamais
+fabriquée).
+
+### Traitement
+
+`RuleBasedStubAnnotator` calcule un score **unique** de chevauchement
+lexical (proportion des tokens du signal de contexte — technique,
+tactiques, nom du mécanisme, emplacement — retrouvés dans le texte des
+preuves RAG récupérées) et l'applique identiquement aux 11 sous-métriques
+: ce stub ne peut pas distinguer sémantiquement Realism
+d'InteractionLikelihood ou d'Effectiveness sans modèle de langage réel —
+le prétendre serait une fabrication. La confiance croît avec le nombre de
+preuves récupérées (saturée). Chaque `Annotation` (validée par Pydantic,
+`src/schemas.py`) porte `model_version="rule_based_stub"` et un
+`annotation_id` déterministe (hash du contexte). `AnnotationCache`
+permet de rejouer un résultat identique pour un contexte identique sans
+ré-appeler le provider (testé par comptage d'appels).
+
+### Sorties
+
+`list[Annotation]` (11 éléments, un par sous-métrique), chacune avec
+`score`, `justification`, `evidence`, `confidence`, `model_version`,
+`prompt_version`, `annotated_at`, `annotation_id`.
+
+### Technologie utilisée
+
+Python pur (`hashlib`, `re`, `json`) + Pydantic (validation de sortie via
+`Annotation`, déjà présente dans `src/schemas.py`).
+
+### Commande réelle d'exécution
+
+```bash
+python -m examples.annotator_llm_example
+```
+
+### Tests
+
+`tests/test_annotator_llm.py` — 13 tests : exactement 11 métriques
+produites, marquage `rule_based_stub`, refus explicite sans preuve,
+déterminisme (contexte identique → sortie identique), score plus élevé
+pour un contexte pertinent que pour un contexte non pertinent (variation
+réelle mesurée, pas une constante arbitraire), confiance croissante avec
+le nombre de preuves, bornes `[0,1]`, identifiant déterministe, cache
+(rejeu sans second appel au provider, vérifié par comptage), invariant :
+`annotator_llm.py` n'importe jamais `risk_engine`/`optimizer`. Tous
+verts.
+
+### Exemple réel disponible
+
+`docs/chapter4/outputs/llm_annotation_example.json` — chaîne réelle
+complète RAG (124 chunks réels) → contexte d'annotation → 11
+`Annotation` réelles pour le candidat `(T1078@DC01, D3-DUC, auth-store)`,
+générée par `examples/annotator_llm_example.py`. Le fichier porte
+explicitement la mention *"PAS un resultat LLM reel ni un resultat
+experimental du chapitre 5"*.
+
+### Capture associée
+
+CAPTURE 6 — voir `SCREENSHOT_MANIFEST.md` (`READY_FOR_SCREENSHOT`).
+
+### Limites
+
+- **Ce n'est pas une annotation sémantique réelle** : faute d'API LLM
+  disponible dans cet environnement, le score des 11 sous-métriques est
+  identique (chevauchement lexical unique), pas différencié entre
+  Realism/InteractionLikelihood/Effectiveness — une vraie annotation LLM
+  produirait des scores distincts par sous-métrique, avec une
+  justification sémantique réelle.
+- Pas d'`annotation_validator.py` dédié : le bornage/format sont déjà
+  garantis par la validation Pydantic d'`Annotation` (§11.4), mais la
+  logique de gel de table (§13, module 9 « freeze ») reste à implémenter.
+- Aucune intégration avec `admissibility.py` (SP1) : ce module consomme
+  un `AnnotationContext` déjà construit ; l'assemblage automatique
+  occurrence SP1 → contexte → annotation reste à faire dans un futur
+  orchestrateur.
 
 ---
 
@@ -770,16 +876,25 @@ et
 vérifient, par analyse de l'arbre syntaxique (`ast`, pas une recherche de
 sous-chaîne), que `src/risk_engine.py` et `src/optimizer.py` n'importent
 jamais `src/annotator_llm.py`, `src/rag_indexer.py` ni
-`src/rag_retriever.py` — **les deux tests sont verts**. Le volet reste à
-ajouter pour un futur `reporter.py`/orchestrateur dès qu'ils existeront.
+`src/rag_retriever.py` — **les deux tests sont verts**. Symétriquement,
+`tests/test_annotator_llm.py::TestNeverComputesAggregates` vérifie que
+`src/annotator_llm.py` n'importe jamais `src/risk_engine.py` ni
+`src/optimizer.py` — **également vert**. Le volet reste à ajouter pour un
+futur `reporter.py`/orchestrateur dès qu'ils existeront.
 
 ### Déterminisme du LLM
 
-**Status : NON APPLICABLE ENCORE.** Aucun appel LLM n'existe dans le
-dépôt à ce stade — la politique de reproductibilité (température 0,
-cache par `model`/`prompt_version`/`temperature`/`timestamp`, repli
-`rule_based_stub` explicitement marqué comme tel) sera documentée ici
-lorsque `src/annotator_llm.py` sera implémenté.
+**Status : IMPLEMENTE côté repli déterministe.** Aucune API LLM réelle
+n'est appelée dans ce dépôt à ce stade : `src/annotator_llm.py` fournit
+`RuleBasedStubAnnotator`, marqué `model_version="rule_based_stub"`
+partout où une annotation est produite — jamais présenté comme un
+résultat LLM réel (§20). `AnnotationCache` associe une clé déterministe
+(hash du contexte + `model_version` + `prompt_version`) à la liste
+d'`Annotation` déjà produite, pour rejouer un résultat identique sans
+ré-appeler le provider — testé par comptage d'appels
+(`tests/test_annotator_llm.py::TestAnnotationCache`). Un futur provider
+LLM réel devra respecter la même interface (`AnnotationProvider`) et une
+température fixe (0) pour préserver cette reproductibilité.
 
 ---
 
@@ -808,7 +923,7 @@ lorsque `src/annotator_llm.py` sera implémenté.
 | `D_i` | `src/admissibility.py` | `build_admissibility_report` | `test_admissibility.py` | `sp1_candidates.json` | C3 | IMPLEMENTE |
 | `L_{i,h,d}` | `src/admissibility.py` | `evaluate_allowed`/`evaluate_requirements_satisfied`/`evaluate_relevant` | `test_admissibility.py` | `sp1_candidates.json` | C3 | IMPLEMENTE |
 | `C_{i,h}` | `src/admissibility.py` | `build_admissibility_report` | `test_admissibility.py` | `sp1_candidates.json` | C3 | IMPLEMENTE |
-| 11 sous-métriques | `src/annotator_llm.py` | — | — | — | C6 | NON IMPLEMENTE |
+| 11 sous-métriques | `src/annotator_llm.py` | `RuleBasedStubAnnotator.annotate` | `test_annotator_llm.py` | `llm_annotation_example.json` | C6 | IMPLEMENTE (repli `rule_based_stub`, pas une annotation sémantique réelle) |
 | `Realisme` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
 | `P_interaction` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
 | `P_engagement` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |

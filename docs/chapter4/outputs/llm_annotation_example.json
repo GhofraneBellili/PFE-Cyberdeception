@@ -1,0 +1,189 @@
+{
+  "note": "Annotation produite par le repli deterministe rule_based_stub (aucune API LLM reelle disponible) — PAS un resultat LLM reel ni un resultat experimental du chapitre 5.",
+  "candidate": {
+    "occurrence_id": "T1078@DC01",
+    "mechanism_id": "D3-DUC",
+    "location_id": "auth-store"
+  },
+  "retrieved_evidence": [
+    {
+      "source": "d3fend:D3-DUC:0",
+      "passage": "Decoy User Credential"
+    },
+    {
+      "source": "d3fend:D3-DUC:3",
+      "passage": "d3f:Credential"
+    },
+    {
+      "source": "d3fend:D3-DUC:1",
+      "passage": "A Credential created for the purpose of deceiving an adversary."
+    }
+  ],
+  "annotations": [
+    {
+      "metric": "R_tech",
+      "score": 0.3333333333333333,
+      "confidence": 1.0,
+      "evidence": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:3",
+        "d3fend:D3-DUC:1"
+      ],
+      "justification": "Stub deterministe (rule_based_stub) : chevauchement lexical entre le contexte ('T1078', 'Decoy User Credential', 'auth-store') et 3 preuve(s) RAG recuperee(s) -> score=0.333. Ceci n'est PAS une annotation semantique LLM reelle (score identique applique aux 11 sous-metriques, faute de modele de langage disponible dans cet environnement).",
+      "model_version": "rule_based_stub",
+      "prompt_version": "rule_based_stub-v1",
+      "annotation_id": "rule_based_stub:rule_based_stub-v1:R_tech:9498b023e974f0b4",
+      "annotated_at": "2026-08-27T08:54:21.161317+00:00"
+    },
+    {
+      "metric": "R_context",
+      "score": 0.3333333333333333,
+      "confidence": 1.0,
+      "evidence": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:3",
+        "d3fend:D3-DUC:1"
+      ],
+      "justification": "Stub deterministe (rule_based_stub) : chevauchement lexical entre le contexte ('T1078', 'Decoy User Credential', 'auth-store') et 3 preuve(s) RAG recuperee(s) -> score=0.333. Ceci n'est PAS une annotation semantique LLM reelle (score identique applique aux 11 sous-metriques, faute de modele de langage disponible dans cet environnement).",
+      "model_version": "rule_based_stub",
+      "prompt_version": "rule_based_stub-v1",
+      "annotation_id": "rule_based_stub:rule_based_stub-v1:R_context:9498b023e974f0b4",
+      "annotated_at": "2026-08-27T08:54:21.161317+00:00"
+    },
+    {
+      "metric": "R_perception",
+      "score": 0.3333333333333333,
+      "confidence": 1.0,
+      "evidence": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:3",
+        "d3fend:D3-DUC:1"
+      ],
+      "justification": "Stub deterministe (rule_based_stub) : chevauchement lexical entre le contexte ('T1078', 'Decoy User Credential', 'auth-store') et 3 preuve(s) RAG recuperee(s) -> score=0.333. Ceci n'est PAS une annotation semantique LLM reelle (score identique applique aux 11 sous-metriques, faute de modele de langage disponible dans cet environnement).",
+      "model_version": "rule_based_stub",
+      "prompt_version": "rule_based_stub-v1",
+      "annotation_id": "rule_based_stub:rule_based_stub-v1:R_perception:9498b023e974f0b4",
+      "annotated_at": "2026-08-27T08:54:21.161317+00:00"
+    },
+    {
+      "metric": "R_behavior",
+      "score": 0.3333333333333333,
+      "confidence": 1.0,
+      "evidence": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:3",
+        "d3fend:D3-DUC:1"
+      ],
+      "justification": "Stub deterministe (rule_based_stub) : chevauchement lexical entre le contexte ('T1078', 'Decoy User Credential', 'auth-store') et 3 preuve(s) RAG recuperee(s) -> score=0.333. Ceci n'est PAS une annotation semantique LLM reelle (score identique applique aux 11 sous-metriques, faute de modele de langage disponible dans cet environnement).",
+      "model_version": "rule_based_stub",
+      "prompt_version": "rule_based_stub-v1",
+      "annotation_id": "rule_based_stub:rule_based_stub-v1:R_behavior:9498b023e974f0b4",
+      "annotated_at": "2026-08-27T08:54:21.161317+00:00"
+    },
+    {
+      "metric": "A_object",
+      "score": 0.3333333333333333,
+      "confidence": 1.0,
+      "evidence": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:3",
+        "d3fend:D3-DUC:1"
+      ],
+      "justification": "Stub deterministe (rule_based_stub) : chevauchement lexical entre le contexte ('T1078', 'Decoy User Credential', 'auth-store') et 3 preuve(s) RAG recuperee(s) -> score=0.333. Ceci n'est PAS une annotation semantique LLM reelle (score identique applique aux 11 sous-metriques, faute de modele de langage disponible dans cet environnement).",
+      "model_version": "rule_based_stub",
+      "prompt_version": "rule_based_stub-v1",
+      "annotation_id": "rule_based_stub:rule_based_stub-v1:A_object:9498b023e974f0b4",
+      "annotated_at": "2026-08-27T08:54:21.161317+00:00"
+    },
+    {
+      "metric": "A_action",
+      "score": 0.3333333333333333,
+      "confidence": 1.0,
+      "evidence": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:3",
+        "d3fend:D3-DUC:1"
+      ],
+      "justification": "Stub deterministe (rule_based_stub) : chevauchement lexical entre le contexte ('T1078', 'Decoy User Credential', 'auth-store') et 3 preuve(s) RAG recuperee(s) -> score=0.333. Ceci n'est PAS une annotation semantique LLM reelle (score identique applique aux 11 sous-metriques, faute de modele de langage disponible dans cet environnement).",
+      "model_version": "rule_based_stub",
+      "prompt_version": "rule_based_stub-v1",
+      "annotation_id": "rule_based_stub:rule_based_stub-v1:A_action:9498b023e974f0b4",
+      "annotated_at": "2026-08-27T08:54:21.161317+00:00"
+    },
+    {
+      "metric": "A_source",
+      "score": 0.3333333333333333,
+      "confidence": 1.0,
+      "evidence": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:3",
+        "d3fend:D3-DUC:1"
+      ],
+      "justification": "Stub deterministe (rule_based_stub) : chevauchement lexical entre le contexte ('T1078', 'Decoy User Credential', 'auth-store') et 3 preuve(s) RAG recuperee(s) -> score=0.333. Ceci n'est PAS une annotation semantique LLM reelle (score identique applique aux 11 sous-metriques, faute de modele de langage disponible dans cet environnement).",
+      "model_version": "rule_based_stub",
+      "prompt_version": "rule_based_stub-v1",
+      "annotation_id": "rule_based_stub:rule_based_stub-v1:A_source:9498b023e974f0b4",
+      "annotated_at": "2026-08-27T08:54:21.161317+00:00"
+    },
+    {
+      "metric": "S_stop",
+      "score": 0.3333333333333333,
+      "confidence": 1.0,
+      "evidence": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:3",
+        "d3fend:D3-DUC:1"
+      ],
+      "justification": "Stub deterministe (rule_based_stub) : chevauchement lexical entre le contexte ('T1078', 'Decoy User Credential', 'auth-store') et 3 preuve(s) RAG recuperee(s) -> score=0.333. Ceci n'est PAS une annotation semantique LLM reelle (score identique applique aux 11 sous-metriques, faute de modele de langage disponible dans cet environnement).",
+      "model_version": "rule_based_stub",
+      "prompt_version": "rule_based_stub-v1",
+      "annotation_id": "rule_based_stub:rule_based_stub-v1:S_stop:9498b023e974f0b4",
+      "annotated_at": "2026-08-27T08:54:21.161317+00:00"
+    },
+    {
+      "metric": "S_redirect",
+      "score": 0.3333333333333333,
+      "confidence": 1.0,
+      "evidence": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:3",
+        "d3fend:D3-DUC:1"
+      ],
+      "justification": "Stub deterministe (rule_based_stub) : chevauchement lexical entre le contexte ('T1078', 'Decoy User Credential', 'auth-store') et 3 preuve(s) RAG recuperee(s) -> score=0.333. Ceci n'est PAS une annotation semantique LLM reelle (score identique applique aux 11 sous-metriques, faute de modele de langage disponible dans cet environnement).",
+      "model_version": "rule_based_stub",
+      "prompt_version": "rule_based_stub-v1",
+      "annotation_id": "rule_based_stub:rule_based_stub-v1:S_redirect:9498b023e974f0b4",
+      "annotated_at": "2026-08-27T08:54:21.161317+00:00"
+    },
+    {
+      "metric": "S_contain",
+      "score": 0.3333333333333333,
+      "confidence": 1.0,
+      "evidence": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:3",
+        "d3fend:D3-DUC:1"
+      ],
+      "justification": "Stub deterministe (rule_based_stub) : chevauchement lexical entre le contexte ('T1078', 'Decoy User Credential', 'auth-store') et 3 preuve(s) RAG recuperee(s) -> score=0.333. Ceci n'est PAS une annotation semantique LLM reelle (score identique applique aux 11 sous-metriques, faute de modele de langage disponible dans cet environnement).",
+      "model_version": "rule_based_stub",
+      "prompt_version": "rule_based_stub-v1",
+      "annotation_id": "rule_based_stub:rule_based_stub-v1:S_contain:9498b023e974f0b4",
+      "annotated_at": "2026-08-27T08:54:21.161317+00:00"
+    },
+    {
+      "metric": "S_delay",
+      "score": 0.3333333333333333,
+      "confidence": 1.0,
+      "evidence": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:3",
+        "d3fend:D3-DUC:1"
+      ],
+      "justification": "Stub deterministe (rule_based_stub) : chevauchement lexical entre le contexte ('T1078', 'Decoy User Credential', 'auth-store') et 3 preuve(s) RAG recuperee(s) -> score=0.333. Ceci n'est PAS une annotation semantique LLM reelle (score identique applique aux 11 sous-metriques, faute de modele de langage disponible dans cet environnement).",
+      "model_version": "rule_based_stub",
+      "prompt_version": "rule_based_stub-v1",
+      "annotation_id": "rule_based_stub:rule_based_stub-v1:S_delay:9498b023e974f0b4",
+      "annotated_at": "2026-08-27T08:54:21.161317+00:00"
+    }
+  ]
+}

@@ -1394,6 +1394,68 @@ Annotation LLM (`src/annotator_llm.py`), avec repli déterministe
 `rule_based_stub` explicitement marqué comme tel si aucune API LLM réelle
 n'est disponible.
 
+---
+
+### Étape 13 — Implémentation de l'annotation LLM (`src/annotator_llm.py`)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Produire les 11 `Annotation` brutes (§11.3) pour un candidat `(T_{i,h},
+d, l)`, sans jamais calculer les agrégats SP2 (Realisme, P_interaction,
+P_engagement, Effet_prog, DE — §11.5).
+
+#### Traitement réalisé
+
+**Aucune API LLM réelle n'étant disponible dans cet environnement**,
+`RuleBasedStubAnnotator` implémente un repli déterministe : un score
+unique de chevauchement lexical entre le contexte (technique, tactiques,
+mécanisme, emplacement) et les preuves RAG récupérées, appliqué
+identiquement aux 11 sous-métriques (ce stub ne peut pas les distinguer
+sémantiquement sans modèle de langage — le prétendre serait une
+fabrication). Chaque annotation porte `model_version="rule_based_stub"`.
+`AnnotationCache` permet de rejouer un résultat identique pour un
+contexte identique sans ré-appeler le provider (déterminisme/
+reproductibilité).
+
+#### Sorties
+
+`docs/chapter4/outputs/llm_annotation_example.json`, généré par
+`python -m examples.annotator_llm_example` : chaîne réelle RAG (124
+chunks) → contexte d'annotation → 11 `Annotation` réelles pour
+`(T1078@DC01, D3-DUC, auth-store)`. Le fichier porte explicitement la
+mention *"PAS un resultat LLM reel ni un resultat experimental du
+chapitre 5"*.
+
+#### Fichiers concernés
+
+`src/annotator_llm.py`, `src/rag_retriever.py` (`to_deception_evidence`),
+`tests/test_annotator_llm.py`, `examples/annotator_llm_example.py`.
+
+#### Tests et validation
+
+`tests/test_annotator_llm.py` — 13 tests (11 métriques exactement,
+marquage `rule_based_stub`, refus explicite sans preuve, déterminisme,
+score réellement plus élevé sur un contexte pertinent, confiance
+croissante avec le nombre de preuves, bornes `[0,1]`, identifiant
+déterministe, cache avec rejeu sans second appel, invariant
+d'importation). **474 tests** au total au moment de la validation. Détail
+complet : `docs/chapter4/IMPLEMENTATION_REPORT.md`, section 6.
+
+#### Limites actuelles
+
+Ce n'est pas une annotation sémantique réelle : le score est identique
+pour les 11 sous-métriques (chevauchement lexical, pas une distinction
+Realism/InteractionLikelihood/Effectiveness). Pas d'`annotation_validator.py`
+dédié (bornage déjà garanti par Pydantic) ; pas d'assemblage automatique
+SP1 → contexte → annotation (reste au futur orchestrateur).
+
+#### Lien avec l'étape suivante
+
+Gel de la table d'annotations (« freeze », `src/annotation_validator.py`),
+puis orchestrateur du pipeline complet.
+
 ## OPEN_DECISION en cours
 
 Ces points sont volontairement non résolus et ne doivent pas l'être

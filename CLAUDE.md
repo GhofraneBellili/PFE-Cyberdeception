@@ -2221,7 +2221,7 @@ INTERDIT
 - [x] `admissibility.py`
 - [x] `rag_indexer.py`
 - [x] `rag_retriever.py`
-- [ ] `annotator_llm.py`
+- [x] `annotator_llm.py`
 - [ ] `annotation_validator.py`
 - [x] `risk_engine.py`
 - [x] `cost_engine.py`
