@@ -176,6 +176,24 @@ class TestBuildExpandedCatalog:
         catalog_2 = build_expanded_catalog()
         assert catalog_1 == catalog_2
 
+    def test_email_required_service_grounded_for_two_engage_mechanisms(self):
+        """Réf. ADMISSIBILITY_EVIDENCE_AUDIT.md / Phase 11 (SP1 riche) :
+        EAC0009 et EAC0021 sont les deux seuls mécanismes Engage dont
+        `required_services` est renseigné par une preuve factuelle directe
+        (long_description citant explicitement des boîtes mail/mail
+        appliances) — tous les autres restent `[]` (undetermined), aucune
+        exigence n'est inventée."""
+        catalog = build_expanded_catalog()
+        by_id = {m["id"]: m for m in catalog["mechanisms"]}
+        assert by_id["EAC0009"]["admissibility_profile"]["required_services"] == ["email"]
+        assert by_id["EAC0021"]["admissibility_profile"]["required_services"] == ["email"]
+        for mechanism in catalog["mechanisms"]:
+            if mechanism["id"] not in ("D3-DNR", "EAC0009", "EAC0021"):
+                profile = mechanism["admissibility_profile"]
+                assert not profile["required_asset_types"]
+                assert not profile["required_services"]
+                assert not profile["required_artifacts"]
+
     def test_mechanism_families_present(self):
         """Réf. §10 (statistiques de couverture) : au moins D3FEND, Engage
         et littérature sont représentés parmi les mécanismes catalogués."""

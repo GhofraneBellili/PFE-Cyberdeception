@@ -536,6 +536,24 @@ ENGAGE_MECHANISM_SPECS: dict[str, dict] = {
 }
 
 
+# Réf. ADMISSIBILITY_EVIDENCE_AUDIT.md (même discipline que
+# REQUIRED_ASSET_TYPES/D3-DNR ci-dessus) : deux enrichissements
+# ponctuels, chacun cité à une phrase factuelle exacte du long_description
+# Engage (jamais une recommandation « should »/« may »), justifiant que le
+# mécanisme opère spécifiquement sur une infrastructure de messagerie.
+ENGAGE_REQUIRED_SERVICES: dict[str, list[str]] = {
+    # "Email Manipulation can affect which mail appliances process mail
+    # flows, where mail is forwarded, or what mail is present in an
+    # inbox. [...] Suspicious emails may be removed from production
+    # mailbox and placed into an inbox in an engagement environment."
+    "EAC0009": ["email"],
+    # "a defender might move a suspicious attachment from a corporate
+    # inbox to an inbox on a system that, while in the corporate IP
+    # space, is completely segmented from the enterprise network."
+    "EAC0021": ["email"],
+}
+
+
 def _build_engage_evidence(activity: dict) -> list[dict]:
     activity_id = activity["activity_id"]
     evidence = []
@@ -552,6 +570,7 @@ def _build_engage_mechanism(activity: dict, *, release_version: str) -> dict:
     activity_id = activity["activity_id"]
     spec = ENGAGE_MECHANISM_SPECS[activity_id]
     location_types = list(spec["possible_placements"])
+    required_services = sorted(ENGAGE_REQUIRED_SERVICES.get(activity_id, []))
     return {
         "id": activity_id,
         "name": activity["name"],
@@ -569,7 +588,7 @@ def _build_engage_mechanism(activity: dict, *, release_version: str) -> dict:
         "admissibility_profile": {
             "allowed_location_types": location_types,
             "required_asset_types": [],
-            "required_services": [],
+            "required_services": required_services,
             "required_artifacts": [],
             "exposure_mode": None,
             "metadata": {},

@@ -142,6 +142,32 @@ Cette hiérarchie de granularité est utile à SP1 pour modéliser des emplaceme
 différente (un honeypot dédié vs. une ressource déployée sur un serveur réel vs. un honeynet
 entier) — ce n'est pas une duplication du même mécanisme.
 
+## 6bis. Prérequis d'admissibilité (`required_*`) — extension de l'audit
+
+`src/admissibility.py::evaluate_requirements_satisfied` retourne `"undetermined"` (jamais
+`"pass"`) tant que `required_asset_types`/`required_services`/`required_artifacts` sont **tous
+vides** — et un candidat `"undetermined"` n'est jamais admissible (politique prudente OPEN_DECISION
+4). Avant cette passe, **seul D3-DNR** avait un `required_asset_types` documenté
+(`docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md`) : structurellement, aucun autre mécanisme ne
+pouvait jamais devenir admissible, quelle que soit la richesse de l'instance SP1 — ce n'est pas
+un manque de richesse d'instance, c'est un manque de preuve documentaire de prérequis.
+
+Relecture ciblée des `long_description` MITRE Engage (même discipline que l'audit D3-DNR :
+uniquement des affirmations factuelles, jamais un « should »/« may ») : deux mécanismes
+mentionnent explicitement une infrastructure de messagerie comme condition d'opération :
+
+| id | `required_services` | citation exacte |
+|---|---|---|
+| EAC0009 | `["email"]` | *"Email Manipulation can affect which mail appliances process mail flows... Suspicious emails may be removed from production mailbox and placed into an inbox in an engagement environment."* |
+| EAC0021 | `["email"]` | *"a defender might move a suspicious attachment from a corporate inbox to an inbox on a system..."* |
+
+Tous les 24 autres mécanismes du catalogue conservent des listes `required_*` vides
+(`undetermined`, jamais fabriqué) — voir `tests/test_catalog_builder.py::TestBuildExpandedCatalog::test_email_required_service_grounded_for_two_engage_mechanisms`.
+Conséquence directe pour SP1 : **3 mécanismes** (D3-DNR, EAC0009, EAC0021) peuvent désormais
+réellement atteindre `PrerequisSatisfaits = "pass"`, contre 1 seul auparavant — voir
+`docs/chapter4/outputs/sp1_extended_real_example.txt` pour le résultat réel sur une instance
+riche.
+
 ## 7. Résumé chiffré (réf. `docs/chapter4/outputs/catalog_statistics.json`)
 
 - 26 mécanismes catalogués (9 D3FEND, 15 MITRE Engage, 2 littérature) ;

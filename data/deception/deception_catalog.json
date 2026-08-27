@@ -835,7 +835,9 @@
           "mailbox"
         ],
         "required_asset_types": [],
-        "required_services": [],
+        "required_services": [
+          "email"
+        ],
         "required_artifacts": [],
         "exposure_mode": null,
         "metadata": {}
@@ -1198,7 +1200,9 @@
           "network_segment"
         ],
         "required_asset_types": [],
-        "required_services": [],
+        "required_services": [
+          "email"
+        ],
         "required_artifacts": [],
         "exposure_mode": null,
         "metadata": {}

@@ -1,0 +1,27 @@
+SP1 etendu - instance riche (catalogue et mapping REELS, 26 mecanismes)
+----------------------------------------------------------------------------------------
+Occurrence      Mecanisme   Emplacement             Decision
+D_i(T1566@WS01) = ['EAC0009', 'EAC0011', 'EAC0021']
+T1566@WS01      EAC0009     mailbox-ws01            ADMISSIBLE
+T1566@WS01      EAC0021     mailbox-ws01            ADMISSIBLE
+T1566@WS01      EAC0021     host-ws01               ADMISSIBLE
+D_i(T1190@WEB01) = ['EAC0005', 'EAC0006']
+D_i(T1110@DC01) = ['EAC0005', 'EAC0014', 'EAC0018']
+D_i(T1003@DC01) = ['EAC0005', 'EAC0011']
+D_i(T1078@DC01) = ['EAC0005', 'EAC0008', 'EAC0011', 'EAC0022']
+D_i(T1059@APP01) = ['D3-DF', 'EAC0014', 'EAC0018', 'EAC0022']
+D_i(T1083@FS01) = ['D3-DF', 'EAC0005', 'EAC0011', 'EAC0014', 'EAC0015', 'EAC0022']
+D_i(T1005@DB01) = ['D3-DF', 'EAC0005', 'EAC0008', 'EAC0011', 'EAC0014', 'EAC0015', 'EAC0018']
+D_i(T1039@FS01) = ['D3-DNR', 'EAC0005', 'EAC0011', 'EAC0015', 'EAC0016', 'EAC0018']
+T1039@FS01      D3-DNR      network-resource-fs01   ADMISSIBLE
+T1041@APP01 : TERMINAL (C_i_h = vide par construction, §6)
+----------------------------------------------------------------------------------------
+Occurrences (non terminales) : 9
+Occurrences terminales        : 1
+Candidats bruts                : 3042
+Admissibles                    : 4
+Rejetes                        : 3038
+Occurrences couvertes par >=1 admissible : 2 (['T1039@FS01', 'T1566@WS01'])
+Mecanismes admissibles distincts          : 3 (['D3-DNR', 'EAC0009', 'EAC0021'])
+----------------------------------------------------------------------------------------
+Analyse (§11) : PrerequisSatisfaits reste 'undetermined' (jamais admissible) tant que required_asset_types/required_services/required_artifacts du mecanisme sont TOUS vides (politique prudente OPEN_DECISION 4). Seuls D3-DNR, EAC0009 et EAC0021 disposent d'un prerequis documente (docs/chapter4/CATALOG_AUDIT.md, section 6bis) : ce n'est donc pas un manque de richesse d'instance qui limitait SP1 a 1 seul candidat admissible auparavant, mais un manque de preuve documentaire de prerequis pour les 23 autres mecanismes -- limite documentee, pas comblee artificiellement.
