@@ -77,13 +77,17 @@ Module: src/annotation_validator.py (stub, non implémenté) ; calcul détermini
 Rôle dans le chapitre 4: Section 4.6 — Moteurs déterministes et optimisation.
 ```
 
-## Capture C8 — Sortie simple du moteur SP3 ou du pipeline complet
+## Capture C8 — Sortie simple du moteur SP3
 
 ```
-Status: NOT_IMPLEMENTED
-Module: src/risk_engine.py (stub, non implémenté)
+Status: READY_FOR_SCREENSHOT
+Module: src/risk_engine.py
+Fichier de sortie: docs/chapter4/outputs/risk_example.txt (résumé) + docs/chapter4/outputs/risk_example.csv (complet, deux scénarios)
+Commande: python -m examples.sp3_example
+Capture: docs/chapter4/screenshots/07_risk/sp3_result.png (à produire manuellement depuis risk_example.txt)
+Ce qui doit être visible: table Noeud/A/Gamma/P/I/R pour les deux scénarios (avec/sans déception), et la synthèse R_avec_deception=0.0208 / R_sans_deception=0.0365 / réduction=42.9% — valeurs identiques à l'ancre de validation test_reference_example.
 Rôle dans le chapitre 4: Section 4.6 — Moteurs déterministes et optimisation.
-Condition de déblocage: test_reference_example (ancre §11) doit passer avant toute capture de ce module.
+Condition de déblocage: REMPLIE — test_reference_example (ancre §11) est vert (tests/test_risk_engine.py::TestReferenceExample).
 ```
 
 ## Notes de suivi

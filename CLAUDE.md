@@ -2223,11 +2223,11 @@ INTERDIT
 - [ ] `rag_retriever.py`
 - [ ] `annotator_llm.py`
 - [ ] `annotation_validator.py`
-- [ ] `risk_engine.py`
+- [x] `risk_engine.py`
 - [ ] `cost_engine.py`
 - [ ] `optimizer.py`
 - [ ] `reporter.py`
-- [ ] test analytique de référence
+- [x] test analytique de référence
 - [ ] validation exhaustive du solveur sur petite instance
 
 ---

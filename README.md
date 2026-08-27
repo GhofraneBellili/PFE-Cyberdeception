@@ -1147,6 +1147,72 @@ SP3 (moteur de risque déterministe, `src/risk_engine.py`), avec pour
 critère de correction le test de régression `test_reference_example` sur
 l'exemple numérique de référence du chapitre 3.
 
+---
+
+### Étape 9 — Implémentation de SP3 (`src/risk_engine.py`)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Propager `Gamma → P^e → A → P → I → R` sur le graphe d'attaque
+(convergence noisy-OR, divergence par probabilité de branche `pi`), et
+faire passer le test de régression `test_reference_example` — ancre de
+validation du projet : aucun module de risque ou d'optimisation n'est
+considéré correct tant que ce test ne passe pas.
+
+#### Traitement réalisé
+
+Tri topologique du graphe (NetworkX) ; `Gamma = 1 - DE` par occurrence ;
+noeuds d'entrée : `A=1` ; sinon noisy-OR sur les probabilités transmises
+de chaque parent (`P^e = P_parent × Gamma_parent × pi`, `pi` uniquement en
+divergence — valeur explicite de l'arête ou `1/|enfants|` par défaut) ;
+`P = A×q` ; `R = P×I`. Aucune valeur manquante n'est devinée (q et I
+obligatoires pour chaque occurrence, erreur explicite sinon).
+
+#### Ancre de validation — résultat réel
+
+Scénario T1566/T1190 → T1003 → T1078 → (T1059/T1057/T1082, divergence
+`pi=1/3`) → T1041, déception `DE=0.429` sur T1003 uniquement :
+
+| Grandeur | Calculé | Cible |
+|---|---|---|
+| `Gamma_1003` | 0.571 | 0.571 |
+| `R_avec_deception` | 0.0208 | 0.0208 |
+| `R_sans_deception` | 0.0365 | 0.0365 |
+| Réduction relative | 42.9 % | ≈ 42.9 % |
+
+#### Sorties
+
+`docs/chapter4/outputs/risk_example.csv` / `risk_example.txt`, générés
+par `python -m examples.sp3_example`.
+
+#### Fichiers concernés
+
+`src/risk_engine.py`, `tests/test_risk_engine.py`,
+`examples/sp3_example.py`.
+
+#### Tests et validation
+
+`tests/test_risk_engine.py` — 23 tests (formules élémentaires,
+propagation linéaire, convergence, divergence par défaut et explicite,
+valeurs manquantes rejetées, bornes `[0,1]`, **`test_reference_example`**,
+et un test d'invariant vérifiant par analyse `ast` que `risk_engine.py`
+n'importe jamais `annotator_llm.py`/`rag_indexer.py`/`rag_retriever.py`).
+**391 tests** au total au moment de la validation. Détail complet :
+`docs/chapter4/IMPLEMENTATION_REPORT.md`, section 9.
+
+#### Limites actuelles
+
+`DE` par occurrence est fourni directement par l'appelant (pas encore lu
+depuis une table d'annotations figée réelle, sections SP2/freeze non
+implémentées). Intégration avec `cost_engine.py`/`optimizer.py` à venir.
+
+#### Lien avec l'étape suivante
+
+`cost_engine.py` (`Cout(d;H)`), puis `optimizer.py` (unicité, budget,
+dominance, front de Pareto, `Y*`).
+
 ## OPEN_DECISION en cours
 
 Ces points sont volontairement non résolus et ne doivent pas l'être

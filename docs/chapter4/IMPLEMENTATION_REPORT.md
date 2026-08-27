@@ -14,13 +14,16 @@
 l'optimisation.** Il annote hors ligne (SP2, section 6/7) ; ses sorties
 sont validées puis figées (`freeze`) ; l'optimisation et le moteur de
 risque (SP3) lisent ensuite exclusivement la table figée, sans jamais
-rappeler le LLM. Cet invariant est vérifié par un test dédié dès que les
-modules `src/risk_engine.py` et `src/optimizer.py` existent réellement
-(section 12) : ce test contrôle qu'aucun de ces deux modules n'importe
-`src/annotator_llm.py` ni `src/rag_indexer.py`/`src/rag_retriever.py`.
-Tant que ces modules ne sont pas implémentés, l'invariant est vrai par
-absence de code, mais pas encore *testé* — ce document ne prétend pas le
-contraire.
+rappeler le LLM. Cet invariant est vérifié par un test dédié pour chaque
+module qui existe réellement (section 12) : ce test contrôle qu'il
+n'importe jamais `src/annotator_llm.py` ni `src/rag_indexer.py`/
+`src/rag_retriever.py`. **`src/risk_engine.py` (SP3) est désormais
+implémenté et ce test est vert**
+(`tests/test_risk_engine.py::TestLlmOutOfExecutionPath`, vérification par
+analyse `ast` de l'arbre syntaxique). Le volet symétrique pour
+`src/optimizer.py` sera ajouté dès que ce module existera ; jusque-là,
+l'invariant y reste vrai par absence de code, mais pas encore *testé* —
+ce document ne prétend pas le contraire.
 
 ---
 
@@ -40,7 +43,7 @@ déclaration d'intention) :
 | `src/rag_retriever.py` | 7 (stub) | NON IMPLEMENTE |
 | `src/annotator_llm.py` | 8 (stub) | NON IMPLEMENTE |
 | `src/annotation_validator.py` | 8 (stub) | NON IMPLEMENTE |
-| `src/risk_engine.py` | 8 (stub) | NON IMPLEMENTE |
+| `src/risk_engine.py` | ~150 | **IMPLEMENTE** (SP3, `test_reference_example` vert) |
 | `src/cost_engine.py` | 7 (stub) | NON IMPLEMENTE |
 | `src/optimizer.py` | 7 (stub) | NON IMPLEMENTE |
 | `src/reporter.py` | 8 (stub) | NON IMPLEMENTE |
@@ -67,7 +70,8 @@ deterministic SP2 aggregation         ← NON IMPLEMENTE
   ↓
 frozen annotations                    ← NON IMPLEMENTE
   ↓
-Cost (cost_engine.py) + SP3 (risk_engine.py)  ← NON IMPLEMENTE
+Cost (cost_engine.py)                ← NON IMPLEMENTE
+SP3 (risk_engine.py)                 ← IMPLEMENTE (test_reference_example vert)
   ↓
 optimizer.py                          ← NON IMPLEMENTE
   ↓
@@ -348,14 +352,109 @@ Aucun module ne calcule encore `Realisme`, `P_interaction`,
 
 ## 9. Moteur SP3
 
-**Status : NON IMPLEMENTE.**
+**Status : IMPLEMENTE. Ancre de validation `test_reference_example` VERTE.**
 
-`src/risk_engine.py` est un stub de 8 lignes. Le test de régression
-`test_reference_example` (ancre de validation, exemple §11 du chapitre 3 :
-`DE=0.429`, `Gamma_1003=0.571`, `R_avec_deception=0.0208`,
-`R_sans_deception=0.0365`, réduction ≈ 42.9 %) n'existe pas encore.
-**Aucun résultat de risque n'est considéré comme correct tant que ce test
-n'existe pas et ne passe pas.**
+### Objectif
+
+Propager Gamma → P^e → A → P → I → R sur le graphe d'attaque, dans
+l'ordre topologique, en gérant convergence (noisy-OR) et divergence (π).
+
+### Correspondance avec le chapitre 3
+
+CLAUDE.md §14 intégralement : `Gamma_{i,h}(y)` (§14.3), `P^e` (§14.4, cas
+non divergent et divergent), `A_{i,h}(y)` noisy-OR (§14.5), `P_{i,h}(y)`
+(§14.6), `R_{i,h}(y)` (§14.7). Notation verrouillée : `Gamma`, `A`, `P`,
+`I`, `R`, `q`, `DE` (inchangés de CLAUDE.md, seuls les concepts SP2 sont
+renommés en français).
+
+### Fichiers concernés
+
+`src/risk_engine.py`, `tests/test_risk_engine.py`,
+`examples/sp3_example.py`.
+
+### Classes / fonctions principales
+
+`compute_gamma`, `compute_transmitted_edge_probability`,
+`compute_reachability` (noisy-OR), `compute_propagated_success_probability`,
+`compute_aggregated_impact`, `compute_risk`, `propagate_risk` (orchestration
+complète sur le graphe, ordre topologique via NetworkX).
+
+### Entrées
+
+Un `AttackGraph` déjà validé, `q_by_occurrence` (obligatoire pour toutes
+les occurrences — aucune valeur devinée, §25.3), `impact_by_occurrence`
+(idem), `de_by_occurrence` (optionnel par occurrence — absence = DE=0,
+aucune déception déployée à cette occurrence).
+
+### Traitement
+
+Tri topologique du graphe (NetworkX) ; pour chaque occurrence : Gamma =
+1-DE ; si nœud d'entrée, A=1 ; sinon, pour chaque parent, calcul de P^e
+(avec π = valeur explicite de l'arête si divergence, sinon 1/|enfants| —
+jamais si non divergent, §14.4 « règle gelée ») puis agrégation noisy-OR ;
+P = A×q ; R = P×I.
+
+### Sorties
+
+`dict[occurrence_id, {Gamma, A, P, I, R, DE, q}]`.
+
+### Technologie utilisée
+
+Python pur + NetworkX (tri topologique).
+
+### Commande réelle d'exécution
+
+```bash
+python -m examples.sp3_example
+```
+
+### Tests
+
+`tests/test_risk_engine.py` — 23 tests : formules élémentaires isolées,
+propagation linéaire, convergence à deux entrées, divergence (répartition
+égale par défaut et probabilités explicites), valeurs manquantes rejetées
+(q/I), bornes `[0,1]` sur A/P/Gamma/R, **`test_reference_example`**
+(ancre de validation — voir ci-dessous), et un test dédié vérifiant que
+`src/risk_engine.py` n'importe jamais `src/annotator_llm.py` ni
+`src/rag_indexer.py`/`src/rag_retriever.py` (invariant « LLM hors du
+chemin d'exécution », analysé par `ast`, pas une recherche de
+sous-chaîne). Tous verts.
+
+### Ancre de validation — `test_reference_example`
+
+Scénario : T1566/T1190 → T1003 → T1078 → T1059/T1057/T1082 (divergence à
+trois enfants, π=1/3) → T1041. Déception DE=0.429 sur T1003 uniquement.
+Résultats **réellement calculés par `propagate_risk`** (aucune valeur
+recopiée à la main) :
+
+| Grandeur | Valeur calculée | Valeur cible (prompt §0bis) |
+|---|---|---|
+| `DE_1003` | 0.429 | 0.429 |
+| `Gamma_1003` | 0.571 | 0.571 |
+| `R_avec_deception` (T1041) | 0.0208 | 0.0208 |
+| `R_sans_deception` (T1041) | 0.0365 | 0.0365 |
+| Réduction relative | 42.9 % | ≈ 42.9 % |
+
+Toutes les égalités sont vérifiées à une tolérance de `1e-3` (`5e-3` pour
+la réduction relative dérivée, valeur donnée avec « ≈ » dans la cible).
+
+### Exemple réel disponible
+
+`docs/chapter4/outputs/risk_example.csv` (table complète des 8 occurrences,
+scénarios avec/sans déception) et `docs/chapter4/outputs/risk_example.txt`
+(résumé lisible), générés par `examples/sp3_example.py`.
+
+### Capture associée
+
+CAPTURE 8 — voir `SCREENSHOT_MANIFEST.md` (`READY_FOR_SCREENSHOT`).
+
+### Limites
+
+`propagate_risk` ne lit pas encore une table d'annotations figée réelle
+(section 7/13, non implémentées) : `de_by_occurrence` est fourni
+directement par l'appelant pour l'instant (comme dans l'exemple et les
+tests). L'intégration avec `cost_engine.py`/`optimizer.py` (sélection de
+`y`) reste à faire.
 
 ---
 
@@ -379,12 +478,13 @@ Aucun point d'entrée `runs/<run_id>/...` n'existe encore.
 
 ### Invariant testé — LLM hors du chemin d'exécution
 
-**Status : NON ENCORE TESTABLE.** Le test vérifiant que
-`src/risk_engine.py` et `src/optimizer.py` n'importent jamais
-`src/annotator_llm.py`/`src/rag_indexer.py`/`src/rag_retriever.py` sera
-ajouté dès que ces modules existeront (section 9/10). Actuellement,
-l'invariant est vrai par absence totale de code dans `risk_engine.py`/
-`optimizer.py`, mais ce n'est pas encore une garantie testée.
+**Status : PARTIELLEMENT TESTÉ.** `tests/test_risk_engine.py::TestLlmOutOfExecutionPath::test_risk_engine_does_not_import_llm_or_rag`
+vérifie, par analyse de l'arbre syntaxique (`ast`, pas une recherche de
+sous-chaîne), que `src/risk_engine.py` n'importe jamais
+`src/annotator_llm.py`, `src/rag_indexer.py` ni `src/rag_retriever.py` —
+**ce test est vert**. Le volet symétrique pour `src/optimizer.py` sera
+ajouté dès que ce module existera (section 10) ; à ce stade, l'invariant
+y est vrai par absence totale de code, mais pas encore testé.
 
 ### Déterminisme du LLM
 
@@ -428,7 +528,7 @@ lorsque `src/annotator_llm.py` sera implémenté.
 | `Effet_prog` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
 | `DE` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
 | `Cout(d;H)` | `src/cost_engine.py` | — | — | — | — | NON IMPLEMENTE |
-| `Gamma`, `A`, `P`, `R` | `src/risk_engine.py` | — | `test_reference_example` (à créer) | — | C8 | NON IMPLEMENTE |
+| `Gamma`, `A`, `P`, `R` | `src/risk_engine.py` | `propagate_risk` | `test_reference_example` | `risk_example.csv` | C8 | IMPLEMENTE |
 | budget | `src/optimizer.py` | — | — | — | — | NON IMPLEMENTE |
 | Pareto | `src/optimizer.py` | — | — | — | (chapitre 5) | NON IMPLEMENTE |
 | `y*` / `Y*` | `src/optimizer.py` / `src/reporter.py` | — | — | — | (chapitre 5) | NON IMPLEMENTE |
