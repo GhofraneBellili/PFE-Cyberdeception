@@ -297,5 +297,473 @@ def write_catalog(catalog: dict, path: Path = CATALOG_PATH) -> None:
     path.write_text(json.dumps(catalog, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
+# ===========================================================================
+# Extension >= 25 mécanismes — réf. tâche « éliminer la limitation : le
+# catalogue réel ne contient que 3 mécanismes »
+# ===========================================================================
+#
+# `build_catalog()` ci-dessus (périmètre v1, strict, D3FEND uniquement avec
+# relation ATT&CK directement tracée) reste INCHANGÉ : c'est une base de
+# référence auditée et testée, pas un choix erroné à corriger. Cette
+# extension applique une politique DIFFÉRENTE et plus large :
+# `interaction_mechanism` peut désormais être construit à partir du texte
+# documentaire réel (kb-article D3FEND « How it works », description/
+# long_description MITRE Engage, passage de littérature) plutôt que
+# seulement des relations ATT&CK tracées — mais JAMAIS par paraphrase
+# libre : chaque valeur ci-dessous est justifiée par une citation exacte de
+# la source (voir docs/chapter4/CATALOG_AUDIT.md pour la décision et la
+# justification mécanisme par mécanisme).
+#
+# Composition du catalogue étendu (26 mécanismes) :
+#   - 3 D3FEND « v1 » (D3-DF, D3-DUC, D3-DNR, inchangés) ;
+#   - 6 D3FEND supplémentaires, feuilles réelles sans relation ATT&CK
+#     tracée dans ce staging (D3-DP, D3-DST, D3-DPR, D3-CHN, D3-SHN,
+#     D3-IHN) — leur fiche documentaire (definition + kb-article) EXISTE
+#     réellement, seule la relation ATT&CK tracée manque : aucun M_{i,d}
+#     ne sera donc généré pour eux (mapping_builder.py), mais ce sont des
+#     mécanismes catalogués valides (critères §6 : description précise,
+#     preuve documentaire, target_artifact/interaction_mechanism) ;
+#   - 15 MITRE Engage (activités de type « Engagement », jamais
+#     « Strategic » — les 8 activités Strategic sont toutes de la
+#     planification/du process, jamais un mécanisme déployable, §6) ;
+#   - 2 génériques de littérature (Honeypot, Honeytoken) — concepts
+#     largement établis dans la littérature scientifique, distincts des
+#     concepts D3FEND de granularité différente (voir audit : Honeypot =
+#     hôte/service leurre unique, D3-DNR = ressource leurre greffée sur un
+#     actif réel existant, D3-CHN/SHN/IHN = honeynet au niveau réseau).
+#
+# EAC0012 (Personas) est FUSIONNÉ dans D3-DP (Decoy Persona) comme preuve
+# supplémentaire plutôt que catalogué séparément : les deux fiches
+# décrivent le même mécanisme (fausse identité utilisateur), réf. §8
+# (audit de déduplication) — ne jamais dupliquer une fiche pour gonfler le
+# compte.
+#
+# Convention : identifiants de code en anglais, commentaires et docstrings
+# en français (§25.1).
+
+ENGAGE_ACTIVITY_SEED_PATH = STAGING_DIR / "engage_activity_seed_1.0.json"
+LITERATURE_EVIDENCE_PATH = STAGING_DIR / "literature_evidence_seed_1.2.json"
+LITERATURE_DOCUMENT_PATH = STAGING_DIR / "literature_document_seed_1.2.json"
+
+EXPANDED_CATALOG_VERSION = "pfe-deception-catalog-2.0"
+
+# ---------------------------------------------------------------------------
+# D3FEND étendu — 6 feuilles réelles sans relation ATT&CK tracée
+# ---------------------------------------------------------------------------
+
+D3FEND_EXTENDED_IDS = ("D3-DP", "D3-DST", "D3-DPR", "D3-CHN", "D3-SHN", "D3-IHN")
+
+# Chaque valeur cite la phrase exacte du kb-article D3FEND (jamais une
+# paraphrase libre) — voir docs/chapter4/CATALOG_AUDIT.md pour la citation
+# complète par mécanisme.
+D3FEND_EXTENDED_INTERACTION_MECHANISM: dict[str, str] = {
+    # "A false online identity is created for the purposes of interacting
+    # with adversaries in a direct or indirect manner."
+    "D3-DP": "interacts with adversaries (directly or indirectly) via a false online identity",
+    # "Usage of decoy session tokens may be monitored to track attacker
+    # behavior or otherwise control the beliefs of the attacker."
+    "D3-DST": "uses (authenticates with) the decoy session token; usage is monitored",
+    # "The media may include URLs, points of contact, or other identifiers
+    # to entice interaction from adversaries."
+    "D3-DPR": "interacts with URLs/points of contact embedded in publicly released decoy media",
+    # "Decoy honeypots are deployed within the enterprise environment that
+    # emulate certain services or portions of an OS to attract attackers."
+    "D3-CHN": "connects to / interacts with emulated services on a network-connected honeynet",
+    # "A standalone honeynet does not directly interact with the real
+    # enterprise environment" (definition: "attracting attackers and
+    # eliciting their behaviors").
+    "D3-SHN": "interacts with the standalone honeynet, isolated from production enterprise systems",
+    # "Integrated honeynets use full production environments [...] that
+    # utilize computing resources or software that attract attackers, and
+    # allow full interaction."
+    "D3-IHN": "full interaction with production-integrated decoy computing resources/software",
+}
+
+D3FEND_EXTENDED_ARTIFACT_TO_LOCATION_TYPE: dict[str, str] = {
+    "d3f:User": "account",
+    "d3f:SessionToken": "session_store",
+    "d3f:LocalAreaNetwork": "network_segment",
+    "d3f:IntranetNetwork": "network_segment",
+}
+
+
+def _build_extended_d3fend_mechanism(concept: dict, *, release_version: str, extra_evidence: list[dict]) -> dict:
+    concept_id = concept["source_technique_id"]
+    artifacts = list(concept.get("artifacts", []))
+    location_types = sorted(
+        {D3FEND_EXTENDED_ARTIFACT_TO_LOCATION_TYPE[a] for a in artifacts if a in D3FEND_EXTENDED_ARTIFACT_TO_LOCATION_TYPE}
+    )
+    evidence = _build_evidence(concept, concept_id) + extra_evidence
+
+    return {
+        "id": concept_id,
+        "name": concept["name"],
+        "description": concept["definition"],
+        "target_artifacts": artifacts,
+        "requirements": [],
+        "possible_placements": location_types,
+        "interaction_mechanism": D3FEND_EXTENDED_INTERACTION_MECHANISM[concept_id],
+        "realism_factors": [],
+        "progression_effects": [],
+        "resource_requirements": {},
+        "maintenance_requirements": [],
+        "evidence": evidence,
+        "version": release_version,
+        "admissibility_profile": {
+            "allowed_location_types": location_types,
+            "required_asset_types": [],
+            "required_services": [],
+            "required_artifacts": [],
+            "exposure_mode": None,
+            "metadata": {},
+        },
+        "metadata": {
+            "d3fend_source_uri": concept.get("source_uri"),
+            "d3fend_off_artifact_relations": [],
+            "d3fend_attack_technique_count": 0,
+            "inclusion_policy": "extended_v2_no_direct_attack_relation_in_staging",
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# MITRE Engage — 15 activités « Engagement » retenues comme mécanismes
+# déployables (réf. §6 : critères d'inclusion, jamais automatique)
+# ---------------------------------------------------------------------------
+
+# EAC0012 (Personas) fusionné dans D3-DP — pas un id de catalogue séparé.
+ENGAGE_MERGED_INTO_D3FEND: dict[str, str] = {"EAC0012": "D3-DP"}
+
+# Justification EXCLUE par activité (réf. docs/chapter4/CATALOG_AUDIT.md
+# pour le raisonnement complet) — jamais silencieux.
+ENGAGE_EXCLUDED_REASONS: dict[str, str] = {
+    "EAC0001": "activite de MONITORING (API Monitoring) : observation, pas un mecanisme deployable percu par l'attaquant",
+    "EAC0002": "activite de MONITORING (Network Monitoring)",
+    "EAC0003": "activite de MONITORING (System Activity Monitoring)",
+    "EAC0004": "activite d'ANALYSE (Network Analysis), pas un artefact deployable",
+    "EAC0013": "activite d'ANALYSE (Malware Detonation / sandboxing) : technique d'investigation, pas un mecanisme de tromperie deploye contre l'attaquant",
+    "EAC0017": "controle de SECURITE OPERATIONNELLE (Hardware Manipulation) : retrait de micro/camera pour la securite de l'operation elle-meme, pas percu comme un leurre par l'attaquant (source : 'often required to maintain operational safety')",
+    "EAC0019": "activite de gestion INTERNE (Baseline) : definir/reinitialiser un etat de reference, aucun placement ni artefact concret percu par l'attaquant",
+    "SAC0001": "activite STRATEGIQUE (Operational Objective) : planification, pas un mecanisme deployable",
+    "SAC0002": "activite STRATEGIQUE (Persona Creation) : planification amont de EAC0012/D3-DP, pas elle-meme un mecanisme distinct",
+    "SAC0003": "activite STRATEGIQUE (Storyboarding) : planification narrative",
+    "SAC0004": "activite STRATEGIQUE (Cyber Threat Intelligence) : analyse, pas un mecanisme deployable",
+    "SAC0005": "activite STRATEGIQUE (Gating Criteria) : criteres d'arret operationnel, pas un mecanisme deployable",
+    "SAC0006": "activite STRATEGIQUE (After-Action Review) : retour d'experience post-operation",
+    "SAC0009": "activite STRATEGIQUE (Threat Model) : evaluation de risque organisationnel",
+    "SAC0012": "activite STRATEGIQUE (Engagement Environment) : conception amont de l'environnement, categorie/processus (memes motifs que D3-DE/D3-DO), pas elle-meme un mecanisme instancie",
+}
+
+# target_artifacts/possible_placements/interaction_mechanism dérivés d'une
+# lecture directe de description/long_description (jamais inventés) — voir
+# docs/chapter4/CATALOG_AUDIT.md pour la citation source de chaque champ.
+ENGAGE_MECHANISM_SPECS: dict[str, dict] = {
+    "EAC0005": {
+        "target_artifacts": ["credential", "account", "file", "directory", "process"],
+        "possible_placements": ["credential_store", "account", "filesystem"],
+        "interaction_mechanism": "adversary encounters decoy credentials, accounts, files/directories, or system processes (Lures) intended to elicit, enable, block, encourage, or discourage a specific adversary action",
+    },
+    "EAC0006": {
+        "target_artifacts": ["application", "service"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "adversary engages with a diverse set of installed applications/services (varied types and patch levels) configured on the target system",
+    },
+    "EAC0007": {
+        "target_artifacts": ["network_device", "firewall", "printer", "phone"],
+        "possible_placements": ["network_segment"],
+        "interaction_mechanism": "adversary engages with an assorted collection of deployed network devices establishing the legitimacy of a deceptive network",
+    },
+    "EAC0008": {
+        "target_artifacts": ["browsing_history", "filesystem_usage_history", "session_cookie", "decoy_account"],
+        "possible_placements": ["host", "account"],
+        "interaction_mechanism": "adversary observes system artifacts (browsing history, file usage, session cookies) generated by defender-driven exercising of a decoy account/system to reinforce believability",
+    },
+    "EAC0009": {
+        "target_artifacts": ["email", "mailbox"],
+        "possible_placements": ["mailbox"],
+        "interaction_mechanism": "adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis",
+    },
+    "EAC0010": {
+        "target_artifacts": ["peripheral_device", "usb_device", "wifi_adapter"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "adversary interacts with introduced peripheral devices (e.g., external Wi-Fi adapters, USB devices) carrying additional deceptive information",
+    },
+    "EAC0011": {
+        "target_artifacts": ["document", "picture", "registry_entry", "browsing_history", "connection_history"],
+        "possible_placements": ["filesystem", "host"],
+        "interaction_mechanism": "adversary encounters planted user data (documents, pictures, registry entries, browsing/connection history) supporting the credibility of the engagement narrative",
+    },
+    "EAC0014": {
+        "target_artifacts": ["os_component", "filesystem", "discovery_command_output", "password_policy"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "adversary receives altered software outputs (discovery command results, password policy description, archival/encryption behavior) that hide real artifacts and/or reveal decoy artifacts",
+    },
+    "EAC0015": {
+        "target_artifacts": ["os_version_info", "hardware_info", "account_info", "credential_info", "decoy_file", "decoy_email"],
+        "possible_placements": [],
+        "interaction_mechanism": "adversary is exposed to revealed or concealed facts/fictions (OS/hardware/account/credential info, decoy file/email content) engineered to adjust trust and uncertainty in the environment",
+    },
+    "EAC0016": {
+        "target_artifacts": ["network_topology", "ip_addressing_scheme", "c2_channel"],
+        "possible_placements": ["network_segment"],
+        "interaction_mechanism": "adversary's network operations (C2/exfiltration channels, port/service reachability) are throttled, segmented, or redirected via manipulated network properties",
+    },
+    "EAC0018": {
+        "target_artifacts": ["security_configuration", "group_policy", "firewall_rule"],
+        "possible_placements": ["host", "network_share"],
+        "interaction_mechanism": "adversary encounters selectively weakened or tightened security controls (e.g., a single disabled control on one specific share) that encourage or discourage activity in predetermined locations",
+    },
+    "EAC0020": {
+        "target_artifacts": ["isolated_system", "isolated_network"],
+        "possible_placements": ["network_segment", "host"],
+        "interaction_mechanism": "adversary's lateral movement and activity are contained within an isolated decoy system/network with limited or no path to production resources",
+    },
+    "EAC0021": {
+        "target_artifacts": ["malicious_email", "malicious_attachment", "malicious_usb"],
+        "possible_placements": ["mailbox", "host", "network_segment"],
+        "interaction_mechanism": "adversary's malicious link/file/device is intercepted and moved to a decoy system within a decoy network for continued engagement/analysis",
+    },
+    "EAC0022": {
+        "target_artifacts": ["account", "file", "directory", "credential", "log", "browsing_history", "cookie"],
+        "possible_placements": ["host", "account", "filesystem", "credential_store"],
+        "interaction_mechanism": "adversary is presented with multiple diverse network/system artifacts (accounts, files, credentials, logs, browsing history, cookies) broadening the attack surface and revealing targeting preferences",
+    },
+    "EAC0023": {
+        "target_artifacts": ["vulnerability"],
+        "possible_placements": ["host", "network_resource"],
+        "interaction_mechanism": "adversary exploits an intentionally introduced vulnerability in the engagement environment, steering targeting toward or away from specific resources",
+    },
+}
+
+
+def _build_engage_evidence(activity: dict) -> list[dict]:
+    activity_id = activity["activity_id"]
+    evidence = []
+    description = (activity.get("description") or "").strip()
+    long_description = (activity.get("long_description") or "").strip()
+    if description:
+        evidence.append({"source": f"engage:{activity_id}:description", "passage": description})
+    if long_description and long_description != description:
+        evidence.append({"source": f"engage:{activity_id}:long_description", "passage": long_description})
+    return evidence
+
+
+def _build_engage_mechanism(activity: dict, *, release_version: str) -> dict:
+    activity_id = activity["activity_id"]
+    spec = ENGAGE_MECHANISM_SPECS[activity_id]
+    location_types = list(spec["possible_placements"])
+    return {
+        "id": activity_id,
+        "name": activity["name"],
+        "description": activity["description"],
+        "target_artifacts": list(spec["target_artifacts"]),
+        "requirements": [],
+        "possible_placements": location_types,
+        "interaction_mechanism": spec["interaction_mechanism"],
+        "realism_factors": [],
+        "progression_effects": [],
+        "resource_requirements": {},
+        "maintenance_requirements": [],
+        "evidence": _build_engage_evidence(activity),
+        "version": release_version,
+        "admissibility_profile": {
+            "allowed_location_types": location_types,
+            "required_asset_types": [],
+            "required_services": [],
+            "required_artifacts": [],
+            "exposure_mode": None,
+            "metadata": {},
+        },
+        "metadata": {
+            "engage_detail_type": activity.get("detail_type"),
+            "inclusion_policy": "engage_activity_direct_engagement_technique",
+        },
+    }
+
+
+def _build_persona_merge_evidence(engage_activities_by_id: dict) -> list[dict]:
+    """Réf. §8 (déduplication) : EAC0012 (Personas) fusionné comme preuve
+    supplémentaire de D3-DP plutôt que catalogué séparément."""
+    activity = engage_activities_by_id["EAC0012"]
+    return _build_engage_evidence(activity)
+
+
+# ---------------------------------------------------------------------------
+# Littérature — 2 mécanismes génériques largement établis, distincts par
+# granularité des concepts D3FEND déjà catalogués (voir audit)
+# ---------------------------------------------------------------------------
+
+LITERATURE_MECHANISM_SPECS: dict[str, dict] = {
+    "LIT-HONEYPOT": {
+        "name": "Honeypot",
+        "description": (
+            "A closely monitored network decoy host or service used to distract adversaries from more "
+            "valuable machines, provide early warning of new attacks, and allow in-depth examination of "
+            "adversaries during and after exploitation."
+        ),
+        "target_artifacts": ["decoy_host"],
+        "possible_placements": ["network_segment", "host"],
+        "interaction_mechanism": "adversary scans, connects to, and attempts to exploit or log on to the monitored decoy host, diverting them from production systems",
+        "evidence_source_ids": (
+            "usenixsec2004_provos_virtual_honeypot_framework",
+            "doi_10.1109_csac.2003.1254322",
+            "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy",
+        ),
+    },
+    "LIT-HONEYTOKEN": {
+        "name": "Honeytoken",
+        "description": (
+            "A fake but plausible-looking piece of data or resource (e.g., a database record, configuration "
+            "entry, or API key) planted to detect unauthorized access; interacting with it creates a strong "
+            "indicator of compromise. Generalizes beyond a single credential/session token (already covered "
+            "by D3-DUC/D3-DST) to arbitrary non-credential decoy data."
+        ),
+        "target_artifacts": ["decoy_data", "decoy_record"],
+        "possible_placements": ["database", "filesystem", "configuration_store"],
+        "interaction_mechanism": "adversary accesses or exfiltrates the honeytoken (fake data/record), triggering a monitored indicator of compromise",
+        "evidence_source_ids": ("doi_10.1145_3678890.3678897",),
+    },
+}
+
+
+def _build_literature_evidence(source_ids: tuple[str, ...], literature_evidence: list[dict]) -> list[dict]:
+    return [
+        {"source": item["evidence_id"], "passage": item["text"]}
+        for item in literature_evidence
+        if item["source_id"] in source_ids
+    ]
+
+
+def _build_literature_mechanism(mechanism_id: str, *, literature_evidence: list[dict], release_version: str) -> dict:
+    spec = LITERATURE_MECHANISM_SPECS[mechanism_id]
+    evidence = _build_literature_evidence(spec["evidence_source_ids"], literature_evidence)
+    if not evidence:
+        raise CatalogBuilderError(
+            f"Aucune preuve littérature trouvée pour '{mechanism_id}' parmi {spec['evidence_source_ids']} : "
+            "un mécanisme catalogué doit toujours avoir au moins une preuve réelle."
+        )
+    location_types = list(spec["possible_placements"])
+    return {
+        "id": mechanism_id,
+        "name": spec["name"],
+        "description": spec["description"],
+        "target_artifacts": list(spec["target_artifacts"]),
+        "requirements": [],
+        "possible_placements": location_types,
+        "interaction_mechanism": spec["interaction_mechanism"],
+        "realism_factors": [],
+        "progression_effects": [],
+        "resource_requirements": {},
+        "maintenance_requirements": [],
+        "evidence": evidence,
+        "version": release_version,
+        "admissibility_profile": {
+            "allowed_location_types": location_types,
+            "required_asset_types": [],
+            "required_services": [],
+            "required_artifacts": [],
+            "exposure_mode": None,
+            "metadata": {},
+        },
+        "metadata": {
+            "literature_source_ids": list(spec["evidence_source_ids"]),
+            "inclusion_policy": "literature_generic_established_mechanism",
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# Assemblage du catalogue étendu
+# ---------------------------------------------------------------------------
+
+
+def build_expanded_catalog(
+    *,
+    deception_seed_path: Path = DECEPTION_SEED_PATH,
+    attack_mapping_path: Path = ATTACK_MAPPING_PATH,
+    engage_activity_seed_path: Path = ENGAGE_ACTIVITY_SEED_PATH,
+    literature_evidence_path: Path = LITERATURE_EVIDENCE_PATH,
+) -> dict:
+    """Réf. tâche « étendre le catalogue à >= 25 mécanismes réels » :
+    combine le périmètre v1 (`build_catalog`, 3 mécanismes D3FEND avec
+    relation ATT&CK tracée) avec l'extension D3FEND (6), MITRE Engage (15)
+    et littérature (2) — 26 mécanismes au total. Chaque exclusion reste
+    documentée (`excluded_concepts`), jamais silencieuse."""
+    base_catalog = build_catalog(deception_seed_path=deception_seed_path, attack_mapping_path=attack_mapping_path)
+
+    deception_seed, deception_seed_sha256 = _read_json_with_sha256(deception_seed_path)
+    engage_seed, engage_seed_sha256 = _read_json_with_sha256(engage_activity_seed_path)
+    literature_seed, literature_seed_sha256 = _read_json_with_sha256(literature_evidence_path)
+
+    release_version = deception_seed["release_version"]
+    engage_version = engage_seed.get("engage_version") or engage_seed.get("schema_version")
+    literature_version = literature_seed.get("schema_version")
+
+    concepts_by_id = {c["source_technique_id"]: c for c in deception_seed["concepts"]}
+    engage_activities_by_id = {a["activity_id"]: a for a in engage_seed["activities"]}
+    literature_evidence = literature_seed["evidence"]
+
+    mechanisms = list(base_catalog["mechanisms"])
+    excluded = [e for e in base_catalog["excluded_concepts"] if e["id"] not in D3FEND_EXTENDED_IDS]
+
+    # --- D3FEND étendu (6) ---
+    persona_extra_evidence = _build_persona_merge_evidence(engage_activities_by_id)
+    for concept_id in D3FEND_EXTENDED_IDS:
+        concept = concepts_by_id[concept_id]
+        extra_evidence = persona_extra_evidence if concept_id == "D3-DP" else []
+        mechanisms.append(
+            _build_extended_d3fend_mechanism(concept, release_version=release_version, extra_evidence=extra_evidence)
+        )
+
+    # --- MITRE Engage (15) ---
+    for activity_id, activity in sorted(engage_activities_by_id.items()):
+        if activity_id in ENGAGE_MECHANISM_SPECS:
+            mechanisms.append(_build_engage_mechanism(activity, release_version=str(engage_version)))
+        elif activity_id in ENGAGE_MERGED_INTO_D3FEND:
+            excluded.append(
+                {
+                    "id": activity_id,
+                    "name": activity["name"],
+                    "reason": f"fusionne dans {ENGAGE_MERGED_INTO_D3FEND[activity_id]} (meme mecanisme, réf. §8 deduplication) : preuve ajoutee en evidence supplementaire, pas un id de catalogue separe",
+                }
+            )
+        else:
+            reason = ENGAGE_EXCLUDED_REASONS.get(activity_id)
+            if reason is None:
+                raise CatalogBuilderError(
+                    f"Activite Engage '{activity_id}' ni incluse, ni fusionnee, ni justifiee comme exclue : "
+                    "toute activite doit relever explicitement d'un de ces trois cas (jamais silencieux)."
+                )
+            excluded.append({"id": activity_id, "name": activity["name"], "reason": reason})
+
+    # --- Littérature (2) ---
+    for mechanism_id in sorted(LITERATURE_MECHANISM_SPECS):
+        mechanisms.append(
+            _build_literature_mechanism(mechanism_id, literature_evidence=literature_evidence, release_version=str(literature_version))
+        )
+
+    return {
+        "schema": "pfe_deception_catalog",
+        "schema_version": "1.0",
+        "catalog_version": EXPANDED_CATALOG_VERSION,
+        "generated_from": {
+            "d3fend_deception_seed": base_catalog["generated_from"]["d3fend_deception_seed"],
+            "d3fend_attack_mapping_seed": base_catalog["generated_from"]["d3fend_attack_mapping_seed"],
+            "engage_activity_seed": {
+                "path": str(engage_activity_seed_path),
+                "sha256": engage_seed_sha256,
+                "engage_version": engage_version,
+            },
+            "literature_evidence_seed": {
+                "path": str(literature_evidence_path),
+                "sha256": literature_seed_sha256,
+                "schema_version": literature_version,
+            },
+        },
+        "excluded_concepts": excluded,
+        "mechanisms": mechanisms,
+    }
+
+
 if __name__ == "__main__":
-    write_catalog(build_catalog())
+    write_catalog(build_expanded_catalog())

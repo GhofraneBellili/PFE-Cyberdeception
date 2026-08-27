@@ -11,7 +11,7 @@ un catalogue réel.
 import pytest
 
 from src.schemas import DeceptionMechanism
-from tools.deception_kb.catalog_builder import CatalogBuilderError, build_catalog
+from tools.deception_kb.catalog_builder import CatalogBuilderError, build_catalog, build_expanded_catalog
 
 
 class TestBuildCatalogFromRealStaging:
@@ -94,6 +94,96 @@ class TestBuildCatalogFromRealStaging:
         catalog_1 = build_catalog()
         catalog_2 = build_catalog()
         assert catalog_1 == catalog_2
+
+
+class TestBuildExpandedCatalog:
+    """Réf. tâche « étendre le catalogue à >= 25 mécanismes réels » (§4-§8) :
+    tests sur le catalogue étendu réel (D3FEND + MITRE Engage + littérature
+    déjà versionnés), pas une fixture synthétique."""
+
+    def test_at_least_25_mechanisms(self):
+        catalog = build_expanded_catalog()
+        assert len(catalog["mechanisms"]) >= 25
+
+    def test_all_ids_unique(self):
+        catalog = build_expanded_catalog()
+        ids = [m["id"] for m in catalog["mechanisms"]]
+        assert len(ids) == len(set(ids))
+
+    def test_all_names_non_empty(self):
+        catalog = build_expanded_catalog()
+        for mechanism in catalog["mechanisms"]:
+            assert mechanism["name"].strip()
+
+    def test_no_exact_name_and_description_duplication(self):
+        """Réf. §8 (audit de déduplication) : deux mécanismes distincts ne
+        doivent jamais partager exactement le même (name, description) —
+        signe d'une fiche dupliquée plutôt que fusionnée."""
+        catalog = build_expanded_catalog()
+        pairs = [(m["name"], m["description"]) for m in catalog["mechanisms"]]
+        assert len(pairs) == len(set(pairs))
+
+    def test_every_mechanism_has_at_least_one_evidence(self):
+        catalog = build_expanded_catalog()
+        for mechanism in catalog["mechanisms"]:
+            assert len(mechanism["evidence"]) > 0, f"{mechanism['id']} sans preuve"
+
+    def test_every_mechanism_validates_against_schema(self):
+        catalog = build_expanded_catalog()
+        for raw_mechanism in catalog["mechanisms"]:
+            mechanism = DeceptionMechanism.model_validate(raw_mechanism)
+            assert mechanism.id == raw_mechanism["id"]
+
+    def test_v1_three_mechanisms_still_present_unchanged(self):
+        """Le périmètre v1 (build_catalog) doit rester un sous-ensemble
+        inchangé de l'extension, jamais recalculé différemment."""
+        base = build_catalog()
+        expanded = build_expanded_catalog()
+        expanded_by_id = {m["id"]: m for m in expanded["mechanisms"]}
+        for mechanism in base["mechanisms"]:
+            assert expanded_by_id[mechanism["id"]] == mechanism
+
+    def test_persona_merged_not_duplicated(self):
+        """Réf. §8 : EAC0012 (Personas) est fusionné dans D3-DP, jamais un
+        id de catalogue séparé."""
+        catalog = build_expanded_catalog()
+        ids = {m["id"] for m in catalog["mechanisms"]}
+        assert "EAC0012" not in ids
+        assert "D3-DP" in ids
+        excluded_ids = {e["id"] for e in catalog["excluded_concepts"]}
+        assert "EAC0012" in excluded_ids
+
+    def test_engage_strategic_activities_all_excluded(self):
+        """Réf. §6 : les activités MITRE Engage de type Strategic (SAC*)
+        ne sont jamais des mécanismes déployables."""
+        catalog = build_expanded_catalog()
+        ids = {m["id"] for m in catalog["mechanisms"]}
+        assert not any(mechanism_id.startswith("SAC") for mechanism_id in ids)
+
+    def test_every_excluded_concept_has_a_reason(self):
+        catalog = build_expanded_catalog()
+        for excluded in catalog["excluded_concepts"]:
+            assert excluded["reason"].strip()
+
+    def test_provenance_recorded_for_all_four_sources(self):
+        catalog = build_expanded_catalog()
+        generated_from = catalog["generated_from"]
+        for key in ("d3fend_deception_seed", "d3fend_attack_mapping_seed", "engage_activity_seed", "literature_evidence_seed"):
+            assert generated_from[key]["sha256"]
+
+    def test_deterministic(self):
+        catalog_1 = build_expanded_catalog()
+        catalog_2 = build_expanded_catalog()
+        assert catalog_1 == catalog_2
+
+    def test_mechanism_families_present(self):
+        """Réf. §10 (statistiques de couverture) : au moins D3FEND, Engage
+        et littérature sont représentés parmi les mécanismes catalogués."""
+        catalog = build_expanded_catalog()
+        ids = {m["id"] for m in catalog["mechanisms"]}
+        assert any(mechanism_id.startswith("D3-") for mechanism_id in ids)
+        assert any(mechanism_id.startswith("EAC") for mechanism_id in ids)
+        assert any(mechanism_id.startswith("LIT-") for mechanism_id in ids)
 
 
 class TestBuildCatalogMissingMappings:

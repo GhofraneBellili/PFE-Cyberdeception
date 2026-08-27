@@ -1,0 +1,22 @@
+Catalogue de deception - statistiques de couverture reelles
+------------------------------------------------------------------------------
+Catalogue : pfe-deception-catalog-2.0  (26 mecanismes)
+Mapping   : pfe-attack-deception-mapping-2.0  (591 relations M_i,d)
+------------------------------------------------------------------------------
+Mecanismes par famille :
+  d3fend       9
+  engage       15
+  literature   2
+------------------------------------------------------------------------------
+Mecanismes avec >=1 mapping ATT&CK : 18 / 26
+Mecanismes sans mapping ATT&CK      : 8 (D3-CHN, D3-DP, D3-DPR, D3-DST, D3-IHN, D3-SHN, LIT-HONEYPOT, LIT-HONEYTOKEN)
+------------------------------------------------------------------------------
+Relations M_i,d directes (MITRE Engage) : 464
+Relations M_i,d derivees (D3FEND SPARQL) : 127
+Techniques ATT&CK distinctes couvertes   : 271
+------------------------------------------------------------------------------
+Mecanismes par technique ATT&CK (parmi les techniques couvertes) :
+  min=1  max=8  mean=2.18  median=1
+Techniques ATT&CK par mecanisme (parmi les mecanismes mappes) :
+  min=3  max=99  mean=32.83  median=20.5
+------------------------------------------------------------------------------

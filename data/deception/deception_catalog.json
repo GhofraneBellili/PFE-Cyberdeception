@@ -1,7 +1,7 @@
 {
   "schema": "pfe_deception_catalog",
   "schema_version": "1.0",
-  "catalog_version": "pfe-deception-catalog-1.0",
+  "catalog_version": "pfe-deception-catalog-2.0",
   "generated_from": {
     "d3fend_deception_seed": {
       "path": "data\\deception\\staging\\d3fend_deception_seed_1.5.0.json",
@@ -12,6 +12,16 @@
       "path": "data\\deception\\staging\\d3fend_attack_mapping_seed_1.5.0.json",
       "sha256": "8fe61e44087731a4b989e4dfc74742fde3dded371fc24cbc39de4e50f49cb351",
       "release_version": "1.5.0"
+    },
+    "engage_activity_seed": {
+      "path": "data\\deception\\staging\\engage_activity_seed_1.0.json",
+      "sha256": "80be3aa3dcb42624aa3987b25341f0f97fd0f63273e024dec549684de2735d68",
+      "engage_version": "1.0"
+    },
+    "literature_evidence_seed": {
+      "path": "data\\deception\\staging\\literature_evidence_seed_1.2.json",
+      "sha256": "737238cc8a786cfc5e40b00a8a91b81ebc332ed6a51585e49bb2c9bbb0b51d89",
+      "schema_version": "1.2"
     }
   },
   "excluded_concepts": [
@@ -21,39 +31,89 @@
       "reason": "concept parent/categorie (is_leaf=false) : jamais un mecanisme deployable, seuls ses enfants le sont"
     },
     {
-      "id": "D3-DP",
-      "name": "Decoy Persona",
-      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
-    },
-    {
-      "id": "D3-DST",
-      "name": "Decoy Session Token",
-      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
-    },
-    {
-      "id": "D3-DPR",
-      "name": "Decoy Public Release",
-      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
-    },
-    {
       "id": "D3-DE",
       "name": "Decoy Environment",
       "reason": "concept parent/categorie (is_leaf=false) : jamais un mecanisme deployable, seuls ses enfants le sont"
     },
     {
-      "id": "D3-CHN",
-      "name": "Connected Honeynet",
-      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
+      "id": "EAC0001",
+      "name": "API Monitoring",
+      "reason": "activite de MONITORING (API Monitoring) : observation, pas un mecanisme deployable percu par l'attaquant"
     },
     {
-      "id": "D3-SHN",
-      "name": "Standalone Honeynet",
-      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
+      "id": "EAC0002",
+      "name": "Network Monitoring",
+      "reason": "activite de MONITORING (Network Monitoring)"
     },
     {
-      "id": "D3-IHN",
-      "name": "Integrated Honeynet",
-      "reason": "aucune relation ATT&CK directe dans ce staging : interaction_mechanism non justifiable sans l'inventer"
+      "id": "EAC0003",
+      "name": "System Activity Monitoring",
+      "reason": "activite de MONITORING (System Activity Monitoring)"
+    },
+    {
+      "id": "EAC0004",
+      "name": "Network Analysis",
+      "reason": "activite d'ANALYSE (Network Analysis), pas un artefact deployable"
+    },
+    {
+      "id": "EAC0012",
+      "name": "Personas",
+      "reason": "fusionne dans D3-DP (meme mecanisme, réf. §8 deduplication) : preuve ajoutee en evidence supplementaire, pas un id de catalogue separe"
+    },
+    {
+      "id": "EAC0013",
+      "name": "Malware Detonation",
+      "reason": "activite d'ANALYSE (Malware Detonation / sandboxing) : technique d'investigation, pas un mecanisme de tromperie deploye contre l'attaquant"
+    },
+    {
+      "id": "EAC0017",
+      "name": "Hardware Manipulation",
+      "reason": "controle de SECURITE OPERATIONNELLE (Hardware Manipulation) : retrait de micro/camera pour la securite de l'operation elle-meme, pas percu comme un leurre par l'attaquant (source : 'often required to maintain operational safety')"
+    },
+    {
+      "id": "EAC0019",
+      "name": "Baseline",
+      "reason": "activite de gestion INTERNE (Baseline) : definir/reinitialiser un etat de reference, aucun placement ni artefact concret percu par l'attaquant"
+    },
+    {
+      "id": "SAC0001",
+      "name": "Operational Objective",
+      "reason": "activite STRATEGIQUE (Operational Objective) : planification, pas un mecanisme deployable"
+    },
+    {
+      "id": "SAC0002",
+      "name": "Persona Creation",
+      "reason": "activite STRATEGIQUE (Persona Creation) : planification amont de EAC0012/D3-DP, pas elle-meme un mecanisme distinct"
+    },
+    {
+      "id": "SAC0003",
+      "name": "Storyboarding",
+      "reason": "activite STRATEGIQUE (Storyboarding) : planification narrative"
+    },
+    {
+      "id": "SAC0004",
+      "name": "Cyber Threat Intelligence",
+      "reason": "activite STRATEGIQUE (Cyber Threat Intelligence) : analyse, pas un mecanisme deployable"
+    },
+    {
+      "id": "SAC0005",
+      "name": "Gating Criteria",
+      "reason": "activite STRATEGIQUE (Gating Criteria) : criteres d'arret operationnel, pas un mecanisme deployable"
+    },
+    {
+      "id": "SAC0006",
+      "name": "After-Action Review",
+      "reason": "activite STRATEGIQUE (After-Action Review) : retour d'experience post-operation"
+    },
+    {
+      "id": "SAC0009",
+      "name": "Threat Model",
+      "reason": "activite STRATEGIQUE (Threat Model) : evaluation de risque organisationnel"
+    },
+    {
+      "id": "SAC0012",
+      "name": "Engagement Environment",
+      "reason": "activite STRATEGIQUE (Engagement Environment) : conception amont de l'environnement, categorie/processus (memes motifs que D3-DE/D3-DO), pas elle-meme un mecanisme instancie"
     }
   ],
   "mechanisms": [
@@ -245,6 +305,1110 @@
           "unmounts"
         ],
         "d3fend_attack_technique_count": 8
+      }
+    },
+    {
+      "id": "D3-DP",
+      "name": "Decoy Persona",
+      "description": "Establishing a fake online identity to misdirect, deceive, and or interact with adversaries.",
+      "target_artifacts": [
+        "d3f:User"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "account"
+      ],
+      "interaction_mechanism": "interacts with adversaries (directly or indirectly) via a false online identity",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "d3fend:D3-DP:rdfs:label",
+          "passage": "Decoy Persona"
+        },
+        {
+          "source": "d3fend:D3-DP:d3f:definition",
+          "passage": "Establishing a fake online identity to misdirect, deceive, and or interact with adversaries."
+        },
+        {
+          "source": "d3fend:D3-DP:d3f:kb-article",
+          "passage": "## How it works\nA false online identity is created for the purposes of interacting with adversaries in a direct or indirect manner. This includes the associated email addresses, social media accounts, and other online communication profiles.\n\n## Considerations\n* Include phone numbers and online social profiles as well as automatically or manually responding to contact made to the persona to improve realism.\n* Continuous updating and managing the decoy personas and online activity streams to ensure personas do not become stale and outdated."
+        },
+        {
+          "source": "d3fend:D3-DP:d3f:spoofs",
+          "passage": "d3f:User"
+        },
+        {
+          "source": "engage:EAC0012:description",
+          "passage": "Create fictitious human user(s) through a combination of planted data and revealed behavior patterns."
+        },
+        {
+          "source": "engage:EAC0012:long_description",
+          "passage": "A Persona is used to establish background information about a victim to increase the believability of the target. To create a Persona, the defender must develop a backstory and seed the environment with varying data in support of this story. Depending on the need for realism, the constructed persona can be supported by evidence of hobbies, social and professional interactions, consumer transactions, employment, browsing habits, etc.  In addition to lending legitimacy to the environment, personas can be used to engage directly with adversaries, such as during phishing email exchanges. Additionally, personas can make changes to the environment during the operation, such as adding or removing a USB device or introducing new decoy documents or credentials."
+        }
+      ],
+      "version": "1.5.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "account"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "d3fend_source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyPersona",
+        "d3fend_off_artifact_relations": [],
+        "d3fend_attack_technique_count": 0,
+        "inclusion_policy": "extended_v2_no_direct_attack_relation_in_staging"
+      }
+    },
+    {
+      "id": "D3-DST",
+      "name": "Decoy Session Token",
+      "description": "An authentication token created for the purposes of deceiving an adversary.",
+      "target_artifacts": [
+        "d3f:SessionToken"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "session_store"
+      ],
+      "interaction_mechanism": "uses (authenticates with) the decoy session token; usage is monitored",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "d3fend:D3-DST:rdfs:label",
+          "passage": "Decoy Session Token"
+        },
+        {
+          "source": "d3fend:D3-DST:d3f:definition",
+          "passage": "An authentication token created for the purposes of deceiving an adversary."
+        },
+        {
+          "source": "d3fend:D3-DST:d3f:kb-article",
+          "passage": "## How it works\nUsage of decoy session tokens may be monitored to track attacker behavior or otherwise control the beliefs of the attacker.\n\n## Considerations\n* Interaction and activity with the decoy session token must be constantly monitored and analyzed to detect unauthorized activity.\n* Session tokens are typically short-lived and therefore the decoy must be continuously updated to provide the appearance of it being used in the production environment.\n* Automated tools can assist with maintenance and updates by automatically adjusting the decoy session token and environment to mimic the production environment."
+        },
+        {
+          "source": "d3fend:D3-DST:d3f:spoofs",
+          "passage": "d3f:SessionToken"
+        }
+      ],
+      "version": "1.5.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "session_store"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "d3fend_source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoySessionToken",
+        "d3fend_off_artifact_relations": [],
+        "d3fend_attack_technique_count": 0,
+        "inclusion_policy": "extended_v2_no_direct_attack_relation_in_staging"
+      }
+    },
+    {
+      "id": "D3-DPR",
+      "name": "Decoy Public Release",
+      "description": "Issuing publicly released media to deceive adversaries.",
+      "target_artifacts": [],
+      "requirements": [],
+      "possible_placements": [],
+      "interaction_mechanism": "interacts with URLs/points of contact embedded in publicly released decoy media",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "d3fend:D3-DPR:rdfs:label",
+          "passage": "Decoy Public Release"
+        },
+        {
+          "source": "d3fend:D3-DPR:d3f:definition",
+          "passage": "Issuing publicly released media to deceive adversaries."
+        },
+        {
+          "source": "d3fend:D3-DPR:d3f:kb-article",
+          "passage": "## How it works\nPublicly released media includes press release, videos, or other marketing collateral. The media may include URLs, points of contact, or other identifiers to entice interaction from adversaries.\n\n## Considerations\n* Information used in decoy public released media must contain enough realism to deceive and provide interaction from adversaries.\n* Continuous development, creation, and distribution of media and identifiers are needed to ensure adversary interaction continues over time.\n* Decoy public releases could be placed on platforms with different degrees of ownership, including entirely enterprise-owned infrastructure, IaaS, and SaaS (including social applications). Platforms that are not entirely enterprise-owned may be more likely to gather information"
+        }
+      ],
+      "version": "1.5.0",
+      "admissibility_profile": {
+        "allowed_location_types": [],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "d3fend_source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#DecoyPublicRelease",
+        "d3fend_off_artifact_relations": [],
+        "d3fend_attack_technique_count": 0,
+        "inclusion_policy": "extended_v2_no_direct_attack_relation_in_staging"
+      }
+    },
+    {
+      "id": "D3-CHN",
+      "name": "Connected Honeynet",
+      "description": "A decoy service, system, or environment, that is connected to the enterprise network, and simulates or emulates certain functionality to the network, without exposing full access to a production system.",
+      "target_artifacts": [
+        "d3f:LocalAreaNetwork"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment"
+      ],
+      "interaction_mechanism": "connects to / interacts with emulated services on a network-connected honeynet",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "d3fend:D3-CHN:rdfs:label",
+          "passage": "Connected Honeynet"
+        },
+        {
+          "source": "d3fend:D3-CHN:d3f:definition",
+          "passage": "A decoy service, system, or environment, that is connected to the enterprise network, and simulates or emulates certain functionality to the network, without exposing full access to a production system."
+        },
+        {
+          "source": "d3fend:D3-CHN:d3f:kb-article",
+          "passage": "## How it works\nDecoy honeypots are deployed within the enterprise environment that emulate certain services or portions of an OS to attract attackers.\n\n## Considerations\nA connected honeynet provides a tradeoff between emulating certain functionality but not being as sophisticated as an integrated honeynet. The connected honeynet may not provide enough functionality to detect new attack patterns or zero day exploits but could provide enough functionality for specific known vulnerabilities."
+        },
+        {
+          "source": "d3fend:D3-CHN:d3f:spoofs",
+          "passage": "d3f:LocalAreaNetwork"
+        }
+      ],
+      "version": "1.5.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "d3fend_source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#ConnectedHoneynet",
+        "d3fend_off_artifact_relations": [],
+        "d3fend_attack_technique_count": 0,
+        "inclusion_policy": "extended_v2_no_direct_attack_relation_in_staging"
+      }
+    },
+    {
+      "id": "D3-SHN",
+      "name": "Standalone Honeynet",
+      "description": "An environment created for the purpose of attracting attackers and eliciting their behaviors that is not connected to any production enterprise systems.",
+      "target_artifacts": [
+        "d3f:IntranetNetwork"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment"
+      ],
+      "interaction_mechanism": "interacts with the standalone honeynet, isolated from production enterprise systems",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "d3fend:D3-SHN:rdfs:label",
+          "passage": "Standalone Honeynet"
+        },
+        {
+          "source": "d3fend:D3-SHN:d3f:definition",
+          "passage": "An environment created for the purpose of attracting attackers and eliciting their behaviors that is not connected to any production enterprise systems."
+        },
+        {
+          "source": "d3fend:D3-SHN:d3f:kb-article",
+          "passage": "## How it works\nA standalone honeynet does not directly interact with the real enterprise environment. It may be located near or in some portion of the enterprise address space, but it does not interact with enterprise resources.\n\n## Considerations\nA standalone honeynet is a lower risk to deploy compared to connected or integrated honeynets due to its isolation from the enterprise network. However, this comes at cost in loss of fidelity and realism. Significant extra effort must be made in order to make the environment look realistic."
+        },
+        {
+          "source": "d3fend:D3-SHN:d3f:spoofs",
+          "passage": "d3f:IntranetNetwork"
+        }
+      ],
+      "version": "1.5.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "d3fend_source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#StandaloneHoneynet",
+        "d3fend_off_artifact_relations": [],
+        "d3fend_attack_technique_count": 0,
+        "inclusion_policy": "extended_v2_no_direct_attack_relation_in_staging"
+      }
+    },
+    {
+      "id": "D3-IHN",
+      "name": "Integrated Honeynet",
+      "description": "The practice of setting decoys in a production environment to entice interaction from attackers.",
+      "target_artifacts": [
+        "d3f:IntranetNetwork"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment"
+      ],
+      "interaction_mechanism": "full interaction with production-integrated decoy computing resources/software",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "d3fend:D3-IHN:rdfs:label",
+          "passage": "Integrated Honeynet"
+        },
+        {
+          "source": "d3fend:D3-IHN:d3f:definition",
+          "passage": "The practice of setting decoys in a production environment to entice interaction from attackers."
+        },
+        {
+          "source": "d3fend:D3-IHN:d3f:kb-article",
+          "passage": "## How it works\nIntegrated honeynets use full production environments connected to the enterprise network, that utilize computing resources or software that attract attackers, and allow full interaction and access that provides a complete view of an attack.\n\n## Considerations\nAn attacker with control of a system on an Integrated Honeynet could:\n* try to attack other connected hosts on the network, its IP range of internal hosts not properly configured to react to connections from machines on the integrated honeynet, or position behind the firewall.\n* exploit its position by eavesdropping on network traffic\nIf an attacker manages to stop the processes used to log an attack without setting off any alarms. [1]\n\n1. Honeypots for Windows, Roger Grimes, 2005"
+        },
+        {
+          "source": "d3fend:D3-IHN:d3f:spoofs",
+          "passage": "d3f:IntranetNetwork"
+        }
+      ],
+      "version": "1.5.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "d3fend_source_uri": "http://d3fend.mitre.org/ontologies/d3fend.owl#IntegratedHoneynet",
+        "d3fend_off_artifact_relations": [],
+        "d3fend_attack_technique_count": 0,
+        "inclusion_policy": "extended_v2_no_direct_attack_relation_in_staging"
+      }
+    },
+    {
+      "id": "EAC0005",
+      "name": "Lures",
+      "description": "Deceptive systems and artifacts intended to serve as decoys, breadcrumbs, or bait to elicit a specific response from the adversary.",
+      "target_artifacts": [
+        "credential",
+        "account",
+        "file",
+        "directory",
+        "process"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "credential_store",
+        "account",
+        "filesystem"
+      ],
+      "interaction_mechanism": "adversary encounters decoy credentials, accounts, files/directories, or system processes (Lures) intended to elicit, enable, block, encourage, or discourage a specific adversary action",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0005:description",
+          "passage": "Deceptive systems and artifacts intended to serve as decoys, breadcrumbs, or bait to elicit a specific response from the adversary."
+        },
+        {
+          "source": "engage:EAC0005:long_description",
+          "passage": "Lures are intended to elicit a particular response from the adversary. For example, the defender may utilize Lures to enable or block the adversary’s intended actions or encourage or discourage a specific action or response. Lures can take a variety of forms including credentials, accounts, files/directories, browser extensions/bookmarks, system processes, etc. Regardless of form, Lures provide opportunities to the defender to drive adversary behavior in ways that align with operational outcomes."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "credential_store",
+          "account",
+          "filesystem"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0006",
+      "name": "Application Diversity",
+      "description": "Present the adversary with a variety of installed applications and services.",
+      "target_artifacts": [
+        "application",
+        "service"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "adversary engages with a diverse set of installed applications/services (varied types and patch levels) configured on the target system",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0006:description",
+          "passage": "Present the adversary with a variety of installed applications and services."
+        },
+        {
+          "source": "engage:EAC0006:long_description",
+          "passage": "Application Diversity presents an array of software targets to the adversary. On a single target system, defenders can configure multiple services or software applications. This diversity may include not only a variety of different types of applications, but also various versions of the same application. Application Diversity can be used to encourage engagement by offering a broad attack surface. By monitoring adversary activity in a diverse environment, the defender can gain information on the adversary’s capabilities and targeting preferences. For example, a defender can install one or more applications with a variety of patch levels to see how the adversary’s response differs across versions.  Additionally, a diverse set of applications provides a variety of avenues for the defender to present additional information throughout an operation. This information can be used to introduce additional attack surfaces, motivate or demotivate the adversary, or further the engagement narrative. For example, if the adversary is close to uncovering something that might raise suspicion around a target, the defender can add an event to a shared calendar application or a message in a notes application that the system will be offline for scheduled maintenance. Having a variety of applications on the system provides the defender with multiple engagement avenues to handle whatever events happen during the operation. Finally, diversity can increase the adversary’s overall comfort level by adding to the believability of the environment."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0007",
+      "name": "Network Diversity",
+      "description": "Use a diverse set of devices on the network to help establish the legitimacy of a deceptive network.",
+      "target_artifacts": [
+        "network_device",
+        "firewall",
+        "printer",
+        "phone"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment"
+      ],
+      "interaction_mechanism": "adversary engages with an assorted collection of deployed network devices establishing the legitimacy of a deceptive network",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0007:description",
+          "passage": "Use a diverse set of devices on the network to help establish the legitimacy of a deceptive network."
+        },
+        {
+          "source": "engage:EAC0007:long_description",
+          "passage": "Network Diversity involves the use of an assorted collection of network resources such as networking devices, firewalls, printers, phones, etc. Network Diversity can be used to encourage adversaries to engage by offering a broad attack surface. Additionally, diversity can increase the adversary’s overall comfort level by adding to the believability of the environment. By monitoring adversary activity in a diverse environment, the defender can gain information on the adversary’s capabilities and targeting preferences. For example, a defender can deploy a variety of network resources to identify which devices are targeted by the adversary."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0008",
+      "name": "Burn-In",
+      "description": "Exercise a target system in a manner where it will generate desirable system artifacts.",
+      "target_artifacts": [
+        "browsing_history",
+        "filesystem_usage_history",
+        "session_cookie",
+        "decoy_account"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host",
+        "account"
+      ],
+      "interaction_mechanism": "adversary observes system artifacts (browsing history, file usage, session cookies) generated by defender-driven exercising of a decoy account/system to reinforce believability",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0008:description",
+          "passage": "Exercise a target system in a manner where it will generate desirable system artifacts."
+        },
+        {
+          "source": "engage:EAC0008:long_description",
+          "passage": "Burn-In involves exercising the system to create desirable system artifacts such as web browsing history, file system usage, or the running of user applications. At times, Burn-In can be accomplished by simply letting a system or application run for an extended period of time. Other times, the defender engages with the environment to produce the Burn-In artifacts, such as when the defender logs into a decoy account or accesses a decoy website to generate session cookies and browser history. These tasks can be accomplished manually or via automated tooling.  Burn-In should occur pre-operation and continue as appropriate during the operation. The artifacts generated during the Burn-In process can reassure the adversary of the environment’s legitimacy by creating an environment that more closely resembles a real, lived in, system or network."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host",
+          "account"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0009",
+      "name": "Email Manipulation",
+      "description": "Modify the flow of email in the environment.",
+      "target_artifacts": [
+        "email",
+        "mailbox"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "mailbox"
+      ],
+      "interaction_mechanism": "adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0009:description",
+          "passage": "Modify the flow of email in the environment."
+        },
+        {
+          "source": "engage:EAC0009:long_description",
+          "passage": "Email Manipulation covers the various ways email flows in the environment can be affected. Email Manipulation can affect which mail appliances process mail flows, where mail is forwarded, or what mail is present in an inbox. A common use case for email manipulation is as a vector to introduce malware into the engagement environment.  Suspicious emails may be removed from production mailbox and placed into an inbox in an engagement environment. Then, any suspicious attachments or links could be detonated from within the environment. As another example, emails collected over a long period of time from a legitimate inbox outside the environment may be moved into the environment to reassure the adversary of the environment’s legitimacy by creating a mailbox that more closely resembles a real, lived-in inbox."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "mailbox"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0010",
+      "name": "Peripheral Management",
+      "description": "Manage peripheral devices used on systems within the network for engagement purposes.",
+      "target_artifacts": [
+        "peripheral_device",
+        "usb_device",
+        "wifi_adapter"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "adversary interacts with introduced peripheral devices (e.g., external Wi-Fi adapters, USB devices) carrying additional deceptive information",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0010:description",
+          "passage": "Manage peripheral devices used on systems within the network for engagement purposes."
+        },
+        {
+          "source": "engage:EAC0010:long_description",
+          "passage": "Peripheral Management is the administration of peripheral devices used on systems within the engagement environment. A defender can choose to allow or deny certain types of peripherals from being used on systems to either motivate or demotivate adversary activity or to direct the adversary towards specific targets. Defenders can also introduce peripherals to an adversary-controlled system to see how the adversary reacts. For example, the defender can introduce external Wi-Fi adapters, USB devices, etc. to determine if adversaries attempt to use them for exfiltration purposes.  Additionally, peripherals provide an avenue for the defender to present new or additional information to the adversary. This information can be used to introduce an additional attack surface, motivate or demotivate adversary activity, or to further the deception story. For example, the defender may include data on a connected USB device or stage an important conversation near an externally connected camera or microphone. Depending on the contents of this data, the adversary may be encouraged to take a specific action and/or reassured about the legitimacy of the environment."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0011",
+      "name": "Pocket Litter",
+      "description": "Data used to support the engagement narrative.",
+      "target_artifacts": [
+        "document",
+        "picture",
+        "registry_entry",
+        "browsing_history",
+        "connection_history"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "filesystem",
+        "host"
+      ],
+      "interaction_mechanism": "adversary encounters planted user data (documents, pictures, registry entries, browsing/connection history) supporting the credibility of the engagement narrative",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0011:description",
+          "passage": "Data used to support the engagement narrative."
+        },
+        {
+          "source": "engage:EAC0011:long_description",
+          "passage": "Pocket Litter is data placed on a system to help tell the engagement narrative, to increase the credibility of an environment, and/or to establish a cognitive bias to raise the adversary’s tolerance to weaknesses in the environment. Unlike Lures, Pocket Litter does not necessarily aim to encourage the adversary to take a specific action, but rather it supports the overall deception story.  Pocket Litter can include documents, pictures, registry entries, installed software, log history, browsing history, connection history, and other user data that an adversary would expect to exist on a user’s computer. For example, a defender might conduct a series of web searches to generate browser artifacts, or scatter a variety of photos and documents across the desktop to make the computer feel lived in."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "filesystem",
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0014",
+      "name": "Software Manipulation",
+      "description": "Make changes to a system’s software properties and functions to achieve a desired effect.",
+      "target_artifacts": [
+        "os_component",
+        "filesystem",
+        "discovery_command_output",
+        "password_policy"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "adversary receives altered software outputs (discovery command results, password policy description, archival/encryption behavior) that hide real artifacts and/or reveal decoy artifacts",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0014:description",
+          "passage": "Make changes to a system’s software properties and functions to achieve a desired effect."
+        },
+        {
+          "source": "engage:EAC0014:long_description",
+          "passage": "Software Manipulation allows a defender to alter or replace elements of the OS, file system, or other software installed and executed on a system. These alterations can affect outputs, degrade effectiveness, and/or prevent the software from functioning altogether. For example, the defender can manipulate software by changing the output of commonly used discovery commands to hide legitimate systems and artifacts and/or reveal deceptive artifacts and systems.  Alternatively, the defender can change the output of the password policy description for an adversary attempting to brute-force credentials. This manipulation may cause the adversary to waste resources brute-forcing passwords with inaccurate complexity requirements. If the defender wanted to degrade software effectiveness, they might weaken algorithms to expose data that is being archived, encoded, and/or encrypted.  Finally, to prevent software from functioning altogether, the defender may cause failures in software typically used to delete data or hide adversary artifacts. For some Software Manipulation use cases, it may be possible to make changes in such a way that adversary actions and legitimate user actions are handled differently. For example, the defender could show all files when viewed in a graphical application but hide files or introduce decoy files when viewed via a terminal command. This setup would allow legitimate users full access to the file system, while manipulating access for adversaries using a reverse shell."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0015",
+      "name": "Information Manipulation",
+      "description": "Conceal and reveal both facts and fictions to support a deception story",
+      "target_artifacts": [
+        "os_version_info",
+        "hardware_info",
+        "account_info",
+        "credential_info",
+        "decoy_file",
+        "decoy_email"
+      ],
+      "requirements": [],
+      "possible_placements": [],
+      "interaction_mechanism": "adversary is exposed to revealed or concealed facts/fictions (OS/hardware/account/credential info, decoy file/email content) engineered to adjust trust and uncertainty in the environment",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0015:description",
+          "passage": "Conceal and reveal both facts and fictions to support a deception story"
+        },
+        {
+          "source": "engage:EAC0015:long_description",
+          "passage": "Information Manipulation is used to support the engagement narrative and directly impact adversary activities. Revealed facts and fictions can be used to adjust the adversary’s trust in the environment. Concealed facts and fiction can be used to adjust the adversary’s sense of uncertainty towards the environment. Revealed facts may include OS type and version, geographic location, hardware type and version, accounts, credentials, etc. Revealed fictions may include the content of decoy files, emails, messages, etc. Revealed facts and fictions may or may not be believed by the adversary.  If an adversary believes a revealed fact or fiction, it may lend credibility to the environment or encourage a specific action. If an adversary is suspicious or does not believe a revealed fact or fiction, it may erode adversary trust in the environment or discourage a specific action. Therefore, revealed facts and fictions can be used to adjust the adversary’s trust in the environment in ways that support the operational objectives.  <br><br>Concealed facts may include virtualized systems disguised as physical systems, monitoring software, or collection efforts. Concealed fictions may include an encrypted, interestingly named, decoy file or a partially deleted email thread referencing high value, but decoy, assets. Concealed facts and fictions may or may not be discovered by the adversary. If the adversary discovers a concealed fact or fiction, it may increase the ambiguity of the environment and affect the adversary’s sense of uncertainty.  In this way, concealed facts and fictions can be used to adjust the ambiguity and affect the adversary’s sense of uncertainty in ways that support the operational objectives"
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0016",
+      "name": "Network Manipulation",
+      "description": "Make changes to network properties and functions to achieve a desired effect.",
+      "target_artifacts": [
+        "network_topology",
+        "ip_addressing_scheme",
+        "c2_channel"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment"
+      ],
+      "interaction_mechanism": "adversary's network operations (C2/exfiltration channels, port/service reachability) are throttled, segmented, or redirected via manipulated network properties",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0016:description",
+          "passage": "Make changes to network properties and functions to achieve a desired effect."
+        },
+        {
+          "source": "engage:EAC0016:long_description",
+          "passage": "Network Manipulation allows a defender to throttle network speeds, segment the network, maintain a unique IP addressing scheme, add a kill switch to cut off network access, etc. These types of manipulations can affect the adversary’s ability to achieve their operational objectives by incurring an increased resource cost, forcing them to change tactics, or stopping them altogether.  For example, a defender can limit the allowed ports or network requests to force the adversary to alter their planned C2 or exfiltration channels. As another example, a defender could allow or deny outbound SMB requests from a network to affect the success of forced authentication. Additionally, the defender can degrade network speeds and reliability to impose a resource cost as adversaries exfiltrate large quantities of data. Finally, a defender can block primary C2 domains and IPs to determine if the adversary has additional infrastructure. While there are a range of network manipulation options, in all cases, the defender has an opportunity to learn about or influence the adversaries operating in the environment."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0018",
+      "name": "Security Controls",
+      "description": "Alter security controls to make the system more or less vulnerable to attack.",
+      "target_artifacts": [
+        "security_configuration",
+        "group_policy",
+        "firewall_rule"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host",
+        "network_share"
+      ],
+      "interaction_mechanism": "adversary encounters selectively weakened or tightened security controls (e.g., a single disabled control on one specific share) that encourage or discourage activity in predetermined locations",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0018:description",
+          "passage": "Alter security controls to make the system more or less vulnerable to attack."
+        },
+        {
+          "source": "engage:EAC0018:long_description",
+          "passage": "Manipulating Security Controls involves making configuration changes to a system’s security settings including modifying Group Policies, disabling/enabling autorun for removable media, tightening or relaxing system firewalls, etc. Such security controls can be tightened to dissuade or prevent adversary activity. Conversely, security controls can be weakened or left overly permissive to encourage or enable adversary activity.  Tightening security controls can typically be done by implementing any of the mitigations described in MITRE ATT&CK. See https://attack.mitre.org/mitigations/enterprise/ for a full list of mitigation strategies. While loosening security controls may seem obvious (i.e., simply don’t employ a given mitigation strategy), there is an additional level of nuance that must be considered. Some security controls are considered so routine that its absence may be suspicious.  For example, completely turning off Windows Defender would likely raise the adversary’s suspicion. However, it is possible to turn off Windows Defender in certain shared drives to encourage adversary activity in predetermined locations. Therefore, it will likely be far less suspicious to turn off Windows Defender in a single directory or share. When assessing the likelihood that removing a given security control is overly suspicious, it is important to consider how prevalent that security control is, the target adversary’s sophistication, and the engagement narrative."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host",
+          "network_share"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0020",
+      "name": "Isolation",
+      "description": "Configure devices, systems, networks, etc. to contain activity and data, thus preventing the expansion of an engagement beyond desired limits.",
+      "target_artifacts": [
+        "isolated_system",
+        "isolated_network"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment",
+        "host"
+      ],
+      "interaction_mechanism": "adversary's lateral movement and activity are contained within an isolated decoy system/network with limited or no path to production resources",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0020:description",
+          "passage": "Configure devices, systems, networks, etc. to contain activity and data, thus preventing the expansion of an engagement beyond desired limits."
+        },
+        {
+          "source": "engage:EAC0020:long_description",
+          "passage": "Using Isolation, a defender can limit the effectiveness and scope of malicious activity and/or lower exposure to unintended risks. When a system or resource is isolated, a defender can observe adversary behaviors or tools with limited, or no, lateral movement allowed. For example, a defender may detonate a piece of malware on an isolated system to perform dynamic analysis without risk to other network resources.  Determining which systems should be isolated in an operation is a critical decision when calculating acceptable operational risk. However, if the adversary expects to find an entire corporate network but instead finds only an isolated system, they may not be interested in engaging with the target. Balancing acceptable risk, believability, and operational objectives is essential when determining if or when a system should be isolated."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment",
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0021",
+      "name": "Attack Vector Migration",
+      "description": "Move a malicious link, file, or device from its intended location to an engagement system or network for execution/use.",
+      "target_artifacts": [
+        "malicious_email",
+        "malicious_attachment",
+        "malicious_usb"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "mailbox",
+        "host",
+        "network_segment"
+      ],
+      "interaction_mechanism": "adversary's malicious link/file/device is intercepted and moved to a decoy system within a decoy network for continued engagement/analysis",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0021:description",
+          "passage": "Move a malicious link, file, or device from its intended location to an engagement system or network for execution/use."
+        },
+        {
+          "source": "engage:EAC0021:long_description",
+          "passage": "When a defender Migrates an Attack Vector, the defender intercepts a malicious element and moves it to a safe environment, such as a decoy system within a decoy network, for continued engagement or analysis. A defender may choose to Attack Vector Migrations, which may appear in the form of phishing emails, suspicious email attachments, or malicious USBs. For example, a defender might move a suspicious attachment from a corporate inbox to an inbox on a system that, while in the corporate IP space, is completely segmented from the enterprise network. This segregated environment will allow the adversary to move laterally throughout the environment without risk to enterprise resources.  Determining when an engagement should be moved to an engagement environment is a critical decision when calculating acceptable operational risk. However, if the adversary sent a custom malware sample to a phishing victim, but ultimately find themselves on an unrelated victim, they may be suspicious. Balancing this acceptable risk, believability, and operational goals is essential when determining if or when to migrate an attack vector."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "mailbox",
+          "host",
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0022",
+      "name": "Artifact Diversity",
+      "description": "Present the adversary with a variety of network and system artifacts.",
+      "target_artifacts": [
+        "account",
+        "file",
+        "directory",
+        "credential",
+        "log",
+        "browsing_history",
+        "cookie"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host",
+        "account",
+        "filesystem",
+        "credential_store"
+      ],
+      "interaction_mechanism": "adversary is presented with multiple diverse network/system artifacts (accounts, files, credentials, logs, browsing history, cookies) broadening the attack surface and revealing targeting preferences",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0022:description",
+          "passage": "Present the adversary with a variety of network and system artifacts."
+        },
+        {
+          "source": "engage:EAC0022:long_description",
+          "passage": "Artifact Diversity means presenting multiple network and system artifacts to the adversary including accounts, files/directories, credentials, logs, web browsing history, browser cookies, etc. These artifacts can be legitimate artifacts created as the result of natural usage over time or manually added to the environment by the defender. Artifact Diversity can be used to encourage the adversary to engage by offering a broad attack surface or can increase the adversary’s overall comfort level by adding to the believability of the environment.  Additionally, these artifacts may be Lures intended to elicit a specific response from the adversary. In any case, by monitoring adversary activity in a diverse environment, the defender can gain information on the adversary’s capabilities and targeting preferences. For example, a defender can include a diverse set of accounts and credentials and then monitor to determine which accounts the adversary targets in the future."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host",
+          "account",
+          "filesystem",
+          "credential_store"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "EAC0023",
+      "name": "Introduced Vulnerabilities",
+      "description": "Intentionally introduce vulnerabilities into the environment for the adversary to exploit.",
+      "target_artifacts": [
+        "vulnerability"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host",
+        "network_resource"
+      ],
+      "interaction_mechanism": "adversary exploits an intentionally introduced vulnerability in the engagement environment, steering targeting toward or away from specific resources",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "engage:EAC0023:description",
+          "passage": "Intentionally introduce vulnerabilities into the environment for the adversary to exploit."
+        },
+        {
+          "source": "engage:EAC0023:long_description",
+          "passage": "By intentionally Introducing Vulnerabilities into the engagement environment, the defender can attempt to motivate the adversary to target specific resources. This targeting may serve to move the adversary towards a particular resource, or away from another resource. At other times, the defender may Introduce Vulnerabilities as a mean of encouraging the adversary to reveal targeting preferences, available capabilities, or even to influence future targeting decisions. The operational objectives will drive how and why the defender Introduces Vulnerabilities in the engagement environment."
+        }
+      ],
+      "version": "1.0",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host",
+          "network_resource"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "engage_detail_type": "Engagement",
+        "inclusion_policy": "engage_activity_direct_engagement_technique"
+      }
+    },
+    {
+      "id": "LIT-HONEYPOT",
+      "name": "Honeypot",
+      "description": "A closely monitored network decoy host or service used to distract adversaries from more valuable machines, provide early warning of new attacks, and allow in-depth examination of adversaries during and after exploitation.",
+      "target_artifacts": [
+        "decoy_host"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment",
+        "host"
+      ],
+      "interaction_mechanism": "adversary scans, connects to, and attempts to exploit or log on to the monitored decoy host, diverting them from production systems",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+          "passage": "A honeypot is a closely monitored network decoy serving several purposes: it can distract adversaries from more valuable machines on a network, provide early warning about new attack and exploitation trends, or allow in-depth examination of adversaries during and after exploitation of a honeypot."
+        },
+        {
+          "source": "doi_10.1109_csac.2003.1254322__ev001",
+          "passage": "This presentation discusses how honeypot technologies can be used to detect, identify, and gather information on these specific threats."
+        },
+        {
+          "source": "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy__ev001",
+          "passage": "Over 130 professional red teamers participated in a network penetration test in which both the presence and explicit mention of deceptive defensive techniques were controlled."
+        },
+        {
+          "source": "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy__ev002",
+          "passage": "Participants in the Present-Informed condition were less likely than those in the Present-Uninformed condition to attempt an interactive logon manually, or with an exploit, to a decoy."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment",
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "usenixsec2004_provos_virtual_honeypot_framework",
+          "doi_10.1109_csac.2003.1254322",
+          "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-HONEYTOKEN",
+      "name": "Honeytoken",
+      "description": "A fake but plausible-looking piece of data or resource (e.g., a database record, configuration entry, or API key) planted to detect unauthorized access; interacting with it creates a strong indicator of compromise. Generalizes beyond a single credential/session token (already covered by D3-DUC/D3-DST) to arbitrary non-credential decoy data.",
+      "target_artifacts": [
+        "decoy_data",
+        "decoy_record"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "database",
+        "filesystem",
+        "configuration_store"
+      ],
+      "interaction_mechanism": "adversary accesses or exfiltrates the honeytoken (fake data/record), triggering a monitored indicator of compromise",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3678890.3678897__ev001",
+          "passage": "Fooling adversaries with traps such as honeytokens can slow down cyber attacks and create strong indicators of compromise."
+        },
+        {
+          "source": "doi_10.1145_3678890.3678897__ev002",
+          "passage": "the presence of cyber deception can significantly reduce the risk that adversaries will find a true security risk by about 22% on average."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "database",
+          "filesystem",
+          "configuration_store"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3678890.3678897"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
       }
     }
   ]

@@ -1,0 +1,38 @@
+{
+  "catalog_version": "pfe-deception-catalog-2.0",
+  "mapping_version": "pfe-attack-deception-mapping-2.0",
+  "mechanism_count": 26,
+  "mechanism_count_by_family": {
+    "d3fend": 9,
+    "engage": 15,
+    "literature": 2
+  },
+  "mechanisms_with_attack_mapping": 18,
+  "mechanisms_without_attack_mapping": 8,
+  "mechanisms_without_attack_mapping_ids": [
+    "D3-CHN",
+    "D3-DP",
+    "D3-DPR",
+    "D3-DST",
+    "D3-IHN",
+    "D3-SHN",
+    "LIT-HONEYPOT",
+    "LIT-HONEYTOKEN"
+  ],
+  "attack_deception_relation_count": 591,
+  "relation_count_direct": 464,
+  "relation_count_derived": 127,
+  "distinct_attack_techniques_covered": 271,
+  "mechanisms_per_technique": {
+    "min": 1,
+    "max": 8,
+    "mean": 2.180811808118081,
+    "median": 1
+  },
+  "techniques_per_mechanism": {
+    "min": 3,
+    "max": 99,
+    "mean": 32.833333333333336,
+    "median": 20.5
+  }
+}
