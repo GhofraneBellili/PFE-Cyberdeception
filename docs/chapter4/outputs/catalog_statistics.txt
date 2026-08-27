@@ -1,15 +1,15 @@
 Catalogue de deception - statistiques de couverture reelles
 ------------------------------------------------------------------------------
-Catalogue : pfe-deception-catalog-2.0  (26 mecanismes)
+Catalogue : pfe-deception-catalog-2.0  (51 mecanismes)
 Mapping   : pfe-attack-deception-mapping-2.0  (591 relations M_i,d)
 ------------------------------------------------------------------------------
 Mecanismes par famille :
   d3fend       9
   engage       15
-  literature   2
+  literature   27
 ------------------------------------------------------------------------------
-Mecanismes avec >=1 mapping ATT&CK : 18 / 26
-Mecanismes sans mapping ATT&CK      : 8 (D3-CHN, D3-DP, D3-DPR, D3-DST, D3-IHN, D3-SHN, LIT-HONEYPOT, LIT-HONEYTOKEN)
+Mecanismes avec >=1 mapping ATT&CK : 18 / 51
+Mecanismes sans mapping ATT&CK      : 33 (D3-CHN, D3-DP, D3-DPR, D3-DST, D3-IHN, D3-SHN, LIT-DECEPTIVE-ATTACK-GRAPH, LIT-DECEPTIVE-TOPOLOGY, LIT-DECOY-COMPUTE, LIT-DECOY-FORM, LIT-DECOY-HYPERLINK, LIT-DECOY-NIC, LIT-DECOY-SOURCECODE, LIT-DECOY-TRAFFIC, LIT-DYNAMIC-IDS, LIT-FAKE-HONEYPOT, LIT-HONEY-CONFIG, LIT-HONEY-ENCRYPTION, LIT-HONEY-PERMISSION, LIT-HONEYPATCH, LIT-HONEYPOT, LIT-HONEYTOKEN, LIT-HONEYWORD, LIT-ICS-DECOY, LIT-IP-ROTATION, LIT-MULTIPATH-ROUTING, LIT-OS-FINGERPRINT, LIT-PLATFORM-MIGRATION, LIT-SHADOW-HONEYPOT, LIT-SOFTWARE-DECOY, LIT-SOFTWARE-DIVERSITY, LIT-SOFTWARE-TRAP, LIT-TARPIT)
 ------------------------------------------------------------------------------
 Relations M_i,d directes (MITRE Engage) : 464
 Relations M_i,d derivees (D3FEND SPARQL) : 127

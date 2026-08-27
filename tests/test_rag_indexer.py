@@ -272,7 +272,7 @@ class TestBuildIndex:
 
 
 class TestRealStagingFiles:
-    def test_real_literature_evidence_produces_18_chunks(self):
+    def test_real_literature_evidence_produces_one_chunk_per_evidence_entry(self):
         seed = load_json("literature_evidence_seed_1.2.json")
         chunks = load_literature_chunks(seed)
         assert len(chunks) == len(seed["evidence"])

@@ -20,7 +20,7 @@
     },
     "literature_evidence_seed": {
       "path": "data\\deception\\staging\\literature_evidence_seed_1.2.json",
-      "sha256": "737238cc8a786cfc5e40b00a8a91b81ebc332ed6a51585e49bb2c9bbb0b51d89",
+      "sha256": "3207865ab683a16efe1bcea9d57a5ff80b3ebd326b45948512bfc516056d21b6",
       "schema_version": "1.2"
     }
   },
@@ -1311,6 +1311,573 @@
       }
     },
     {
+      "id": "LIT-DECEPTIVE-ATTACK-GRAPH",
+      "name": "Deceptive Attack Graph",
+      "description": "Leverages a structured attack graph representation to drive attackers into following fake attack paths that distract them from real targets.",
+      "target_artifacts": [
+        "attack_path",
+        "decoy_vulnerability_chain"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment",
+        "host"
+      ],
+      "interaction_mechanism": "adversary follows a fake attack path/vulnerability chain constructed to distract from the real target",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev006",
+          "passage": "conducted red teaming experiments on deception, through leveraging structured attack graph representations, in order to drive attackers into following fake attack paths"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment",
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-DECEPTIVE-TOPOLOGY",
+      "name": "Deceptive Network Topology",
+      "description": "Skews the topology observed by an attacker's reconnaissance (e.g., traceroute, scanning) through random connection dropping and traffic forging, revealing a false network topology.",
+      "target_artifacts": [
+        "network_topology"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment"
+      ],
+      "interaction_mechanism": "adversary's scanning/traceroute probes are answered with forged responses that skew the perceived network topology",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev004",
+          "passage": "a technique to skew the topology of the target network through random connection dropping and traffic forging"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-DECOY-COMPUTE",
+      "name": "Decoy Computation",
+      "description": "Duplicates an application server multiple times to generate decoy computation activity, concealing real processing among fake workload instances.",
+      "target_artifacts": [
+        "decoy_compute_workload"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "adversary targets a duplicated decoy compute instance instead of the real application server",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev010",
+          "passage": "Kontaxis et al. [2014] proposed to duplicate multiple times the entire application server to generate decoy computation activities."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-DECOY-FORM",
+      "name": "Decoy Web Form/Parameter",
+      "description": "Decoy form fields and honey URL parameters embedded in a web application that display fake configuration errors, misleading attackers probing the application.",
+      "target_artifacts": [
+        "decoy_form_field",
+        "decoy_url_parameter"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_resource"
+      ],
+      "interaction_mechanism": "adversary probing the web application interacts with a decoy form field or URL parameter, exposing a fake configuration error",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev018",
+          "passage": "Other studies proposed decoy forms [Katsinis et al. 2013] and honey URL parameters [Petruni 2015] that display fake configuration errors in an effort to mislead attackers"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_resource"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-DECOY-HYPERLINK",
+      "name": "Decoy Hyperlink",
+      "description": "Embeds decoy links in a web application that are invisible to normal human users but are triggered by automated crawlers and web bots, revealing their presence.",
+      "target_artifacts": [
+        "decoy_hyperlink"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_resource"
+      ],
+      "interaction_mechanism": "an automated crawler/bot follows the invisible decoy link, revealing itself as non-human traffic",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev016",
+          "passage": "Brewer et al. [2010] proposed a web application that embeds decoy links. These links are invisible to normal users, but are expected to be triggered by crawlers and web bots"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_resource"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-DECOY-NIC",
+      "name": "Decoy Network Interface",
+      "description": "A decoy Network Interface Controller (NIC) intentionally set up so that only malicious software would use it, since benign software is not expected to interact with it.",
+      "target_artifacts": [
+        "decoy_network_interface"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "malicious software running on the host uses the decoy network interface, which benign software never does, revealing its presence",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev008",
+          "passage": "Rrushi [2016] proposed the use of a decoy Network Interface Controller (NIC) for Windows operating systems. This decoy interface was intentionally set in order to lure and detect malicious software"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-DECOY-SOURCECODE",
+      "name": "Decoy Source Code",
+      "description": "Fake but believable source code files planted to detect the exfiltration of proprietary source code by insiders or attackers.",
+      "target_artifacts": [
+        "decoy_source_file"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "filesystem"
+      ],
+      "interaction_mechanism": "adversary or insider exfiltrates the decoy source code file believing it to be proprietary, revealing the exfiltration attempt",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev021",
+          "passage": "Park et Stolfo [2012] generated fake but believable Java source code to detect the exflitration of proprietary source code."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "filesystem"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-DECOY-TRAFFIC",
+      "name": "Decoy Network Traffic",
+      "description": "Generates decoy network traffic (chaff) to dissimulate sensitive real network connections, making them less likely to be identified and targeted by an adversary observing the network.",
+      "target_artifacts": [
+        "decoy_traffic_flow"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment"
+      ],
+      "interaction_mechanism": "adversary eavesdropping on the network observes decoy traffic flows mixed with real connections, reducing the chance of identifying the real one",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev022",
+          "passage": "Rrushi et al. generated decoy network traffic [2011]"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-DYNAMIC-IDS",
+      "name": "Dynamic IDS Placement",
+      "description": "Dynamically and continuously changes the network placement of intrusion detection sensors over time, creating uncertainty about their location and increasing the likelihood that adversary actions are detected.",
+      "target_artifacts": [
+        "ids_sensor_placement"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment"
+      ],
+      "interaction_mechanism": "adversary cannot reliably predict or avoid the current location of detection sensors, increasing the chance their activity is observed",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1016_j.cose.2021.102288__ev003",
+          "passage": "The defense evasion phase may be disrupted by dynamically and continuously changing the placement of IDS over time."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1016_j.cose.2021.102288"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-FAKE-HONEYPOT",
+      "name": "Fake Honeypot Camouflage",
+      "description": "Makes an ordinary but critical production system appear to be a honeypot, in order to confuse an attacker and turn them away from the real, compromised-worthy system — the inverse of a real honeypot.",
+      "target_artifacts": [
+        "production_asset_disguise"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "adversary who has gained access believes the real critical system is a honeypot and disengages to avoid detection",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev009",
+          "passage": "Rowe et al. [2006] adopted a proactive deception approach that aims at preventing system compromise attempts. They suggested the use of fake honeypots that make ordinary but critical systems appear"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-HONEY-CONFIG",
+      "name": "Honey Configuration File",
+      "description": "A web-facing configuration file (e.g., robots.txt) seeded with fake entries and invisible links to detect scanners and attackers who inspect it.",
+      "target_artifacts": [
+        "decoy_configuration_file"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_resource"
+      ],
+      "interaction_mechanism": "adversary's scanner inspects the configuration file and follows a fake entry/invisible link that only an automated or malicious actor would use",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev017",
+          "passage": "Virvilis et al. [2014] introduced honey configuration files, such as robots.txt, including fake entries, invisible links"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_resource"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-HONEY-ENCRYPTION",
+      "name": "Honey Encryption",
+      "description": "Produces a ciphertext that, when decrypted with an incorrect key or password, yields a plausible-looking but bogus plaintext instead of an obvious failure, confusing an adversary attempting brute-force decryption.",
+      "target_artifacts": [
+        "decoy_ciphertext"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "filesystem",
+        "configuration_store"
+      ],
+      "interaction_mechanism": "adversary brute-forcing the encryption key obtains a plausible-looking decoy plaintext instead of a clear failure signal, unable to tell the correct key from a wrong one",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev020",
+          "passage": "Juels et al. [2014] proposed \"honey encryption\", which creates a ciphertext that, when decrypted with an incorrect key or password, results in a valid-looking decoy message."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "filesystem",
+          "configuration_store"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-HONEY-PERMISSION",
+      "name": "Honey Permission",
+      "description": "Extends role-based access control with fake permissions that assign unintended access to fake versions of sensitive system assets, detecting insiders/attackers who attempt to use them.",
+      "target_artifacts": [
+        "decoy_rbac_permission"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "account"
+      ],
+      "interaction_mechanism": "adversary or insider attempts to exercise a fake permission granting access to a decoy asset, triggering detection",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev011",
+          "passage": "Kaghazgaran and Takabi [2015] offered to extend role-based access control mechanisms with honey permissions. These are fake permissions in the sense that they assign unintended access permissions to only fake versions of sensitive system assets."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "account"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-HONEYPATCH",
+      "name": "Honey-patch",
+      "description": "Converts a software patch into a fake but valid-looking vulnerability; upon detecting exploitation of the fake vulnerability, the system seamlessly forwards the attacker to a vulnerable decoy version of the software. Distinct from EAC0023 (Introduced Vulnerabilities, a broad MITRE Engage activity) by this specific patch-masquerading-plus-redirect implementation.",
+      "target_artifacts": [
+        "decoy_vulnerability",
+        "decoy_software_version"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "adversary exploits what appears to be an unpatched vulnerability and is seamlessly redirected to a vulnerable decoy version of the software",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev013",
+          "passage": "Araujo et al. [2014] converted software patches into fake but valid-looking vulnerabilities (also known as \"honey-patches\") that drastically limit the attackers capability to determine the successfulness of their attacks."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
       "id": "LIT-HONEYPOT",
       "name": "Honeypot",
       "description": "A closely monitored network decoy host or service used to distract adversaries from more valuable machines, provide early warning of new attacks, and allow in-depth examination of adversaries during and after exploitation.",
@@ -1359,8 +1926,8 @@
       },
       "metadata": {
         "literature_source_ids": [
-          "usenixsec2004_provos_virtual_honeypot_framework",
           "doi_10.1109_csac.2003.1254322",
+          "usenixsec2004_provos_virtual_honeypot_framework",
           "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy"
         ],
         "inclusion_policy": "literature_generic_established_mechanism"
@@ -1411,6 +1978,451 @@
       "metadata": {
         "literature_source_ids": [
           "doi_10.1145_3678890.3678897"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-HONEYWORD",
+      "name": "Honeyword",
+      "description": "Multiple false candidate passwords stored alongside the real (hashed) password for an account; any login attempt using a honeyword sets off an alarm, concealing which password is authentic even if the password file is stolen.",
+      "target_artifacts": [
+        "decoy_password"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "credential_store"
+      ],
+      "interaction_mechanism": "adversary who stole the password file attempts to log in with a honeyword instead of the real password, triggering an alarm",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev019",
+          "passage": "Juels et al. introduced in [2013] honeywords (false passwords) in order to conceal true authentic passwords."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "credential_store"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-ICS-DECOY",
+      "name": "Decoy ICS/OT Asset",
+      "description": "A deceptive simulation of an industrial control system (ICS) target that monitors network topology and creates fake but indistinguishable attack targets for adversaries targeting operational technology environments.",
+      "target_artifacts": [
+        "decoy_ics_endpoint"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment",
+        "host"
+      ],
+      "interaction_mechanism": "adversary targeting an industrial control system interacts with a fake but indistinguishable ICS/OT attack target",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev007",
+          "passage": "deceptive simulation techniques [Rrushi 2011] have also been applied in the context of industrial control systems. These tools offer to monitor the network topology and to create fake but indistinguishable attack targets"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment",
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-IP-ROTATION",
+      "name": "Dynamic IP Address Rotation",
+      "description": "Periodically rotates which virtual machine host is mapped to an externally visible IP address; the VM host previously in use is analyzed for evidence of intrusion and removed from rotation if compromised — a moving-target-defense form of deception that prevents an adversary from reliably targeting a fixed address.",
+      "target_artifacts": [
+        "ip_address_mapping"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment"
+      ],
+      "interaction_mechanism": "adversary targeting a specific external IP address is unknowingly redirected to a periodically rotated VM host, exposing prior intrusion attempts to analysis",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1016_j.cose.2021.102288__ev002",
+          "passage": "The periodic rotation of VM hosts is controlled from an administrator machine running a daemon process, and the VM host that was previously in use is analyzed for evidence of intrusion and will be removed"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1016_j.cose.2021.102288"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-MULTIPATH-ROUTING",
+      "name": "Dynamic Multipath Routing",
+      "description": "Uses SDN features to frequently modify communication routes between devices so that any single vantage point only observes a portion of the exchanged traffic, preventing an eavesdropper from reconstructing a full communication.",
+      "target_artifacts": [
+        "network_route"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment"
+      ],
+      "interaction_mechanism": "adversary eavesdropping from a fixed network vantage point only intercepts a portion of the communication, unable to reconstruct the full exchange",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1016_j.cose.2021.102288__ev006",
+          "passage": "a multipath routing strategy, which relies on SDN features to frequently modify communication routes between SCADA devices"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1016_j.cose.2021.102288"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-OS-FINGERPRINT",
+      "name": "Deceptive OS Fingerprint",
+      "description": "Mimics the network-stack behavior of a fake operating system to mislead OS fingerprinting tools used during reconnaissance. Distinct from EAC0014 (Software Manipulation, a broad MITRE Engage activity covering many output-manipulation cases) by its specific, network-stack-level technical implementation documented in the academic literature.",
+      "target_artifacts": [
+        "os_fingerprint_response"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host",
+        "network_segment"
+      ],
+      "interaction_mechanism": "adversary's OS fingerprinting tool (e.g., Nmap-style probes) receives responses mimicking a fake operating system",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev005",
+          "passage": "multiple deception techniques have been proposed -- that offer to mimic the network behavior of fake operating systems"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host",
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-PLATFORM-MIGRATION",
+      "name": "Cross-Platform Application Migration",
+      "description": "Migrates a running application between virtual machines with different platforms (OS/architecture) while preserving execution state, increasing uncertainty for an adversary who must re-target a changing platform.",
+      "target_artifacts": [
+        "application_runtime_platform"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "adversary who has profiled the application's platform finds it has migrated to a different OS/architecture, invalidating platform-specific exploits",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1016_j.cose.2021.102288__ev004",
+          "passage": "a running application can be migrated between VMs with different platforms while preserving the state"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1016_j.cose.2021.102288"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-SHADOW-HONEYPOT",
+      "name": "Shadow Honeypot",
+      "description": "Extends a honeypot with anomaly-based detection: an instance of the target application that shares its real context and internal state, used to process anomalous traffic. Distinct from the generic Honeypot (LIT-HONEYPOT) by sharing live application state rather than being an isolated decoy.",
+      "target_artifacts": [
+        "decoy_application_instance"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "traffic flagged as anomalous is processed by the shadow instance, which shares the real application's context/state to validate the attack without risking production data",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev014",
+          "passage": "Anagnostakis et al. introduced shadow honeypots that extend honeypots with anomaly-based buffer overflow detection. The shadow honeypot is an instance of the target application and shares its context and internal state."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-SOFTWARE-DECOY",
+      "name": "Intelligent Software Decoy",
+      "description": "A decoy software component that detects and responds to patterns of suspicious behavior, maintaining a repository of behavior patterns and decoying actions.",
+      "target_artifacts": [
+        "decoy_software_component"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "adversary's tool interacts with the software component, whose behavior-pattern detection recognizes and responds to the suspicious interaction",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev012",
+          "passage": "Michael et al. [2002] introduced the notion of intelligent software decoys that detect and respond to patterns of suspicious behavior"
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-SOFTWARE-DIVERSITY",
+      "name": "Software Diversity Randomization",
+      "description": "Breaks a software binary into function blocks and randomly shuffles their order at load time, so every execution instance is unique, hindering code-reuse (e.g., ROP) exploitation.",
+      "target_artifacts": [
+        "binary_layout"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "adversary's exploit relies on a known binary layout that has been randomized for this execution instance, causing the exploit to fail unpredictably",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1016_j.cose.2021.102288__ev005",
+          "passage": "Marlin breaks a software binary into function blocks and randomly shuffles the order."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1016_j.cose.2021.102288"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-SOFTWARE-TRAP",
+      "name": "Software Trap",
+      "description": "A trap dissimulated in application code as a gadget that detects return-oriented programming (ROP) exploitation attempts.",
+      "target_artifacts": [
+        "code_gadget_trap"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "host"
+      ],
+      "interaction_mechanism": "adversary's ROP exploit manipulates the planted code gadget, which detects and notifies the ongoing attack",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev015",
+          "passage": "Crane et al. introduced, in [2013], software traps that are dissimulated in the code as gadgets, and detect return-oriented programming attacks."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "host"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
+        ],
+        "inclusion_policy": "literature_generic_established_mechanism"
+      }
+    },
+    {
+      "id": "LIT-TARPIT",
+      "name": "Network Tarpit",
+      "description": "A decoy machine that creates sticky, slow-responding network connections to stall automated scanning and confuse human adversaries during reconnaissance.",
+      "target_artifacts": [
+        "decoy_host",
+        "tcp_connection"
+      ],
+      "requirements": [],
+      "possible_placements": [
+        "network_segment"
+      ],
+      "interaction_mechanism": "adversary's scanning tool or session opens a connection to the tarpit and is deliberately kept open/slowed, stalling reconnaissance",
+      "realism_factors": [],
+      "progression_effects": [],
+      "resource_requirements": {},
+      "maintenance_requirements": [],
+      "evidence": [
+        {
+          "source": "doi_10.1145_3214305__ev003",
+          "passage": "Such decoy machines are commonly known as network tarpits [Liston 2001]. They create sticky connections with the aim to slow or stall automated scanning and to confuse human adversaries."
+        }
+      ],
+      "version": "1.2",
+      "admissibility_profile": {
+        "allowed_location_types": [
+          "network_segment"
+        ],
+        "required_asset_types": [],
+        "required_services": [],
+        "required_artifacts": [],
+        "exposure_mode": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "literature_source_ids": [
+          "doi_10.1145_3214305"
         ],
         "inclusion_policy": "literature_generic_established_mechanism"
       }

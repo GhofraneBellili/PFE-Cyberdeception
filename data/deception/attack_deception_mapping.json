@@ -14,7 +14,7 @@
     },
     "deception_catalog": {
       "path": "data\\deception\\deception_catalog.json",
-      "sha256": "05d509537aed731c948cbab86fd0ecaa0ce1d6d22fbd734d66f4bdf41e8d1647",
+      "sha256": "f739078c36000cbb216dde89934f6384a8c2f2c0ad6437a042ca7955731112d8",
       "catalog_version": "pfe-deception-catalog-2.0"
     }
   },

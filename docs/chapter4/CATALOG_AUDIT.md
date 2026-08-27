@@ -1,6 +1,8 @@
-# Audit du catalogue de déception étendu (≥ 25 mécanismes)
+# Audit du catalogue de déception étendu (≥ 50 mécanismes)
 
-> Réf. tâche « éliminer la limitation : le catalogue réel ne contient que 3 mécanismes ».
+> Réf. tâche « éliminer la limitation : le catalogue réel ne contient que 3 mécanismes » (26
+> mécanismes) puis réf. tâche « |D_knowledge| >= 50 mécanismes de cyberdéception distincts » (51
+> mécanismes, section 8 ci-dessous).
 > Réf. architecture : CLAUDE.md §7, §9, §10.2 (source de vérité : `docs/architecture_complete_cyberdeception_PFE.pdf`).
 >
 > Ce document justifie, mécanisme par mécanisme, la décision **INCLUDE / MERGE / EXCLUDE**
@@ -11,12 +13,16 @@
 
 `tools/deception_kb/catalog_builder.py::build_catalog()` (périmètre v1 : 3 mécanismes D3FEND
 avec relation ATT&CK directement tracée dans `d3fend_attack_mapping_seed_1.5.0.json`) **reste
-inchangé** — voir sa docstring de module. `build_expanded_catalog()` l'étend avec 23 mécanismes
-supplémentaires, sourcés exclusivement dans les stagings déjà versionnés
-(`data/deception/staging/*.json`, produits par `tools/deception_kb/{d3fend,engage,literature}_seed_builder.py`) :
-**aucune nouvelle source documentaire n'a été nécessaire** pour atteindre le seuil de 25.
+inchangé** — voir sa docstring de module. `build_expanded_catalog()` l'étend avec 48 mécanismes
+supplémentaires (23 D3FEND/Engage + 25 littérature, section 8), sourcés exclusivement dans les
+stagings déjà versionnés
+(`data/deception/staging/*.json`, produits par `tools/deception_kb/{d3fend,engage,literature}_seed_builder.py`).
+Les 23 premiers (D3FEND/Engage) ne nécessitaient aucune nouvelle source ; les 25 mécanismes de la
+section 8 ont nécessité l'extraction de nouveaux passages de deux documents déjà présents dans le
+registre bibliographique (`data/deception/literature/literature_sources.json`) mais jusqu'ici sous-
+exploités, jamais une nouvelle source non vérifiée (détail section 8.1).
 
-Total : **26 mécanismes** (marge de 1 par rapport au seuil ≥ 25, en cas de retrait ultérieur d'un
+Total : **51 mécanismes** (marge de 1 par rapport au seuil ≥ 50, en cas de retrait ultérieur d'un
 mécanisme lors d'une revue future).
 
 ## 2. Critères d'inclusion appliqués (réf. §6 de la tâche)
@@ -142,43 +148,154 @@ Cette hiérarchie de granularité est utile à SP1 pour modéliser des emplaceme
 différente (un honeypot dédié vs. une ressource déployée sur un serveur réel vs. un honeynet
 entier) — ce n'est pas une duplication du même mécanisme.
 
-## 6bis. Prérequis d'admissibilité (`required_*`) — extension de l'audit
+## 6bis. Prérequis d'admissibilité (`required_*`) — devenus une donnée ORGANISATIONNELLE
 
-`src/admissibility.py::evaluate_requirements_satisfied` retourne `"undetermined"` (jamais
-`"pass"`) tant que `required_asset_types`/`required_services`/`required_artifacts` sont **tous
-vides** — et un candidat `"undetermined"` n'est jamais admissible (politique prudente OPEN_DECISION
-4). Avant cette passe, **seul D3-DNR** avait un `required_asset_types` documenté
-(`docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md`) : structurellement, aucun autre mécanisme ne
-pouvait jamais devenir admissible, quelle que soit la richesse de l'instance SP1 — ce n'est pas
-un manque de richesse d'instance, c'est un manque de preuve documentaire de prérequis.
+**Mise à jour (réf. tâche « separate knowledge and organization capabilities ») :** la note
+ci-dessous décrivait la situation *avant* la séparation connaissance/capacité organisationnelle.
+Depuis cette séparation, `DeceptionMechanism.admissibility_profile` (y compris
+`required_asset_types`/`required_services`/`required_artifacts`) est un champ **hérité**,
+documentaire, **plus jamais consulté par `src/admissibility.py`** pour évaluer
+Autorise/PrerequisSatisfaits — voir `docs/chapter4/FINAL_TECHNICAL_REPORT.md`, section « Préparation
+hors ligne vs exécution en ligne ». Les prérequis d'admissibilité viennent désormais
+EXCLUSIVEMENT du catalogue OPÉRATIONNEL fourni par l'organisation
+(`OrganizationDeceptionCapability`, `examples/data/organization_deception_catalog.json`) — jamais
+de D3FEND/Engage/littérature. Ce n'est donc plus « D3FEND ne documente pas assez de prérequis »
+mais « l'organisation n'a pas encore configuré ce mécanisme » — distinction explicite portée par
+`rejection_reason` (`"...undetermined (missing organization configuration)"`).
 
-Relecture ciblée des `long_description` MITRE Engage (même discipline que l'audit D3-DNR :
-uniquement des affirmations factuelles, jamais un « should »/« may ») : deux mécanismes
-mentionnent explicitement une infrastructure de messagerie comme condition d'opération :
+Pour mémoire, l'historique ci-dessous reste correct pour la période où il a été écrit (avant cette
+séparation) — conservé pour traçabilité du raisonnement, pas comme description de l'état actuel :
 
-| id | `required_services` | citation exacte |
-|---|---|---|
-| EAC0009 | `["email"]` | *"Email Manipulation can affect which mail appliances process mail flows... Suspicious emails may be removed from production mailbox and placed into an inbox in an engagement environment."* |
-| EAC0021 | `["email"]` | *"a defender might move a suspicious attachment from a corporate inbox to an inbox on a system..."* |
-
-Tous les 24 autres mécanismes du catalogue conservent des listes `required_*` vides
-(`undetermined`, jamais fabriqué) — voir `tests/test_catalog_builder.py::TestBuildExpandedCatalog::test_email_required_service_grounded_for_two_engage_mechanisms`.
-Conséquence directe pour SP1 : **3 mécanismes** (D3-DNR, EAC0009, EAC0021) peuvent désormais
-réellement atteindre `PrerequisSatisfaits = "pass"`, contre 1 seul auparavant — voir
-`docs/chapter4/outputs/sp1_extended_real_example.txt` pour le résultat réel sur une instance
-riche.
+> `src/admissibility.py::evaluate_requirements_satisfied` retournait `"undetermined"` (jamais
+> `"pass"`) tant que les `required_*` du **catalogue de connaissances** étaient tous vides. Avant la
+> présente extension, seul `D3-DNR` avait un `required_asset_types` documenté par D3FEND ; une
+> relecture ciblée des `long_description` MITRE Engage avait alors permis de documenter
+> `required_services=["email"]` pour `EAC0009`/`EAC0021` (citations exactes sur l'infrastructure de
+> messagerie). Ces trois enrichissements ont depuis été reportés dans le catalogue OPÉRATIONNEL
+> d'exemple (`examples/data/organization_deception_catalog.json`), qui reste libre de les reprendre,
+> les modifier ou les ignorer — ce ne sont plus des faits scientifiques figés dans le catalogue de
+> connaissances.
 
 ## 7. Résumé chiffré (réf. `docs/chapter4/outputs/catalog_statistics.json`)
 
-- 26 mécanismes catalogués (9 D3FEND, 15 MITRE Engage, 2 littérature) ;
+- 51 mécanismes catalogués (9 D3FEND, 15 MITRE Engage, 25 littérature — dont 2 génériques déjà
+  présents avant cette passe et 23 nouveaux, section 8) ;
 - 18 mécanismes disposent d'au moins une relation M_{i,d} (591 relations au total : 464 directes
-  MITRE Engage + 127 dérivées D3FEND) ;
+  MITRE Engage + 127 dérivées D3FEND) — inchangé par l'extension littérature : aucune relation
+  ATT&CK n'a été fabriquée pour les 25 nouveaux mécanismes, faute de staging le permettant ;
 - 271 techniques ATT&CK Enterprise distinctes couvertes (vs. ~125 techniques → 3 mécanismes avant
-  cette extension) ;
-- 8 mécanismes n'ont encore aucune relation ATT&CK tracée (D3-DP, D3-DST, D3-DPR, D3-CHN, D3-SHN,
-  D3-IHN, LIT-HONEYPOT, LIT-HONEYTOKEN) — limite documentée, pas comblée artificiellement (§9).
+  la première extension) ;
+- 33 mécanismes n'ont encore aucune relation ATT&CK tracée (les 6 D3FEND étendus, les 25 mécanismes
+  littérature de la section 8, D3-DPR et D3-DP en étant déjà 2) — limite documentée, pas comblée
+  artificiellement (§9 de la tâche).
 
-## 8. Ce que cet audit ne prouve pas
+## 8. Extension vers ≥ 50 mécanismes — 25 mécanismes littérature supplémentaires
+
+Réf. tâche « |D_knowledge| >= 50 mécanismes de cyberdéception distincts ». Le catalogue D3FEND
+(branche « Deceive », 11 concepts) et MITRE Engage (23 activités « Engagement ») étaient déjà
+épuisés par l'extension à 26 mécanismes (sections 3-4) — aucun concept/activité supplémentaire
+n'existe dans ces deux staging pour aller plus loin sans inventer. L'extension vers 50+ mécanismes
+s'appuie donc sur la littérature scientifique déjà présente dans le registre bibliographique
+(`data/deception/literature/literature_sources.json`), en extrayant de nouveaux passages
+vérifiables de documents déjà versionnés mais jusque-là sous-exploités.
+
+### 8.1 Nouvelle preuve documentaire — méthode
+
+Deux documents déjà enregistrés dans le registre bibliographique (titre/auteurs/année/DOI/URL/
+sha256 déjà vérifiés lors d'une passe antérieure) n'avaient que 2 et 1 passage(s) extrait(s)
+respectivement : `doi_10.1145_3214305` (Han, Kheir, Balzarotti — *Deception Techniques in
+Computer Security: A Research Perspective*, ACM Computing Surveys 2018) et
+`doi_10.1016_j.cose.2021.102288` (Zhang, Thing — *Three Decades of Deception Techniques in Active
+Cyber Defense*, Computers & Security 2021). Les deux sont des **surveys** dédiés à l'énumération de
+techniques de déception nommées et distinctes.
+
+Méthode reproductible et vérifiée par code (pas une lecture non tracée) :
+1. Relecture intégrale des deux PDF déjà acquis localement
+   (`data/deception/raw/literature/{doi_10.1145_3214305,doi_10.1016_j.cose.2021.102288}.{pdf,txt}`,
+   sha256 déjà vérifiés contre le registre) ;
+2. identification de 25 techniques nommées, distinctes, et suffisamment décrites (jamais une simple
+   entrée de taxonomie isolée) ;
+3. pour chacune, un passage exact (`data/deception/literature/evidence_candidates.json`) avec sa
+   page précise ;
+4. **revalidation automatique et déterministe** par `tools/deception_kb/literature_seed_builder.py::build_literature_evidence_seed`
+   — chaque passage doit être retrouvé verbatim (après normalisation des espaces) sur la page
+   déclarée exacte du texte extrait, sinon le builder lève une erreur explicite (aucun passage
+   n'est jamais accepté sans cette vérification programmatique) ;
+5. régénération de `data/deception/staging/literature_{document,evidence}_seed_1.2.json` par la
+   commande officielle (`python -m tools.deception_kb.literature_seed_builder ...`), jamais par
+   édition manuelle du JSON de staging.
+
+Résultat : `literature_evidence_seed_1.2.json` passe de 18 à 43 passages (25 nouveaux), tous avec
+`page_verified: true`.
+
+### 8.2 Les 25 mécanismes retenus
+
+| id | nom | source | citation (extrait) |
+|---|---|---|---|
+| LIT-TARPIT | Network Tarpit | Han et al. 2018, p.8 | *"decoy machines are commonly known as network tarpits... create sticky connections with the aim to slow or stall automated scanning"* |
+| LIT-DECEPTIVE-TOPOLOGY | Deceptive Network Topology | Han et al. 2018, p.10 | *"a technique to skew the topology of the target network through random connection dropping and traffic forging"* |
+| LIT-OS-FINGERPRINT | Deceptive OS Fingerprint | Han et al. 2018, p.10 | *"multiple deception techniques...offer to mimic the network behavior of fake operating systems"* |
+| LIT-DECEPTIVE-ATTACK-GRAPH | Deceptive Attack Graph | Han et al. 2018, p.10 | *"leveraging structured attack graph representations, in order to drive attackers into following fake attack paths"* |
+| LIT-ICS-DECOY | Decoy ICS/OT Asset | Han et al. 2018, p.10 | *"deceptive simulation techniques...applied in the context of industrial control systems...create fake but indistinguishable attack targets"* |
+| LIT-DECOY-NIC | Decoy Network Interface | Han et al. 2018, p.10 | *"a decoy Network Interface Controller (NIC)...intentionally set in order to lure and detect malicious software"* |
+| LIT-FAKE-HONEYPOT | Fake Honeypot Camouflage | Han et al. 2018, p.10 | *"fake honeypots that make ordinary but critical systems appear as real honeypots...turn him away"* |
+| LIT-DECOY-COMPUTE | Decoy Computation | Han et al. 2018, p.11 | *"duplicate multiple times the entire application server to generate decoy computation activities"* |
+| LIT-HONEY-PERMISSION | Honey Permission | Han et al. 2018, p.11 | *"extend role-based access control mechanisms with honey permissions...assign unintended access permissions to only fake versions of sensitive system assets"* |
+| LIT-SOFTWARE-DECOY | Intelligent Software Decoy | Han et al. 2018, p.11 | *"intelligent software decoys that detect and respond to patterns of suspicious behavior"* |
+| LIT-HONEYPATCH | Honey-patch | Han et al. 2018, p.11 | *"converted software patches into fake but valid-looking vulnerabilities...forwards the attacker to a vulnerable decoy version"* |
+| LIT-SHADOW-HONEYPOT | Shadow Honeypot | Han et al. 2018, p.11 | *"shadow honeypots that extend honeypots with anomaly-based buffer overflow detection...shares its context and internal state"* |
+| LIT-SOFTWARE-TRAP | Software Trap | Han et al. 2018, p.11 | *"software traps that are dissimulated in the code as gadgets, and detect return-oriented programming attacks"* |
+| LIT-DECOY-HYPERLINK | Decoy Hyperlink | Han et al. 2018, p.11 | *"decoy links...invisible to normal users, but are expected to be triggered by crawlers and web bots"* |
+| LIT-HONEY-CONFIG | Honey Configuration File | Han et al. 2018, p.11 | *"honey configuration files, such as robots.txt, including fake entries, invisible links"* |
+| LIT-DECOY-FORM | Decoy Web Form/Parameter | Han et al. 2018, p.12 | *"decoy forms...and honey URL parameters...that display fake configuration errors"* |
+| LIT-HONEYWORD | Honeyword | Han et al. 2018, p.12 | *"honeywords (false passwords) in order to conceal true authentic passwords"* |
+| LIT-HONEY-ENCRYPTION | Honey Encryption | Han et al. 2018, p.12 | *"'honey encryption', which creates a ciphertext that, when decrypted with an incorrect key or password, results in a valid-looking decoy message"* |
+| LIT-DECOY-SOURCECODE | Decoy Source Code | Han et al. 2018, p.12 | *"generated fake but believable Java source code to detect the exfiltration of proprietary source code"* |
+| LIT-DECOY-TRAFFIC | Decoy Network Traffic | Han et al. 2018, p.17 | *"Rrushi et al. generated decoy network traffic...to dissimulate sensitive...network connections"* |
+| LIT-IP-ROTATION | Dynamic IP Address Rotation | Zhang & Thing 2021, p.9 | *"periodic rotation of VM hosts...the VM host that was previously in use is analyzed for evidence of intrusion and will be removed"* |
+| LIT-DYNAMIC-IDS | Dynamic IDS Placement | Zhang & Thing 2021, p.9 | *"dynamically and continuously changing the placement of IDS over time"* |
+| LIT-PLATFORM-MIGRATION | Cross-Platform Application Migration | Zhang & Thing 2021, p.9 | *"a running application can be migrated between VMs with different platforms while preserving the state"* |
+| LIT-SOFTWARE-DIVERSITY | Software Diversity Randomization | Zhang & Thing 2021, p.10 | *"Marlin breaks a software binary into function blocks and randomly shuffles the order"* |
+| LIT-MULTIPATH-ROUTING | Dynamic Multipath Routing | Zhang & Thing 2021, p.10 | *"a multipath routing strategy, which relies on SDN features to frequently modify communication routes"* |
+
+### 8.3 Points de vigilance dédup (granularité, pas duplication)
+
+- **LIT-OS-FINGERPRINT vs EAC0014** (Software Manipulation) : EAC0014 est une activité MITRE Engage
+  large (toute manipulation de sortie logicielle) ; LIT-OS-FINGERPRINT est une technique
+  académique spécifique au niveau de la pile réseau/TCP contre le fingerprinting d'OS —
+  complémentaires par granularité, même motif que Honeypot/D3-DNR (§6).
+- **LIT-HONEYPATCH vs EAC0023** (Introduced Vulnerabilities) : EAC0023 est une activité large
+  d'introduction de vulnérabilités ; LIT-HONEYPATCH est une implémentation technique précise
+  (patch masquerading + redirection vers une version leurre) — complémentaires.
+- **LIT-SHADOW-HONEYPOT / LIT-FAKE-HONEYPOT vs LIT-HONEYPOT** : variantes techniques distinctes du
+  honeypot générique (partage d'état réel pour l'une, camouflage inverse pour l'autre) — jamais de
+  fusion, chacune a sa propre mécanique documentée.
+- **LIT-DECOY-SOURCECODE vs D3-DF** (Decoy File) : décision volontairement **distincte** (pas
+  fusionnée comme les honeyfiles/decoy documents, §5) car la mécanique diffère techniquement
+  (détection d'exfiltration de code source, pas un simple accès fichier surveillé) — jugement
+  documenté ici pour audit futur, pas une règle automatique.
+- **LIT-DECEPTIVE-TOPOLOGY vs EAC0016** (Network Manipulation) : EAC0016 est un levier opérationnel
+  défensif (throttle/segment/kill-switch) ; LIT-DECEPTIVE-TOPOLOGY trompe activement la
+  reconnaissance de l'attaquant (topologie perçue fausse) — angle différent, complémentaires.
+
+Les 5 mécanismes « Moving Target Defense » (LIT-IP-ROTATION, LIT-DYNAMIC-IDS,
+LIT-PLATFORM-MIGRATION, LIT-SOFTWARE-DIVERSITY, LIT-MULTIPATH-ROUTING) sont explicitement
+qualifiés de déception par la littérature déjà présente dans le corpus : `doi_10.1145_3337772`
+(*"we propose a taxonomy that defines six types of deception: perturbation, moving target
+defense, obfuscation, mixing, honey-x, and attacker engagement"*) classe le MTD comme l'une des
+six catégories reconnues de cyberdéception — fondement documentaire de leur inclusion, pas une
+extrapolation.
+
+### 8.4 Aucune relation M_{i,d} pour ces 25 mécanismes
+
+Comme pour les 6 mécanismes D3FEND étendus (§6bis), aucun staging ne relie ces 25 mécanismes à des
+techniques ATT&CK spécifiques : aucune relation `M_{i,d}` n'a été fabriquée pour eux. Ils sont
+catalogués (répondent aux critères §6 de la tâche : mécanisme déployable, description précise,
+preuve documentaire, target_artifact/interaction_mechanism) mais resteront `D_i = ∅` pour toute
+technique tant qu'aucune preuve de relation n'est trouvée — limite honnête, documentée dans
+`docs/chapter4/outputs/catalog_statistics.json`.
+
+## 9. Ce que cet audit ne prouve pas
 
 Comme le test analytique de référence (CLAUDE.md §21), cet audit prouve la cohérence et la
 traçabilité du catalogue étendu et de son mapping ATT&CK — il ne prouve pas la qualité

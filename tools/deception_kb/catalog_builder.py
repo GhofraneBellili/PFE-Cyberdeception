@@ -608,8 +608,18 @@ def _build_persona_merge_evidence(engage_activities_by_id: dict) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# Littérature — 2 mécanismes génériques largement établis, distincts par
-# granularité des concepts D3FEND déjà catalogués (voir audit)
+# Littérature — mécanismes génériques établis, distincts par granularité
+# des concepts D3FEND/Engage déjà catalogués (voir docs/chapter4/CATALOG_AUDIT.md
+# pour la justification complète, mécanisme par mécanisme, y compris les
+# relations de granularité avec les mécanismes D3FEND/Engage existants) —
+# réf. tâche « |D_knowledge| >= 50 mécanismes ».
+#
+# `evidence_selectors` identifie chaque preuve par (source_id, locator)
+# EXACT (pas par source_id seul) : plusieurs mécanismes distincts peuvent
+# désormais citer le même document (ex. doi_10.1145_3214305, 22 passages
+# après l'extension de `data/deception/literature/evidence_candidates.json`)
+# — filtrer par source_id seul agrégerait alors des preuves d'autres
+# mécanismes sans rapport.
 # ---------------------------------------------------------------------------
 
 LITERATURE_MECHANISM_SPECS: dict[str, dict] = {
@@ -623,10 +633,11 @@ LITERATURE_MECHANISM_SPECS: dict[str, dict] = {
         "target_artifacts": ["decoy_host"],
         "possible_placements": ["network_segment", "host"],
         "interaction_mechanism": "adversary scans, connects to, and attempts to exploit or log on to the monitored decoy host, diverting them from production systems",
-        "evidence_source_ids": (
-            "usenixsec2004_provos_virtual_honeypot_framework",
-            "doi_10.1109_csac.2003.1254322",
-            "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy",
+        "evidence_selectors": (
+            ("usenixsec2004_provos_virtual_honeypot_framework", "abstract"),
+            ("doi_10.1109_csac.2003.1254322", "abstract"),
+            ("usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy", "abstract"),
+            ("usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy", "body_text_results"),
         ),
     },
     "LIT-HONEYTOKEN": {
@@ -640,25 +651,315 @@ LITERATURE_MECHANISM_SPECS: dict[str, dict] = {
         "target_artifacts": ["decoy_data", "decoy_record"],
         "possible_placements": ["database", "filesystem", "configuration_store"],
         "interaction_mechanism": "adversary accesses or exfiltrates the honeytoken (fake data/record), triggering a monitored indicator of compromise",
-        "evidence_source_ids": ("doi_10.1145_3678890.3678897",),
+        "evidence_selectors": (("doi_10.1145_3678890.3678897", "abstract"),),
+    },
+    "LIT-TARPIT": {
+        "name": "Network Tarpit",
+        "description": (
+            "A decoy machine that creates sticky, slow-responding network connections to stall automated "
+            "scanning and confuse human adversaries during reconnaissance."
+        ),
+        "target_artifacts": ["decoy_host", "tcp_connection"],
+        "possible_placements": ["network_segment"],
+        "interaction_mechanism": "adversary's scanning tool or session opens a connection to the tarpit and is deliberately kept open/slowed, stalling reconnaissance",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_network_tarpit"),),
+    },
+    "LIT-DECEPTIVE-TOPOLOGY": {
+        "name": "Deceptive Network Topology",
+        "description": (
+            "Skews the topology observed by an attacker's reconnaissance (e.g., traceroute, scanning) through "
+            "random connection dropping and traffic forging, revealing a false network topology."
+        ),
+        "target_artifacts": ["network_topology"],
+        "possible_placements": ["network_segment"],
+        "interaction_mechanism": "adversary's scanning/traceroute probes are answered with forged responses that skew the perceived network topology",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_deceptive_topology"),),
+    },
+    "LIT-OS-FINGERPRINT": {
+        "name": "Deceptive OS Fingerprint",
+        "description": (
+            "Mimics the network-stack behavior of a fake operating system to mislead OS fingerprinting tools "
+            "used during reconnaissance. Distinct from EAC0014 (Software Manipulation, a broad MITRE Engage "
+            "activity covering many output-manipulation cases) by its specific, network-stack-level technical "
+            "implementation documented in the academic literature."
+        ),
+        "target_artifacts": ["os_fingerprint_response"],
+        "possible_placements": ["host", "network_segment"],
+        "interaction_mechanism": "adversary's OS fingerprinting tool (e.g., Nmap-style probes) receives responses mimicking a fake operating system",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_os_obfuscation"),),
+    },
+    "LIT-DECEPTIVE-ATTACK-GRAPH": {
+        "name": "Deceptive Attack Graph",
+        "description": (
+            "Leverages a structured attack graph representation to drive attackers into following fake attack "
+            "paths that distract them from real targets."
+        ),
+        "target_artifacts": ["attack_path", "decoy_vulnerability_chain"],
+        "possible_placements": ["network_segment", "host"],
+        "interaction_mechanism": "adversary follows a fake attack path/vulnerability chain constructed to distract from the real target",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_deceptive_attack_graph"),),
+    },
+    "LIT-ICS-DECOY": {
+        "name": "Decoy ICS/OT Asset",
+        "description": (
+            "A deceptive simulation of an industrial control system (ICS) target that monitors network "
+            "topology and creates fake but indistinguishable attack targets for adversaries targeting "
+            "operational technology environments."
+        ),
+        "target_artifacts": ["decoy_ics_endpoint"],
+        "possible_placements": ["network_segment", "host"],
+        "interaction_mechanism": "adversary targeting an industrial control system interacts with a fake but indistinguishable ICS/OT attack target",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_decoy_ics_asset"),),
+    },
+    "LIT-DECOY-NIC": {
+        "name": "Decoy Network Interface",
+        "description": (
+            "A decoy Network Interface Controller (NIC) intentionally set up so that only malicious software "
+            "would use it, since benign software is not expected to interact with it."
+        ),
+        "target_artifacts": ["decoy_network_interface"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "malicious software running on the host uses the decoy network interface, which benign software never does, revealing its presence",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_decoy_network_interface"),),
+    },
+    "LIT-FAKE-HONEYPOT": {
+        "name": "Fake Honeypot Camouflage",
+        "description": (
+            "Makes an ordinary but critical production system appear to be a honeypot, in order to confuse an "
+            "attacker and turn them away from the real, compromised-worthy system — the inverse of a real "
+            "honeypot."
+        ),
+        "target_artifacts": ["production_asset_disguise"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "adversary who has gained access believes the real critical system is a honeypot and disengages to avoid detection",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_fake_honeypot_camouflage"),),
+    },
+    "LIT-DECOY-COMPUTE": {
+        "name": "Decoy Computation",
+        "description": (
+            "Duplicates an application server multiple times to generate decoy computation activity, "
+            "concealing real processing among fake workload instances."
+        ),
+        "target_artifacts": ["decoy_compute_workload"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "adversary targets a duplicated decoy compute instance instead of the real application server",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_decoy_computation"),),
+    },
+    "LIT-HONEY-PERMISSION": {
+        "name": "Honey Permission",
+        "description": (
+            "Extends role-based access control with fake permissions that assign unintended access to fake "
+            "versions of sensitive system assets, detecting insiders/attackers who attempt to use them."
+        ),
+        "target_artifacts": ["decoy_rbac_permission"],
+        "possible_placements": ["account"],
+        "interaction_mechanism": "adversary or insider attempts to exercise a fake permission granting access to a decoy asset, triggering detection",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_honey_permission"),),
+    },
+    "LIT-SOFTWARE-DECOY": {
+        "name": "Intelligent Software Decoy",
+        "description": (
+            "A decoy software component that detects and responds to patterns of suspicious behavior, "
+            "maintaining a repository of behavior patterns and decoying actions."
+        ),
+        "target_artifacts": ["decoy_software_component"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "adversary's tool interacts with the software component, whose behavior-pattern detection recognizes and responds to the suspicious interaction",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_intelligent_software_decoy"),),
+    },
+    "LIT-HONEYPATCH": {
+        "name": "Honey-patch",
+        "description": (
+            "Converts a software patch into a fake but valid-looking vulnerability; upon detecting exploitation "
+            "of the fake vulnerability, the system seamlessly forwards the attacker to a vulnerable decoy "
+            "version of the software. Distinct from EAC0023 (Introduced Vulnerabilities, a broad MITRE Engage "
+            "activity) by this specific patch-masquerading-plus-redirect implementation."
+        ),
+        "target_artifacts": ["decoy_vulnerability", "decoy_software_version"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "adversary exploits what appears to be an unpatched vulnerability and is seamlessly redirected to a vulnerable decoy version of the software",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_honey_patch"),),
+    },
+    "LIT-SHADOW-HONEYPOT": {
+        "name": "Shadow Honeypot",
+        "description": (
+            "Extends a honeypot with anomaly-based detection: an instance of the target application that "
+            "shares its real context and internal state, used to process anomalous traffic. Distinct from the "
+            "generic Honeypot (LIT-HONEYPOT) by sharing live application state rather than being an isolated "
+            "decoy."
+        ),
+        "target_artifacts": ["decoy_application_instance"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "traffic flagged as anomalous is processed by the shadow instance, which shares the real application's context/state to validate the attack without risking production data",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_shadow_honeypot"),),
+    },
+    "LIT-SOFTWARE-TRAP": {
+        "name": "Software Trap",
+        "description": (
+            "A trap dissimulated in application code as a gadget that detects return-oriented programming "
+            "(ROP) exploitation attempts."
+        ),
+        "target_artifacts": ["code_gadget_trap"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "adversary's ROP exploit manipulates the planted code gadget, which detects and notifies the ongoing attack",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_software_trap"),),
+    },
+    "LIT-DECOY-HYPERLINK": {
+        "name": "Decoy Hyperlink",
+        "description": (
+            "Embeds decoy links in a web application that are invisible to normal human users but are "
+            "triggered by automated crawlers and web bots, revealing their presence."
+        ),
+        "target_artifacts": ["decoy_hyperlink"],
+        "possible_placements": ["network_resource"],
+        "interaction_mechanism": "an automated crawler/bot follows the invisible decoy link, revealing itself as non-human traffic",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_decoy_hyperlink"),),
+    },
+    "LIT-HONEY-CONFIG": {
+        "name": "Honey Configuration File",
+        "description": (
+            "A web-facing configuration file (e.g., robots.txt) seeded with fake entries and invisible links to "
+            "detect scanners and attackers who inspect it."
+        ),
+        "target_artifacts": ["decoy_configuration_file"],
+        "possible_placements": ["network_resource"],
+        "interaction_mechanism": "adversary's scanner inspects the configuration file and follows a fake entry/invisible link that only an automated or malicious actor would use",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_honey_configuration_file"),),
+    },
+    "LIT-DECOY-FORM": {
+        "name": "Decoy Web Form/Parameter",
+        "description": (
+            "Decoy form fields and honey URL parameters embedded in a web application that display fake "
+            "configuration errors, misleading attackers probing the application."
+        ),
+        "target_artifacts": ["decoy_form_field", "decoy_url_parameter"],
+        "possible_placements": ["network_resource"],
+        "interaction_mechanism": "adversary probing the web application interacts with a decoy form field or URL parameter, exposing a fake configuration error",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_decoy_form_field"),),
+    },
+    "LIT-HONEYWORD": {
+        "name": "Honeyword",
+        "description": (
+            "Multiple false candidate passwords stored alongside the real (hashed) password for an account; "
+            "any login attempt using a honeyword sets off an alarm, concealing which password is authentic even "
+            "if the password file is stolen."
+        ),
+        "target_artifacts": ["decoy_password"],
+        "possible_placements": ["credential_store"],
+        "interaction_mechanism": "adversary who stole the password file attempts to log in with a honeyword instead of the real password, triggering an alarm",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_honeyword"),),
+    },
+    "LIT-HONEY-ENCRYPTION": {
+        "name": "Honey Encryption",
+        "description": (
+            "Produces a ciphertext that, when decrypted with an incorrect key or password, yields a plausible-"
+            "looking but bogus plaintext instead of an obvious failure, confusing an adversary attempting "
+            "brute-force decryption."
+        ),
+        "target_artifacts": ["decoy_ciphertext"],
+        "possible_placements": ["filesystem", "configuration_store"],
+        "interaction_mechanism": "adversary brute-forcing the encryption key obtains a plausible-looking decoy plaintext instead of a clear failure signal, unable to tell the correct key from a wrong one",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_honey_encryption"),),
+    },
+    "LIT-DECOY-SOURCECODE": {
+        "name": "Decoy Source Code",
+        "description": (
+            "Fake but believable source code files planted to detect the exfiltration of proprietary source "
+            "code by insiders or attackers."
+        ),
+        "target_artifacts": ["decoy_source_file"],
+        "possible_placements": ["filesystem"],
+        "interaction_mechanism": "adversary or insider exfiltrates the decoy source code file believing it to be proprietary, revealing the exfiltration attempt",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_decoy_source_code"),),
+    },
+    "LIT-DECOY-TRAFFIC": {
+        "name": "Decoy Network Traffic",
+        "description": (
+            "Generates decoy network traffic (chaff) to dissimulate sensitive real network connections, making "
+            "them less likely to be identified and targeted by an adversary observing the network."
+        ),
+        "target_artifacts": ["decoy_traffic_flow"],
+        "possible_placements": ["network_segment"],
+        "interaction_mechanism": "adversary eavesdropping on the network observes decoy traffic flows mixed with real connections, reducing the chance of identifying the real one",
+        "evidence_selectors": (("doi_10.1145_3214305", "body_text_decoy_network_traffic"),),
+    },
+    "LIT-IP-ROTATION": {
+        "name": "Dynamic IP Address Rotation",
+        "description": (
+            "Periodically rotates which virtual machine host is mapped to an externally visible IP address; the "
+            "VM host previously in use is analyzed for evidence of intrusion and removed from rotation if "
+            "compromised — a moving-target-defense form of deception that prevents an adversary from reliably "
+            "targeting a fixed address."
+        ),
+        "target_artifacts": ["ip_address_mapping"],
+        "possible_placements": ["network_segment"],
+        "interaction_mechanism": "adversary targeting a specific external IP address is unknowingly redirected to a periodically rotated VM host, exposing prior intrusion attempts to analysis",
+        "evidence_selectors": (("doi_10.1016_j.cose.2021.102288", "body_text_ip_address_rotation"),),
+    },
+    "LIT-DYNAMIC-IDS": {
+        "name": "Dynamic IDS Placement",
+        "description": (
+            "Dynamically and continuously changes the network placement of intrusion detection sensors over "
+            "time, creating uncertainty about their location and increasing the likelihood that adversary "
+            "actions are detected."
+        ),
+        "target_artifacts": ["ids_sensor_placement"],
+        "possible_placements": ["network_segment"],
+        "interaction_mechanism": "adversary cannot reliably predict or avoid the current location of detection sensors, increasing the chance their activity is observed",
+        "evidence_selectors": (("doi_10.1016_j.cose.2021.102288", "body_text_dynamic_ids_placement"),),
+    },
+    "LIT-PLATFORM-MIGRATION": {
+        "name": "Cross-Platform Application Migration",
+        "description": (
+            "Migrates a running application between virtual machines with different platforms (OS/architecture) "
+            "while preserving execution state, increasing uncertainty for an adversary who must re-target a "
+            "changing platform."
+        ),
+        "target_artifacts": ["application_runtime_platform"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "adversary who has profiled the application's platform finds it has migrated to a different OS/architecture, invalidating platform-specific exploits",
+        "evidence_selectors": (("doi_10.1016_j.cose.2021.102288", "body_text_cross_platform_migration"),),
+    },
+    "LIT-SOFTWARE-DIVERSITY": {
+        "name": "Software Diversity Randomization",
+        "description": (
+            "Breaks a software binary into function blocks and randomly shuffles their order at load time, so "
+            "every execution instance is unique, hindering code-reuse (e.g., ROP) exploitation."
+        ),
+        "target_artifacts": ["binary_layout"],
+        "possible_placements": ["host"],
+        "interaction_mechanism": "adversary's exploit relies on a known binary layout that has been randomized for this execution instance, causing the exploit to fail unpredictably",
+        "evidence_selectors": (("doi_10.1016_j.cose.2021.102288", "body_text_software_diversity"),),
+    },
+    "LIT-MULTIPATH-ROUTING": {
+        "name": "Dynamic Multipath Routing",
+        "description": (
+            "Uses SDN features to frequently modify communication routes between devices so that any single "
+            "vantage point only observes a portion of the exchanged traffic, preventing an eavesdropper from "
+            "reconstructing a full communication."
+        ),
+        "target_artifacts": ["network_route"],
+        "possible_placements": ["network_segment"],
+        "interaction_mechanism": "adversary eavesdropping from a fixed network vantage point only intercepts a portion of the communication, unable to reconstruct the full exchange",
+        "evidence_selectors": (("doi_10.1016_j.cose.2021.102288", "body_text_dynamic_multipath_routing"),),
     },
 }
 
 
-def _build_literature_evidence(source_ids: tuple[str, ...], literature_evidence: list[dict]) -> list[dict]:
+def _build_literature_evidence(selectors: tuple[tuple[str, str], ...], literature_evidence: list[dict]) -> list[dict]:
     return [
         {"source": item["evidence_id"], "passage": item["text"]}
         for item in literature_evidence
-        if item["source_id"] in source_ids
+        if (item["source_id"], item["locator"]) in selectors
     ]
 
 
 def _build_literature_mechanism(mechanism_id: str, *, literature_evidence: list[dict], release_version: str) -> dict:
     spec = LITERATURE_MECHANISM_SPECS[mechanism_id]
-    evidence = _build_literature_evidence(spec["evidence_source_ids"], literature_evidence)
+    evidence = _build_literature_evidence(spec["evidence_selectors"], literature_evidence)
     if not evidence:
         raise CatalogBuilderError(
-            f"Aucune preuve littérature trouvée pour '{mechanism_id}' parmi {spec['evidence_source_ids']} : "
+            f"Aucune preuve littérature trouvée pour '{mechanism_id}' parmi {spec['evidence_selectors']} : "
             "un mécanisme catalogué doit toujours avoir au moins une preuve réelle."
         )
     location_types = list(spec["possible_placements"])
@@ -685,7 +986,7 @@ def _build_literature_mechanism(mechanism_id: str, *, literature_evidence: list[
             "metadata": {},
         },
         "metadata": {
-            "literature_source_ids": list(spec["evidence_source_ids"]),
+            "literature_source_ids": sorted({source_id for source_id, _ in spec["evidence_selectors"]}),
             "inclusion_policy": "literature_generic_established_mechanism",
         },
     }

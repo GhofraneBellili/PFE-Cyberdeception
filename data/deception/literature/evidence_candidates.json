@@ -107,6 +107,156 @@
       "page": 10,
       "locator": "body_text_results",
       "text": "Participants in the Present-Informed condition were less likely than those in the Present-Uninformed condition to attempt an interactive logon manually, or with an exploit, to a decoy."
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 8,
+      "locator": "body_text_network_tarpit",
+      "text": "Such decoy machines are commonly known as network tarpits [Liston 2001]. They create sticky connections with the aim to slow or stall automated scanning and to confuse human adversaries."
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 10,
+      "locator": "body_text_deceptive_topology",
+      "text": "a technique to skew the topology of the target network through random connection dropping and traffic forging"
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 10,
+      "locator": "body_text_os_obfuscation",
+      "text": "multiple deception techniques have been proposed -- that offer to mimic the network behavior of fake operating systems"
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 10,
+      "locator": "body_text_deceptive_attack_graph",
+      "text": "conducted red teaming experiments on deception, through leveraging structured attack graph representations, in order to drive attackers into following fake attack paths"
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 10,
+      "locator": "body_text_decoy_ics_asset",
+      "text": "deceptive simulation techniques [Rrushi 2011] have also been applied in the context of industrial control systems. These tools offer to monitor the network topology and to create fake but indistinguishable attack targets"
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 10,
+      "locator": "body_text_decoy_network_interface",
+      "text": "Rrushi [2016] proposed the use of a decoy Network Interface Controller (NIC) for Windows operating systems. This decoy interface was intentionally set in order to lure and detect malicious software"
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 10,
+      "locator": "body_text_fake_honeypot_camouflage",
+      "text": "Rowe et al. [2006] adopted a proactive deception approach that aims at preventing system compromise attempts. They suggested the use of fake honeypots that make ordinary but critical systems appear"
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 11,
+      "locator": "body_text_decoy_computation",
+      "text": "Kontaxis et al. [2014] proposed to duplicate multiple times the entire application server to generate decoy computation activities."
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 11,
+      "locator": "body_text_honey_permission",
+      "text": "Kaghazgaran and Takabi [2015] offered to extend role-based access control mechanisms with honey permissions. These are fake permissions in the sense that they assign unintended access permissions to only fake versions of sensitive system assets."
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 11,
+      "locator": "body_text_intelligent_software_decoy",
+      "text": "Michael et al. [2002] introduced the notion of intelligent software decoys that detect and respond to patterns of suspicious behavior"
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 11,
+      "locator": "body_text_honey_patch",
+      "text": "Araujo et al. [2014] converted software patches into fake but valid-looking vulnerabilities (also known as \"honey-patches\") that drastically limit the attackers capability to determine the successfulness of their attacks."
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 11,
+      "locator": "body_text_shadow_honeypot",
+      "text": "Anagnostakis et al. introduced shadow honeypots that extend honeypots with anomaly-based buffer overflow detection. The shadow honeypot is an instance of the target application and shares its context and internal state."
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 11,
+      "locator": "body_text_software_trap",
+      "text": "Crane et al. introduced, in [2013], software traps that are dissimulated in the code as gadgets, and detect return-oriented programming attacks."
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 11,
+      "locator": "body_text_decoy_hyperlink",
+      "text": "Brewer et al. [2010] proposed a web application that embeds decoy links. These links are invisible to normal users, but are expected to be triggered by crawlers and web bots"
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 11,
+      "locator": "body_text_honey_configuration_file",
+      "text": "Virvilis et al. [2014] introduced honey configuration files, such as robots.txt, including fake entries, invisible links"
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 12,
+      "locator": "body_text_decoy_form_field",
+      "text": "Other studies proposed decoy forms [Katsinis et al. 2013] and honey URL parameters [Petruni 2015] that display fake configuration errors in an effort to mislead attackers"
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 12,
+      "locator": "body_text_honeyword",
+      "text": "Juels et al. introduced in [2013] honeywords (false passwords) in order to conceal true authentic passwords."
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 12,
+      "locator": "body_text_honey_encryption",
+      "text": "Juels et al. [2014] proposed \"honey encryption\", which creates a ciphertext that, when decrypted with an incorrect key or password, results in a valid-looking decoy message."
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 12,
+      "locator": "body_text_decoy_source_code",
+      "text": "Park et Stolfo [2012] generated fake but believable Java source code to detect the exflitration of proprietary source code."
+    },
+    {
+      "source_id": "doi_10.1145_3214305",
+      "page": 17,
+      "locator": "body_text_decoy_network_traffic",
+      "text": "Rrushi et al. generated decoy network traffic [2011]"
+    },
+    {
+      "source_id": "doi_10.1016_j.cose.2021.102288",
+      "page": 9,
+      "locator": "body_text_ip_address_rotation",
+      "text": "The periodic rotation of VM hosts is controlled from an administrator machine running a daemon process, and the VM host that was previously in use is analyzed for evidence of intrusion and will be removed"
+    },
+    {
+      "source_id": "doi_10.1016_j.cose.2021.102288",
+      "page": 9,
+      "locator": "body_text_dynamic_ids_placement",
+      "text": "The defense evasion phase may be disrupted by dynamically and continuously changing the placement of IDS over time."
+    },
+    {
+      "source_id": "doi_10.1016_j.cose.2021.102288",
+      "page": 9,
+      "locator": "body_text_cross_platform_migration",
+      "text": "a running application can be migrated between VMs with different platforms while preserving the state"
+    },
+    {
+      "source_id": "doi_10.1016_j.cose.2021.102288",
+      "page": 10,
+      "locator": "body_text_software_diversity",
+      "text": "Marlin breaks a software binary into function blocks and randomly shuffles the order."
+    },
+    {
+      "source_id": "doi_10.1016_j.cose.2021.102288",
+      "page": 10,
+      "locator": "body_text_dynamic_multipath_routing",
+      "text": "a multipath routing strategy, which relies on SDN features to frequently modify communication routes between SCADA devices"
     }
   ]
 }

@@ -97,13 +97,14 @@ class TestBuildCatalogFromRealStaging:
 
 
 class TestBuildExpandedCatalog:
-    """Réf. tâche « étendre le catalogue à >= 25 mécanismes réels » (§4-§8) :
-    tests sur le catalogue étendu réel (D3FEND + MITRE Engage + littérature
-    déjà versionnés), pas une fixture synthétique."""
+    """Réf. tâche « étendre le catalogue à >= 25 mécanismes réels » puis
+    réf. tâche « |D_knowledge| >= 50 mécanismes de cyberdéception
+    distincts » : tests sur le catalogue étendu réel (D3FEND + MITRE
+    Engage + littérature déjà versionnés), pas une fixture synthétique."""
 
-    def test_at_least_25_mechanisms(self):
+    def test_at_least_50_mechanisms(self):
         catalog = build_expanded_catalog()
-        assert len(catalog["mechanisms"]) >= 25
+        assert len(catalog["mechanisms"]) >= 50
 
     def test_all_ids_unique(self):
         catalog = build_expanded_catalog()
@@ -193,6 +194,27 @@ class TestBuildExpandedCatalog:
                 assert not profile["required_asset_types"]
                 assert not profile["required_services"]
                 assert not profile["required_artifacts"]
+
+    def test_literature_mechanisms_have_precisely_scoped_evidence(self):
+        """Réf. tâche « |D_knowledge| >= 50 » : plusieurs nouveaux
+        mécanismes littérature citent le MÊME document
+        (doi_10.1145_3214305, 22 passages) — vérifie que le filtrage par
+        (source_id, locator) n'agrège pas les preuves d'un autre
+        mécanisme partageant seulement le source_id."""
+        catalog = build_expanded_catalog()
+        by_id = {m["id"]: m for m in catalog["mechanisms"]}
+
+        tarpit_evidence = {e["passage"] for e in by_id["LIT-TARPIT"]["evidence"]}
+        honeyword_evidence = {e["passage"] for e in by_id["LIT-HONEYWORD"]["evidence"]}
+        assert tarpit_evidence.isdisjoint(honeyword_evidence)
+        assert any("tarpit" in p.lower() for p in tarpit_evidence)
+        assert any("honeyword" in p.lower() for p in honeyword_evidence)
+
+    def test_at_least_25_new_literature_mechanisms_beyond_original_two(self):
+        catalog = build_expanded_catalog()
+        literature_ids = {m["id"] for m in catalog["mechanisms"] if m["id"].startswith("LIT-")}
+        assert len(literature_ids) >= 27  # LIT-HONEYPOT, LIT-HONEYTOKEN + >=25 nouveaux
+        assert {"LIT-HONEYPOT", "LIT-HONEYTOKEN"} <= literature_ids
 
     def test_mechanism_families_present(self):
         """Réf. §10 (statistiques de couverture) : au moins D3FEND, Engage
