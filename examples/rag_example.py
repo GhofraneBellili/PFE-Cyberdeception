@@ -69,11 +69,17 @@ def main() -> None:
         f"Index : {len(index)} chunks ({len(d3fend_chunks)} D3FEND, {len(engage_chunks)} Engage, {len(literature_chunks)} litterature)",
         f"Requete : {query!r}",
         "-" * 78,
-        f"{'Rang':<5}{'Score':<8}{'Type':<12}{'chunk_id':<28}Extrait",
+        f"{'Rang':<5}{'Score':<8}{'Type':<12}{'chunk_id':<28} Extrait",
     ]
     for rank, result in enumerate(results, start=1):
         snippet = result.chunk.text[:60] + ("..." if len(result.chunk.text) > 60 else "")
-        lines.append(f"{rank:<5}{result.score:<8.3f}{result.chunk.source_type:<12}{result.chunk.chunk_id:<28}{snippet}")
+        # chunk_id tronque a 26 caracteres (+ "..") pour garantir un espace
+        # separateur avant l'extrait, meme quand l'identifiant est long
+        # (ex. certains chunk_id Engage) -- un champ largeur fixe non tronque
+        # ferait sinon coller l'identifiant et l'extrait sans separateur.
+        chunk_id = result.chunk.chunk_id
+        chunk_id_display = chunk_id if len(chunk_id) <= 26 else chunk_id[:26] + ".."
+        lines.append(f"{rank:<5}{result.score:<8.3f}{result.chunk.source_type:<12}{chunk_id_display:<28} {snippet}")
     lines.append("-" * 78)
     text = "\n".join(lines) + "\n"
     (OUT_DIR / "rag_retrieval_example.txt").write_text(text, encoding="utf-8")

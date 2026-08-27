@@ -12,6 +12,7 @@ effectivement importées par du code réel sont incluses.
 | NetworkX | 3.x (`networkx>=3,<4`) | Représentation du graphe d'attaque comme `DiGraph`, utilitaires de parcours (parents/enfants) | `src/graph_builder.py` |
 | pytest | ≥ 8.0 (dépendance `dev`) | Suite de tests (588 tests au moment de ce document) | `tests/` |
 | `urllib.request` (bibliothèque standard) | — | Appel HTTP vers un provider LLM réel (Ollama local ou endpoint OpenAI-compatible) — choix technique explicite pour éviter une nouvelle dépendance (`requests`) alors que la bibliothèque standard suffit | `src/llm_provider.py` |
+| matplotlib | 3.x (`matplotlib>=3.8,<4`, dépendance optionnelle `docs`) | Génération reproductible des 5 figures PNG du chapitre 4 (C1/C2/C3/C4/C7) à partir des sorties réelles du dépôt — outil de documentation, jamais importé par `src/` (voir `pyproject.toml`, groupe `[project.optional-dependencies].docs`) | `tools/chapter4_figures/` |
 
 ## Technologies explicitement NON utilisées à ce stade
 
@@ -36,8 +37,8 @@ d'environnement `LLM_PROVIDER` — aucun modèle n'est imposé dans le code :
 `detect_provider()` (`src/annotator_llm.py`) sélectionne automatiquement
 entre un provider réel et le repli déterministe `RuleBasedStubAnnotator`
 selon ce qui est réellement exploitable — voir
-`docs/chapter4/IMPLEMENTATION_REPORT.md`, section 4.4.2, pour la commande
-exacte permettant de produire une vraie annotation localement.
+`docs/chapter4/FINAL_TECHNICAL_REPORT.md`, section 4.4.2, pour la
+commande exacte permettant de produire une vraie annotation localement.
 
 ## Choix techniques déterministes réalisés (pas de nouvelle dépendance)
 

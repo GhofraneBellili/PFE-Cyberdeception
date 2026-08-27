@@ -17,7 +17,11 @@
 > admissible** (`T1039@FS01`/`D3-DNR`/`shared-drive`, obtenu après audit
 > documentaire des prérequis — voir
 > `docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md`), aucune exécution LLM
-> réelle dans cet environnement (code prêt et testé).
+> réelle dans cet environnement (code prêt et testé). **5 figures PNG
+> générées et disponibles** (C1, C2, C3, C4, C7 — `AVAILABLE`, voir
+> `docs/chapter4/SCREENSHOT_MANIFEST.md`), reproductibles via `python -m
+> tools.chapter4_figures.generate_all` ; C5/C6 restent `NOT_AVAILABLE`
+> (dépendent d'une exécution LLM réelle).
 
 ---
 
@@ -94,7 +98,9 @@ retenue comme preuve d'exécution du pipeline complet.
 
 **J. Limites réelles.** Aucune.
 
-**K. Artefact/capture.** C1 (`READY_FOR_SCREENSHOT`).
+**K. Artefact/capture.** C1 (`AVAILABLE`) —
+`docs/chapter4/screenshots/01_architecture/architecture_tree.png`
+(1900×2475 px, généré par `tools/chapter4_figures/c1_architecture.py`).
 
 **L. Formulation à ne pas utiliser.** Ne pas décrire `runs/` comme une
 « base de données de résultats » — c'est un répertoire de sortie de
@@ -365,7 +371,10 @@ feuilles D3FEND, 0 sur Engage) ; `required_services`/`required_artifacts`
 vides pour les 3 mécanismes (aucune preuve trouvée) ; `required_asset_types`
 vide pour `D3-DF`/`D3-DUC`.
 
-**K. Artefact/capture.** C2 (`READY_FOR_SCREENSHOT`).
+**K. Artefact/capture.** C2 (`AVAILABLE`) —
+`docs/chapter4/screenshots/02_knowledge/deception_mechanism.png`
+(1946×1450 px, généré par `tools/chapter4_figures/c2_mechanism.py`,
+mécanisme `D3-DNR`).
 
 **L. Formulation à ne pas utiliser.** Ne pas écrire « le catalogue de
 cyberdéception couvre l'ensemble des mécanismes documentés par D3FEND et
@@ -440,8 +449,10 @@ directe (pas une analyse complète des chemins vers les nœuds terminaux,
 que §10.4 permettrait en principe). `C_{i,h}` reste vide pour `D3-DF` et
 `D3-DUC` avec le catalogue réel actuel.
 
-**K. Artefact/capture.** C3 (`READY_FOR_SCREENSHOT`) —
-`docs/chapter4/outputs/sp1_real_example.json`/`.txt`.
+**K. Artefact/capture.** C3 (`AVAILABLE`) —
+`docs/chapter4/screenshots/03_sp1/sp1_real_result.png` (1960×1602 px,
+généré par `tools/chapter4_figures/c3_sp1.py` depuis
+`docs/chapter4/outputs/sp1_real_example.json`/`.txt`).
 
 **L. Formulation à ne pas utiliser.** Ne pas écrire « SP1 sélectionne le
 meilleur mécanisme » — SP1 ne classe ni ne sélectionne, il filtre
@@ -519,7 +530,9 @@ score identique pour les 11 sous-métriques (chevauchement lexical, pas
 une distinction Realism/InteractionLikelihood/Effectiveness) ; le
 provider réel n'a jamais été exercé contre un vrai service.
 
-**K. Artefact/capture.** C4 (RAG, `READY_FOR_SCREENSHOT`) ; C5 (LLM réel,
+**K. Artefact/capture.** C4 (RAG, `AVAILABLE`) —
+`docs/chapter4/screenshots/04_rag/rag_retrieval.png` (2050×1084 px,
+généré par `tools/chapter4_figures/c4_rag.py`) ; C5 (LLM réel,
 `NOT_AVAILABLE`).
 
 **L. Formulation à ne pas utiliser.** Ne pas écrire « le système utilise
@@ -686,7 +699,9 @@ robuste (`deployment_plan` non vide dans ce cas précis grâce à l'audit de
 la section 4.3.3), mais l'exemple `orchestrator_example.py` par défaut
 utilise encore un catalogue synthétique de démonstration distinct.
 
-**K. Artefact/capture.** C7 (`READY_FOR_SCREENSHOT`).
+**K. Artefact/capture.** C7 (`AVAILABLE`) —
+`docs/chapter4/screenshots/09_pipeline/pipeline_result.png` (2067×1654 px,
+généré par `tools/chapter4_figures/c7_pipeline.py`).
 
 **L. Formulation à ne pas utiliser.** Ne pas écrire « le pipeline exécute
 les annotations en parallèle » — traitement strictement séquentiel, un

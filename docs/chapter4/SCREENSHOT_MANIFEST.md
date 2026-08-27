@@ -1,11 +1,14 @@
 # Manifeste des captures — Chapitre 4
 
 Aucune capture n'est fabriquée pour un module absent. Le statut
-`READY_FOR_SCREENSHOT` signifie qu'un fichier de sortie réel existe et
-qu'une commande précise permet de reproduire la capture ; aucun outil de
-capture d'écran automatisé n'est disponible dans cet environnement, donc
-aucun statut `AVAILABLE` (PNG déjà produit) n'est déclaré tant qu'une
-capture n'a pas été prise manuellement par l'utilisateur.
+`AVAILABLE` signifie que le fichier PNG existe réellement dans
+`docs/chapter4/screenshots/`, généré de façon reproductible par
+`tools/chapter4_figures/` à partir des sorties réelles du dépôt (jamais
+une valeur inventée) ; `READY_FOR_SCREENSHOT` signifie qu'un fichier de
+sortie réel existe et qu'une commande précise permet de produire la
+figure, mais que le PNG n'a pas encore été généré ;
+`NOT_AVAILABLE` signifie que la donnée source elle-même n'existe pas
+encore (aucune figure ne peut en être tirée sans fabrication).
 
 **Renumérotation (réf. tâche « captures utiles au chapitre 4 »)** : la
 liste est désormais **C1–C7** (auparavant C1–C8). SP3 détaillé, front de
@@ -23,50 +26,50 @@ permis d'obtenir le candidat admissible réel de C3.
 ## Capture C1 — Organisation réelle du projet
 
 ```
-Status: READY_FOR_SCREENSHOT
+Status: AVAILABLE
 Module: (aucun module de code — structure du dépôt)
 Fichier de sortie: docs/chapter4/outputs/architecture_tree.txt
-Commande: voir docs/chapter4/outputs/architecture_tree.txt (généré depuis un script Python ponctuel listant récursivement le dépôt, répertoires .git/.venv/.claude/__pycache__ exclus, répertoires de données volumineuses résumés par un nombre de fichiers)
-Capture: docs/chapter4/screenshots/01_architecture/architecture_tree.png (à produire manuellement à partir du fichier texte)
-Ce qui doit être visible: src/ (tous modules implémentés), tools/deception_kb/ (couche offline, y compris catalog_builder.py/mapping_builder.py), data/deception/ (staging + catalogue + mapping réels), examples/, tests/.
+Générateur: tools/chapter4_figures/c1_architecture.py (python -m tools.chapter4_figures.c1_architecture)
+Capture: docs/chapter4/screenshots/01_architecture/architecture_tree.png (1900×2475 px, fond blanc)
+Ce qui est visible: src/ (15 modules), tools/deception_kb/ (couche offline, catalog_builder.py/mapping_builder.py), data/deception/ (catalogue + mapping réels + staging résumé), examples/ (16 scripts), tests/ (21 fichiers, résumé), docs/chapter4/ (rapports + outputs résumé).
 Rôle dans le chapitre 4: Section 4.1.2 — Organisation du projet.
 ```
 
 ## Capture C2 — Fiche d'un mécanisme réel du catalogue
 
 ```
-Status: READY_FOR_SCREENSHOT
+Status: AVAILABLE
 Module: data/deception/deception_catalog.json (tools/deception_kb/catalog_builder.py)
-Fichier de sortie: data/deception/deception_catalog.json (mécanisme "D3-DUC")
-Commande: python -m tools.deception_kb.catalog_builder
-Capture: docs/chapter4/screenshots/02_knowledge/deception_mechanism.png (à produire manuellement — se limiter à un seul mécanisme, ex. D3-DUC, pas les 3 ni les preuves complètes)
-Ce qui doit être visible: id, name, description, target_artifacts, interaction_mechanism (dérivé des relations ATT&CK réelles), admissibility_profile.allowed_location_types (D3-DUC : credential_store ; suggestion : montrer plutôt D3-DNR pour illustrer aussi required_asset_types, réellement renseigné après audit), un extrait d'evidence (source + passage), version.
+Fichier de sortie: data/deception/deception_catalog.json (mécanisme "D3-DNR")
+Générateur: tools/chapter4_figures/c2_mechanism.py (python -m tools.chapter4_figures.c2_mechanism)
+Capture: docs/chapter4/screenshots/02_knowledge/deception_mechanism.png (1946×1450 px, fond blanc)
+Ce qui est visible: id, name, description, target_artifacts, possible_placements, required_asset_types (D3-DNR : file_server, web_application_server — renseigné après audit), interaction_mechanism (dérivé des relations ATT&CK réelles), version, un extrait de preuve documentaire (source + passage du kb-article D3FEND).
 Rôle dans le chapitre 4: Section 4.3.3 — Base de connaissances de cyberdéception.
-Note: catalogue v1 volontairement restreint à 3 mécanismes (D3-DF, D3-DNR, D3-DUC) — seuls les concepts-feuilles D3FEND avec une relation ATT&CK directement tracée dans le staging. Après audit documentaire des prérequis (docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md), D3-DF gagne "network_share" (allowed_location_types) et D3-DNR gagne required_asset_types=["web_application_server","file_server"] — les deux traçables à une phrase précise du kb-article D3FEND, jamais inventés.
+Note: D3-DNR choisi de préférence (plutôt que D3-DUC/D3-DF) car il possède des propriétés d'admissibilité réellement renseignées après l'audit documentaire (docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md) — required_asset_types traçable à une phrase précise du kb-article D3FEND, jamais inventé.
 ```
 
 ## Capture C3 — Résultat SP1 réel
 
 ```
-Status: READY_FOR_SCREENSHOT
+Status: AVAILABLE
 Module: src/admissibility.py
 Fichier de sortie: docs/chapter4/outputs/sp1_real_example.txt (résumé) + sp1_real_example.json (complet) — catalogue et mapping RÉELS, après audit des prérequis
-Commande: python -m examples.sp1_real_example
-Capture: docs/chapter4/screenshots/03_sp1/sp1_real_result.png (à produire manuellement depuis sp1_real_example.txt)
-Ce qui doit être visible: D_i réellement peuplé depuis le mapping M_{i,d} matérialisé, décision par candidat (Autorise/PrerequisSatisfaits/Pertinent), la synthèse (12 candidats bruts, 1 admissible, 11 rejetés), ET la ligne ADMISSIBLE réelle : T1039@FS01 / D3-DNR / shared-drive.
+Générateur: tools/chapter4_figures/c3_sp1.py (python -m tools.chapter4_figures.c3_sp1)
+Capture: docs/chapter4/screenshots/03_sp1/sp1_real_result.png (1960×1602 px, fond blanc)
+Ce qui est visible: tableau des 12 candidats (Occurrence/Mécanisme/Emplacement/Autorise/PrerequisSatisfaits/Pertinent/Décision), la ligne ADMISSIBLE réelle surlignée (T1039@FS01 / D3-DNR / shared-drive), et la synthèse (12 candidats bruts, 1 admissible, 11 rejetés).
 Rôle dans le chapitre 4: Section 4.4.1 — Construction du domaine admissible (SP1).
-Note pédagogique: pour D3-DUC et D3-DF, RequirementsSatisfied="undetermined" (aucune preuve documentaire suffisante) — C_{i,h} vide pour ces deux mécanismes ; pour D3-DNR, RequirementsSatisfied s'évalue réellement pass/fail grâce à l'audit documentaire (required_asset_types renseigné). La capture doit montrer ce contraste, pas seulement le résultat admissible isolé.
+Note pédagogique: pour D3-DUC et D3-DF, RequirementsSatisfied="undetermined" (aucune preuve documentaire suffisante) — C_{i,h} vide pour ces deux mécanismes ; pour D3-DNR, RequirementsSatisfied s'évalue réellement pass/fail grâce à l'audit documentaire (required_asset_types renseigné). La figure montre ce contraste ligne par ligne, pas seulement le résultat admissible isolé.
 ```
 
 ## Capture C4 — Récupération documentaire RAG
 
 ```
-Status: READY_FOR_SCREENSHOT
+Status: AVAILABLE
 Module: src/rag_indexer.py / src/rag_retriever.py
-Fichier de sortie: docs/chapter4/outputs/rag_retrieval_example.txt (résultat de récupération) + rag_chunks_example.json (structure des chunks)
-Commande: python -m examples.rag_example
-Capture: docs/chapter4/screenshots/04_rag/rag_retrieval.png (à produire manuellement depuis rag_retrieval_example.txt)
-Ce qui doit être visible: la requête, un index réel de 124 chunks (44 D3FEND, 62 Engage, 18 littérature), le classement Rang/Score/Type/chunk_id/Extrait — premier résultat "d3fend:D3-DUC:0" (Decoy User Credential), pertinent pour la requête.
+Fichier de sortie: docs/chapter4/outputs/rag_retrieval_example.txt (résultat de récupération)
+Générateur: tools/chapter4_figures/c4_rag.py (python -m tools.chapter4_figures.c4_rag)
+Capture: docs/chapter4/screenshots/04_rag/rag_retrieval.png (2050×1084 px, fond blanc)
+Ce qui est visible: la requête, un index réel de 124 chunks (44 D3FEND, 62 Engage, 18 littérature), le classement des 5 premiers résultats (Rang/Score/Type/chunk_id/Extrait) — premier résultat "d3fend:D3-DUC:0" (Decoy User Credential), pertinent pour la requête.
 Rôle dans le chapitre 4: Section 4.4.2 — Évaluation contextuelle par RAG et LLM (SP2).
 ```
 
@@ -97,14 +100,14 @@ Repli documenté (PAS cette capture) : docs/chapter4/outputs/frozen_annotations_
 ## Capture C7 — Orchestration / artefacts d'un run complet
 
 ```
-Status: READY_FOR_SCREENSHOT
+Status: AVAILABLE
 Module: src/orchestrator.py
 Fichier de sortie: docs/chapter4/outputs/pipeline_example.txt + runs/chapter4-example/*.json (régénérable, non versionné)
-Commande: python -m examples.orchestrator_example
-Capture: docs/chapter4/screenshots/09_pipeline/pipeline_result.png (à produire manuellement depuis pipeline_example.txt)
-Ce qui doit être visible: run_id, liste des fichiers écrits (input_manifest, candidates, retrieval, annotations_raw/frozen, costs, pareto, deployment_plan, deployment_report, risks, run_manifest), et le rapport Y* (occurrence/mécanisme/emplacement/coût/DE/risque avant-après).
+Générateur: tools/chapter4_figures/c7_pipeline.py (python -m tools.chapter4_figures.c7_pipeline)
+Capture: docs/chapter4/screenshots/09_pipeline/pipeline_result.png (2067×1654 px, fond blanc)
+Ce qui est visible: run_id, candidats évalués/admissibles, la liste des 8 étapes exécutées (Candidats, Retrieval, Annotations, Table figée, Coûts, Plan, Risques, Manifest) sous forme de coches, et la liste des 11 fichiers réellement produits (input_manifest.json, candidates.json, retrieval.json, annotations_raw.json, annotations_frozen.json, costs.json, pareto.json, deployment_plan.json, deployment_report.json, risks.json, run_manifest.json).
 Rôle dans le chapitre 4: Section 4.5.1 — Enchaînement des traitements.
-Note: cette exécution utilise le repli déterministe rule_based_stub (aucun provider LLM réel disponible) — sert à démontrer l'intégration technique bout-en-bout, pas un résultat expérimental du chapitre 5.
+Note: cette exécution utilise le repli déterministe rule_based_stub (aucun provider LLM réel disponible) — sert à démontrer l'intégration technique bout-en-bout. Les valeurs numériques de risque et le front de Pareto (réservés au chapitre 5) ne sont volontairement PAS mis en avant dans cette figure — seule l'étape "Risques" est cochée comme complétée.
 ```
 
 ## Notes de suivi
@@ -119,7 +122,16 @@ Note: cette exécution utilise le repli déterministe rule_based_stub (aucun pro
 - C5 et C6 resteront `NOT_AVAILABLE` tant qu'une exécution locale avec un
   vrai provider LLM (Ollama ou endpoint OpenAI-compatible) n'aura pas été
   effectuée par l'utilisateur — le code est prêt, testé, et documenté
-  (`IMPLEMENTATION_REPORT.md`, section 4.4.2) ; seule l'exécution manque.
+  (`FINAL_TECHNICAL_REPORT.md`, section 4.4.2) ; seule l'exécution manque.
+- **C1, C2, C3, C4, C7 sont désormais `AVAILABLE`** : les 5 PNG existent
+  réellement dans `docs/chapter4/screenshots/`, générés de façon
+  reproductible par `tools/chapter4_figures/` (`python -m
+  tools.chapter4_figures.generate_all` régénère les 5 en une commande) —
+  fond blanc, texte noir/gris, aucune capture de terminal brute, aucune
+  valeur inventée (chaque figure lit un fichier de sortie réel du dépôt).
+  Dépendance `matplotlib` (groupe optionnel `docs` de `pyproject.toml`),
+  utilisée uniquement par cet outil de documentation — jamais importée
+  par `src/`.
 - Historique : l'ancienne numérotation (C1–C8, avec C4=chunks/C5=retrieval
   séparées, C6=annotation stub, C7=table figée stub, C8=SP3) est
   remplacée par celle ci-dessus. Les sorties de l'ancienne C6/C7 restent
