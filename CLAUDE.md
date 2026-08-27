@@ -2219,8 +2219,8 @@ INTERDIT
 - [x] `knowledge_attack.py`
 - [x] `knowledge_deception.py`
 - [x] `admissibility.py`
-- [ ] `rag_indexer.py`
-- [ ] `rag_retriever.py`
+- [x] `rag_indexer.py`
+- [x] `rag_retriever.py`
 - [ ] `annotator_llm.py`
 - [ ] `annotation_validator.py`
 - [x] `risk_engine.py`

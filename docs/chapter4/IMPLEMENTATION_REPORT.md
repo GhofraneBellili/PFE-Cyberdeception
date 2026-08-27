@@ -38,8 +38,8 @@ déclaration d'intention) :
 | `src/knowledge_attack.py` | 385 | **IMPLEMENTE** |
 | `src/knowledge_deception.py` | 239 | **IMPLEMENTE** |
 | `src/admissibility.py` | ~250 | **IMPLEMENTE** (SP1, périmètre petite instance) |
-| `src/rag_indexer.py` | 7 (stub) | NON IMPLEMENTE |
-| `src/rag_retriever.py` | 7 (stub) | NON IMPLEMENTE |
+| `src/rag_indexer.py` | ~250 | **IMPLEMENTE** (chunks tracés + vecteurs TF-IDF hachés) |
+| `src/rag_retriever.py` | ~65 | **IMPLEMENTE** (similarité cosinus, top-k) |
 | `src/annotator_llm.py` | 8 (stub) | NON IMPLEMENTE |
 | `src/annotation_validator.py` | 8 (stub) | NON IMPLEMENTE |
 | `src/risk_engine.py` | ~150 | **IMPLEMENTE** (SP3, `test_reference_example` vert) |
@@ -59,7 +59,7 @@ knowledge_deception + tools/deception_kb/*)
   ↓
 SP1 (admissibility.py)               ← IMPLEMENTE (petite instance)
   ↓
-RAG (rag_indexer.py / rag_retriever.py)   ← NON IMPLEMENTE
+RAG (rag_indexer.py / rag_retriever.py)   ← IMPLEMENTE (chunks reels D3FEND/Engage/litterature, TF-IDF hache)
   ↓
 LLM structured annotation (annotator_llm.py)  ← NON IMPLEMENTE
   ↓
@@ -320,10 +320,119 @@ CAPTURE 3 — voir `SCREENSHOT_MANIFEST.md` (`READY_FOR_SCREENSHOT`).
 
 ## 5. Implémentation du RAG
 
-**Status : NON IMPLEMENTE.**
+**Status : IMPLEMENTE (indexation + récupération, périmètre décrit
+ci-dessous).**
 
-`src/rag_indexer.py` et `src/rag_retriever.py` sont des stubs de 7 lignes
-chacun.
+### Objectif
+
+Ingérer les documents déjà versionnés hors ligne (D3FEND, Engage,
+littérature), les découper en chunks tracés, construire un index et
+récupérer les passages pertinents pour une requête contextuelle (§9.1
+étapes 2, 3, 7).
+
+### Correspondance avec le chapitre 3
+
+CLAUDE.md §9.1 (pipeline de construction de la KB déception, étapes 2/3/7
+en particulier), §26 (`rag_indexer.py`, `rag_retriever.py`).
+
+### Fichiers concernés
+
+`src/rag_indexer.py`, `src/rag_retriever.py`, `tests/test_rag_indexer.py`,
+`tests/test_rag_retriever.py`, `examples/rag_example.py`.
+
+### Classes / fonctions principales
+
+**`rag_indexer.py`** : `Chunk`, `RagIndex`, `load_d3fend_chunks`,
+`load_engage_chunks`, `load_literature_chunks`, `tokenize`,
+`compute_document_frequencies`, `embed_text`, `embed_query`,
+`build_index`.
+
+**`rag_retriever.py`** : `RetrievalResult`, `cosine_similarity`,
+`retrieve`.
+
+### Entrées
+
+Les fichiers de staging déjà versionnés et testés (§3) :
+`data/deception/staging/d3fend_deception_seed_1.5.0.json` (concepts +
+`source_evidence`), `data/deception/staging/engage_activity_seed_1.0.json`
+(activités, `description`/`long_description`),
+`data/deception/staging/literature_evidence_seed_1.2.json` (18 passages
+`page_verified`).
+
+### Traitement
+
+Un chunk par entrée `source_evidence` (D3FEND), par
+`description`/`long_description` distincte (Engage), par passage
+scientifique déjà vérifié (littérature) — texte vide jamais indexé
+(§25.3, omis silencieusement, pas une erreur). Chaque chunk porte
+`chunk_id`, `source_id`, `source_type`, `document_id`, `locator`
+(page/propriété source), `text`, `text_hash` (SHA-256, intégrité),
+`metadata`. Vecteur déterministe par chunk : fréquence de terme pondérée
+par IDF (fréquence documentaire inverse, calculée sur le corpus indexé)
+avec « hashing trick » (256 dimensions par défaut), mots-outils anglais
+exclus, puis normalisation L2. La requête est encodée avec les **mêmes**
+poids IDF que le corpus (`embed_query`), condition nécessaire à une
+similarité cosinus comparable. `retrieve` trie par similarité
+décroissante et retourne les `top_k` chunks (filtre optionnel par
+`source_type`).
+
+### Sorties
+
+`RagIndex` (chunks + vecteurs + statistiques du corpus) ; côté
+`retrieve` : liste de `RetrievalResult` (chunk + score).
+
+### Technologie utilisée
+
+Python pur (`hashlib.blake2b`/`sha256`, `re`, `math`) — **aucune**
+bibliothèque d'embeddings ni service externe (voir Limites).
+
+### Commande réelle d'exécution
+
+```bash
+python -m examples.rag_example
+```
+
+### Tests
+
+`tests/test_rag_indexer.py` — 22 tests (tokenisation, exclusion des
+mots-outils, vecteurs déterministes/normalisés, IDF plus élevé pour un
+terme rare que pour un terme fréquent, ingestion synthétique par source,
+texte vide omis, index sans collision de `chunk_id`, **ingestion réelle
+des trois fichiers de staging** avec assertions sur les comptes réels,
+invariant LLM hors du chemin d'exécution). `tests/test_rag_retriever.py`
+— 13 tests (similarité cosinus, classement par score, `top_k`, filtre par
+`source_type`, index vide, invariant LLM hors du chemin d'exécution). 35
+tests au total, tous verts.
+
+### Exemple réel disponible
+
+`docs/chapter4/outputs/rag_chunks_example.json` (échantillon réel de 6
+chunks, 2 par source) et `docs/chapter4/outputs/rag_retrieval_example.txt`
+(résultat réel de récupération, requête *"decoy credential store to
+deceive an adversary on a domain controller"* sur un index réel de 124
+chunks — 44 D3FEND, 62 Engage, 18 littérature) : le premier résultat est
+`d3fend:D3-DUC:0` (« Decoy User Credential »), directement pertinent pour
+la requête.
+
+### Capture associée
+
+CAPTURE 4 (chunks) et CAPTURE 5 (retrieval) — voir
+`SCREENSHOT_MANIFEST.md` (`READY_FOR_SCREENSHOT`).
+
+### Limites
+
+- Le vecteur par chunk est un TF-IDF haché **déterministe**, pas un
+  embedding sémantique de modèle de langage — un choix technique
+  documenté (pas une décision scientifique), cohérent avec l'absence de
+  bibliothèque d'embeddings choisie à ce stade (`TECHNOLOGIES.md`). Il
+  peut être remplacé plus tard sans changer la forme de
+  `Chunk`/`RagIndex`/`RetrievalResult`.
+- Index en mémoire (`dict` Python), pas de magasin vectoriel persistant.
+- La liste de mots-outils exclus est fixe et anglaise uniquement (pas de
+  détection de langue).
+- Aucune intégration avec `annotator_llm.py` (non implémenté) : les
+  `RetrievalResult` ne sont pas encore convertis en
+  `DeceptionEvidence`/`AnnotationContext.retrieved_evidence`.
 
 ---
 

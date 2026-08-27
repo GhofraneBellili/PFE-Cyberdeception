@@ -1329,6 +1329,71 @@ RAG (`src/rag_indexer.py` / `src/rag_retriever.py`), puis annotation LLM
 (`src/annotator_llm.py`) avec repli déterministe `rule_based_stub`
 explicitement marqué comme tel si aucune API LLM réelle n'est disponible.
 
+---
+
+### Étape 12 — Implémentation du RAG (`src/rag_indexer.py` / `src/rag_retriever.py`)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Ingérer les documents déjà versionnés hors ligne (D3FEND, Engage,
+littérature), les découper en chunks tracés, construire un index et
+récupérer les passages pertinents pour une requête contextuelle (§9.1
+étapes 2, 3, 7).
+
+#### Traitement réalisé
+
+Un chunk par entrée `source_evidence` (D3FEND), par
+`description`/`long_description` distincte (Engage), par passage
+scientifique déjà vérifié (littérature) — texte vide jamais indexé.
+Chaque chunk : `chunk_id`, `source_id`, `source_type`, `document_id`,
+`locator`, `text`, `text_hash` (SHA-256), `metadata`. Vecteur déterministe
+TF-IDF avec « hashing trick » (256 dimensions, mots-outils exclus,
+normalisation L2) — **choix technique explicite**, pas un embedding
+sémantique de modèle de langage, documenté comme tel faute de
+bibliothèque d'embeddings choisie à ce stade. La requête est encodée avec
+les mêmes poids IDF que le corpus indexé pour rester comparable.
+
+#### Sorties
+
+`docs/chapter4/outputs/rag_chunks_example.json` (échantillon réel de 6
+chunks) et `docs/chapter4/outputs/rag_retrieval_example.txt` (résultat
+réel de récupération sur un index de 124 chunks réels — 44 D3FEND, 62
+Engage, 18 littérature), générés par `python -m examples.rag_example` :
+le premier résultat pour la requête *"decoy credential store to deceive
+an adversary on a domain controller"* est `d3fend:D3-DUC:0` (« Decoy
+User Credential »).
+
+#### Fichiers concernés
+
+`src/rag_indexer.py`, `src/rag_retriever.py`, `tests/test_rag_indexer.py`,
+`tests/test_rag_retriever.py`, `examples/rag_example.py`.
+
+#### Tests et validation
+
+`tests/test_rag_indexer.py` (22 tests) + `tests/test_rag_retriever.py`
+(13 tests) — tokenisation, exclusion des mots-outils, vecteurs
+déterministes, IDF, ingestion synthétique et **ingestion réelle des trois
+fichiers de staging**, index sans collision, similarité cosinus,
+classement, `top_k`, filtre par source, invariant LLM hors du chemin
+d'exécution. **461 tests** au total au moment de la validation. Détail
+complet : `docs/chapter4/IMPLEMENTATION_REPORT.md`, section 5.
+
+#### Limites actuelles
+
+Vecteur TF-IDF haché déterministe, pas un embedding sémantique ; index en
+mémoire, pas de magasin vectoriel persistant ; liste de mots-outils fixe
+et anglaise uniquement ; aucune intégration avec `annotator_llm.py` (non
+implémenté) pour convertir les `RetrievalResult` en
+`DeceptionEvidence`/`AnnotationContext.retrieved_evidence`.
+
+#### Lien avec l'étape suivante
+
+Annotation LLM (`src/annotator_llm.py`), avec repli déterministe
+`rule_based_stub` explicitement marqué comme tel si aucune API LLM réelle
+n'est disponible.
+
 ## OPEN_DECISION en cours
 
 Ces points sont volontairement non résolus et ne doivent pas l'être

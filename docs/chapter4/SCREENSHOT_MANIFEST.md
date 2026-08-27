@@ -47,17 +47,24 @@ Rôle dans le chapitre 4: Section 4.4 — Implémentation de SP1.
 ## Capture C4 — Exemple de chunks / preuves disponibles pour le RAG
 
 ```
-Status: NOT_IMPLEMENTED
-Module: src/rag_indexer.py (stub, non implémenté)
-Raison: RAG non implémenté. Note : les preuves documentaires versionnées existent déjà côté offline (data/deception/staging/literature_evidence_seed_1.2.json, 18 passages page_verified ; D3FEND source_evidence), mais elles ne sont pas encore chunkées/indexées pour un RAG runtime.
+Status: READY_FOR_SCREENSHOT
+Module: src/rag_indexer.py
+Fichier de sortie: docs/chapter4/outputs/rag_chunks_example.json
+Commande: python -m examples.rag_example
+Capture: docs/chapter4/screenshots/04_rag/rag_chunks.png (à produire manuellement depuis rag_chunks_example.json)
+Ce qui doit être visible: chunk_id, source_id, source_type, document_id, locator, text, text_hash, metadata — un chunk D3FEND (ex. "Decoy Object"), un chunk Engage, un chunk littérature (passage page_verified).
 Rôle dans le chapitre 4: Section 4.5 — Implémentation du LLM et du RAG.
 ```
 
 ## Capture C5 — Résultat réel du retrieval
 
 ```
-Status: NOT_IMPLEMENTED
-Module: src/rag_retriever.py (stub, non implémenté)
+Status: READY_FOR_SCREENSHOT
+Module: src/rag_retriever.py
+Fichier de sortie: docs/chapter4/outputs/rag_retrieval_example.txt
+Commande: python -m examples.rag_example
+Capture: docs/chapter4/screenshots/04_rag/rag_retrieval.png (à produire manuellement depuis rag_retrieval_example.txt)
+Ce qui doit être visible: la requête, un index réel de 124 chunks (44 D3FEND, 62 Engage, 18 littérature), et le classement Rang/Score/Type/chunk_id/Extrait — premier résultat "d3fend:D3-DUC:0" (Decoy User Credential), pertinent pour la requête sur les credentials leurres.
 Rôle dans le chapitre 4: Section 4.5 — Implémentation du LLM et du RAG.
 ```
 

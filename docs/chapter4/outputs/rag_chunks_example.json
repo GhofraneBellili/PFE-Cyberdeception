@@ -1,0 +1,82 @@
+[
+  {
+    "chunk_id": "d3fend:D3-DO:0",
+    "source_id": "d3fend.json",
+    "source_type": "d3fend",
+    "document_id": "D3-DO",
+    "locator": "rdfs:label",
+    "text": "Decoy Object",
+    "text_hash": "8fbbfaf6f68ababd142920ffdd69cccc72f43f701fa0185a8adb10b422c30c99",
+    "metadata": {
+      "concept_name": "Decoy Object",
+      "source_entity": "d3f:DecoyObject",
+      "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9"
+    }
+  },
+  {
+    "chunk_id": "d3fend:D3-DO:1",
+    "source_id": "d3fend.json",
+    "source_type": "d3fend",
+    "document_id": "D3-DO",
+    "locator": "d3f:definition",
+    "text": "A Decoy Object is created and deployed for the purposes of deceiving attackers.",
+    "text_hash": "77c6dbddc441ed7e67495b84281eb8d62c839f50256fa87b1bea2f1c1cf8b0a3",
+    "metadata": {
+      "concept_name": "Decoy Object",
+      "source_entity": "d3f:DecoyObject",
+      "source_sha256": "db82077fffb3897387fde29006b140b1401cb6df4b5729c0496c830e099114b9"
+    }
+  },
+  {
+    "chunk_id": "engage:EAC0001:description",
+    "source_id": "EAC0001",
+    "source_type": "engage",
+    "document_id": "EAC0001",
+    "locator": "description",
+    "text": "Monitor local APIs that might be used by adversary tools and activity.",
+    "text_hash": "077bc8984e8a8d844b90353248d3b23e45d8b9ca850ce0f84eee6bebabda9eb7",
+    "metadata": {
+      "name": "API Monitoring",
+      "detail_type": "Engagement"
+    }
+  },
+  {
+    "chunk_id": "engage:EAC0001:long_description",
+    "source_id": "EAC0001",
+    "source_type": "engage",
+    "document_id": "EAC0001",
+    "locator": "long_description",
+    "text": "API Monitoring involves capturing an internal OS function for its usage, accompanying arguments, and result. When a defender captures this information, the data gathered can be analyzed to gain insights into the activity of an adversary at a level deeper than normal system activity monitoring. This type of monitoring can also be used to produce high-fidelity detections. For example, the defender can trace activity through WinSock TCP API functions to view potentially malicious network events or trace usage of the Win32 DeleteFile() function to log all attempts at deleting a given file.",
+    "text_hash": "48771b97363a5949500307f333a11f43a358a03a7a0f6bd034c41450eaf20989",
+    "metadata": {
+      "name": "API Monitoring",
+      "detail_type": "Engagement"
+    }
+  },
+  {
+    "chunk_id": "doi_10.1145_3214305__ev001",
+    "source_id": "doi_10.1145_3214305",
+    "source_type": "literature",
+    "document_id": "doi_10.1145_3214305",
+    "locator": "page_5_body_text_deployment_discussion",
+    "text": "To be effective, deception elements need to be generated to achieve perfect realism with regard to real data and system integration.",
+    "text_hash": "cf9f1cee317eb43c352f70a3911704ce5ec243b7e613a1a3c5b7598ce6cbab3b",
+    "metadata": {
+      "source_sha256": "9e482fefbed52fa438aa93f35c3ad0aacfef4fea8894618863b7e29c6f73a03e",
+      "page_verified": true
+    }
+  },
+  {
+    "chunk_id": "doi_10.1145_3214305__ev002",
+    "source_id": "doi_10.1145_3214305",
+    "source_type": "literature",
+    "document_id": "doi_10.1145_3214305",
+    "locator": "page_2_body_text",
+    "text": "a digital or information system resource whose value lies in the unauthorized use of that resource",
+    "text_hash": "a86e07e32ac618275930c193a0b5660d8bb7f4e3722fb186c4a30e119e40aed8",
+    "metadata": {
+      "source_sha256": "9e482fefbed52fa438aa93f35c3ad0aacfef4fea8894618863b7e29c6f73a03e",
+      "page_verified": true
+    }
+  }
+]
