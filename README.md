@@ -1213,6 +1213,61 @@ implémentées). Intégration avec `cost_engine.py`/`optimizer.py` à venir.
 `cost_engine.py` (`Cout(d;H)`), puis `optimizer.py` (unicité, budget,
 dominance, front de Pareto, `Y*`).
 
+---
+
+### Étape 10 — Implémentation du coût (`src/cost_engine.py`)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Calculer `Cost(d;H) = C_deploy(d) + C_resource(d;H) + C_maintenance(d;H)`
+(§15), en amont de la contrainte budgétaire de l'optimiseur.
+
+#### Traitement réalisé
+
+Trois fonctions déterministes pour les trois composantes (`C_deploy`,
+`C_resource`, `C_maintenance`), sommées par `compute_mechanism_cost`.
+Toute valeur négative (paramètre ou horizon `H`) est rejetée
+explicitement. Hypothèse gelée du §15 respectée par construction : aucune
+fonction ne prend d'emplacement `l` en paramètre, donc `Cost(d,l;H) =
+Cost(d;H)` structurellement.
+
+#### Sorties
+
+`docs/chapter4/outputs/cost_example.txt`, généré par
+`python -m examples.cost_example` (deux mécanismes, `H=720`) :
+
+```
+Mecanisme   C_deploy    C_resource  C_maintenance   Cost
+D3-DUC      270.00      21.60       3747.60         4039.20
+D3-DF       130.00      22.68       1879.20         2031.88
+```
+
+#### Fichiers concernés
+
+`src/cost_engine.py`, `tests/test_cost_engine.py`,
+`examples/cost_example.py`.
+
+#### Tests et validation
+
+`tests/test_cost_engine.py` — 13 tests (formules des trois composantes,
+rejet des valeurs négatives, somme totale, indépendance vis-à-vis de
+l'emplacement par construction, déterminisme). **404 tests** au total au
+moment de la validation. Détail complet :
+`docs/chapter4/IMPLEMENTATION_REPORT.md`, section 8.
+
+#### Limites actuelles
+
+`DeceptionMechanism.resource_requirements` reste du texte libre non
+parsé (ex. "2 vCPU") : ce module attend des paramètres numériques déjà
+explicites, fournis par l'appelant — la conversion texte→numérique reste
+une OPEN_DECISION non résolue.
+
+#### Lien avec l'étape suivante
+
+`optimizer.py` (unicité, budget, dominance, front de Pareto, `Y*`).
+
 ## OPEN_DECISION en cours
 
 Ces points sont volontairement non résolus et ne doivent pas l'être

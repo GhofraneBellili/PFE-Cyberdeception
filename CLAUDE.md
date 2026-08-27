@@ -2224,7 +2224,7 @@ INTERDIT
 - [ ] `annotator_llm.py`
 - [ ] `annotation_validator.py`
 - [x] `risk_engine.py`
-- [ ] `cost_engine.py`
+- [x] `cost_engine.py`
 - [ ] `optimizer.py`
 - [ ] `reporter.py`
 - [x] test analytique de référence

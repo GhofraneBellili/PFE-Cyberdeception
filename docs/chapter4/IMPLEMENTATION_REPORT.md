@@ -44,7 +44,7 @@ déclaration d'intention) :
 | `src/annotator_llm.py` | 8 (stub) | NON IMPLEMENTE |
 | `src/annotation_validator.py` | 8 (stub) | NON IMPLEMENTE |
 | `src/risk_engine.py` | ~150 | **IMPLEMENTE** (SP3, `test_reference_example` vert) |
-| `src/cost_engine.py` | 7 (stub) | NON IMPLEMENTE |
+| `src/cost_engine.py` | ~140 | **IMPLEMENTE** (Cost(d;H)) |
 | `src/optimizer.py` | 7 (stub) | NON IMPLEMENTE |
 | `src/reporter.py` | 8 (stub) | NON IMPLEMENTE |
 
@@ -70,7 +70,7 @@ deterministic SP2 aggregation         ← NON IMPLEMENTE
   ↓
 frozen annotations                    ← NON IMPLEMENTE
   ↓
-Cost (cost_engine.py)                ← NON IMPLEMENTE
+Cost (cost_engine.py)                ← IMPLEMENTE (Cost(d;H))
 SP3 (risk_engine.py)                 ← IMPLEMENTE (test_reference_example vert)
   ↓
 optimizer.py                          ← NON IMPLEMENTE
@@ -344,9 +344,74 @@ Aucun module ne calcule encore `Realisme`, `P_interaction`,
 
 ## 8. Calcul du coût
 
-**Status : NON IMPLEMENTE.**
+**Status : IMPLEMENTE.**
 
-`src/cost_engine.py` est un stub de 7 lignes.
+### Objectif
+
+Calculer `Cost(d;H) = C_deploy(d) + C_resource(d;H) + C_maintenance(d;H)` (§15).
+
+### Correspondance avec le chapitre 3
+
+CLAUDE.md §15.1 (`C_deploy`), §15.2 (`C_resource`), §15.3 (`C_maintenance`).
+Hypothèse de référence gelée (§15) : coût indépendant de l'emplacement —
+`Cost(d,l;H) = Cost(d;H)` (le module ne prend structurellement jamais `l`
+en paramètre).
+
+### Fichiers concernés
+
+`src/cost_engine.py`, `tests/test_cost_engine.py`,
+`examples/cost_example.py`.
+
+### Classes / fonctions principales
+
+`compute_deployment_cost`, `compute_resource_cost`,
+`compute_maintenance_cost`, `compute_mechanism_cost`,
+`compute_cost_by_mechanism`.
+
+### Entrées
+
+Paramètres numériques explicites par mécanisme (`t_setup`, `w_eng`,
+`L_data`, `w_data`, `C_integration` ; `r_CPU`/`r_RAM`/`r_disk`/
+`r_network` et coûts unitaires associés ; `t_monitoring`, `S_logs`,
+`w_storage`, `C_updates`) et un horizon `H`.
+
+### Traitement
+
+Somme pondérée déterministe des trois composantes ; rejet explicite de
+toute valeur négative ou d'un horizon négatif (aucune valeur devinée).
+
+### Sorties
+
+`dict` par mécanisme : `{C_deploy, C_resource, C_maintenance, Cost}`.
+
+### Technologie utilisée
+
+Python pur.
+
+### Commande réelle d'exécution
+
+```bash
+python -m examples.cost_example
+```
+
+### Tests
+
+`tests/test_cost_engine.py` — 13 tests (formules des trois composantes,
+rejet des valeurs négatives, somme totale, indépendance vis-à-vis de
+l'emplacement par construction, déterminisme). Tous verts.
+
+### Exemple réel disponible
+
+`docs/chapter4/outputs/cost_example.txt`, généré par
+`examples/cost_example.py` (deux mécanismes, `H=720`).
+
+### Limites
+
+`DeceptionMechanism.resource_requirements` (`src/schemas.py`) reste du
+texte libre (`cpu`, `ram`, ... ex. "2 vCPU") : ce module n'essaie pas de
+le parser en valeurs numériques — il attend des paramètres numériques
+déjà explicites, quelle qu'en soit l'origine. La conversion texte→numérique
+reste une OPEN_DECISION non résolue.
 
 ---
 
@@ -527,7 +592,7 @@ lorsque `src/annotator_llm.py` sera implémenté.
 | `P_engagement` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
 | `Effet_prog` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
 | `DE` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
-| `Cout(d;H)` | `src/cost_engine.py` | — | — | — | — | NON IMPLEMENTE |
+| `Cout(d;H)` | `src/cost_engine.py` | `compute_cost_by_mechanism` | `test_cost_engine.py` | `cost_example.txt` | — | IMPLEMENTE |
 | `Gamma`, `A`, `P`, `R` | `src/risk_engine.py` | `propagate_risk` | `test_reference_example` | `risk_example.csv` | C8 | IMPLEMENTE |
 | budget | `src/optimizer.py` | — | — | — | — | NON IMPLEMENTE |
 | Pareto | `src/optimizer.py` | — | — | — | (chapitre 5) | NON IMPLEMENTE |
