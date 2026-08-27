@@ -35,36 +35,59 @@ renseignée si le schéma le permet, soit exclure ce mécanisme »). Ce
 n'est PAS un défaut de D3FEND : c'est une limite de couverture de ce
 staging précis, documentée comme telle dans `excluded_concepts`.
 
-**Champs volontairement laissés à leur valeur par défaut (listes vides),
-faute de preuve documentaire les justifiant** : `requirements`,
-`realism_factors`, `progression_effects`, `maintenance_requirements`,
-`resource_requirements`, et `admissibility_profile.required_asset_types`/
-`required_services`/`required_artifacts`. En particulier,
-`progression_effects` (stop/redirect/contain/delay) appartient au modèle
-de cyberdéception du PFE (chapitre 3), pas à l'ontologie D3FEND
-elle-même : ce n'est pas une omission, c'est la raison d'être de SP2
-(annotation contextuelle) — le catalogue statique ne peut pas répondre à
-cette question dynamique/contextuelle, seule une annotation (LLM ou
-repli déterministe) le peut.
+**Audit documentaire des prérequis d'admissibilité** (réf.
+`docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md`, dernière passe avant gel
+de l'implémentation) : `definition`/`kb-article`/`artifacts` de chacun
+des 3 mécanismes, ainsi que MITRE Engage et la littérature déjà versés,
+ont été relus systématiquement à la recherche d'affirmations
+documentaires (jamais de simples recommandations « should »/« may »)
+justifiant `required_asset_types`/`required_services`/
+`required_artifacts`/`possible_placements`. Deux enrichissements
+ponctuels en sont ressortis, chacun cité à une phrase précise du
+kb-article D3FEND (`ADDITIONAL_LOCATION_TYPES`, `REQUIRED_ASSET_TYPES`
+ci-dessous) — tout le reste (`requirements`, `realism_factors`,
+`progression_effects`, `maintenance_requirements`,
+`resource_requirements`, et le reste de `admissibility_profile.required_*`)
+demeure à sa valeur par défaut (liste vide), faute de preuve
+documentaire suffisamment directe. En particulier, `progression_effects`
+(stop/redirect/contain/delay) appartient au modèle de cyberdéception du
+PFE (chapitre 3), pas à l'ontologie D3FEND elle-même : ce n'est pas une
+omission, c'est la raison d'être de SP2 (annotation contextuelle) — le
+catalogue statique ne peut pas répondre à cette question
+dynamique/contextuelle, seule une annotation (LLM ou repli déterministe)
+le peut.
 
-**Conséquence pour SP1** : `admissibility_profile.required_*` restant
-vides, `RequirementsSatisfied(d,ℓ)` évaluera « undetermined » pour tout
-candidat basé sur ce catalogue (politique prudente déjà appliquée par
-`src/admissibility.py`, OPEN_DECISION 4) — `C_{i,h}` sera donc vide avec
-ce catalogue réel. Un résultat honnête reflétant une lacune de preuve
-documentaire, pas un défaut d'implémentation (voir
-`docs/chapter4/IMPLEMENTATION_REPORT.md`).
+**Conséquence pour SP1** : `RequirementsSatisfied(d,ℓ)` reste
+« undetermined » (politique prudente OPEN_DECISION 4) pour tout candidat
+dont le mécanisme n'a pas de `required_*` non vide — c'est-à-dire tous
+sauf `D3-DNR` après cette passe. `D3-DNR` peut désormais évaluer
+« pass »/« fail » réellement, selon l'`asset_type` de l'emplacement
+candidat (voir `docs/chapter4/outputs/sp1_real_example.json`).
+
+**Distinction « aucun prérequis » (`known_none`) vs « prérequis
+inconnu » (`unknown`)** : analysée explicitement dans l'audit — aucun
+des 3 mécanismes ne possède de preuve documentaire d'une absence
+CONFIRMÉE de prérequis (`known_none`) ; chaque liste vide reflète une
+absence réelle d'information (`unknown`), déjà correctement représentée
+par la sémantique actuelle de `DeceptionAdmissibilityProfile` (liste vide
+→ `undetermined`). Aucun nouveau champ de statut n'a donc été introduit
+dans le schéma — voir l'audit pour le raisonnement complet.
 
 **Champs dérivés d'une transformation déterministe, uniforme et
 documentée (pas une valeur inventée par mécanisme) :**
 - `admissibility_profile.allowed_location_types` / `possible_placements` :
   dérivés de l'artefact cible D3FEND (`artifacts`) via une table de
   correspondance fixe `ARTIFACT_TO_LOCATION_TYPE` (ex. `d3f:File` ->
-  `"filesystem"`) ;
+  `"filesystem"`), complétés le cas échéant par `ADDITIONAL_LOCATION_TYPES`
+  (un seul cas : `D3-DF` -> `+"network_share"`, kb-article) ;
 - `interaction_mechanism` : liste triée des `off_artifact_relation`
   observés dans `d3fend_attack_mapping_seed` pour ce concept (ex.
   `"accesses, creates, forges"`) — une lecture directe de la donnée
-  D3FEND, pas une interprétation libre.
+  D3FEND, pas une interprétation libre ;
+- `admissibility_profile.required_asset_types` : vide par défaut,
+  complété par `REQUIRED_ASSET_TYPES` (un seul cas : `D3-DNR` ->
+  `["web_application_server", "file_server"]`, kb-article, avec réserve
+  documentée sur la clause ouverte « or other », voir l'audit).
 
 Ce module ne fait ni SP1, ni RAG, ni appel LLM : c'est une couche
 OFFLINE (comme `d3fend_seed_builder.py`), pas une partie du runtime.
@@ -95,6 +118,28 @@ ARTIFACT_TO_LOCATION_TYPE: dict[str, str] = {
     "d3f:File": "filesystem",
     "d3f:NetworkResource": "network_resource",
     "d3f:Credential": "credential_store",
+}
+
+# Réf. docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md — deux enrichissements
+# ponctuels, chacun directement cité à une phrase précise du kb-article
+# D3FEND (section « How it works », factuelle — jamais une recommandation
+# « should »/« may » de la section « Considerations »), jamais inventés.
+# Ne pas ajouter d'entrée ici sans un passage correspondant dans l'audit.
+
+# D3-DF : "The decoy file is made available as a local or network
+# resource." -> un second type d'emplacement possible, en complément de
+# celui dérivé de target_artifacts (filesystem, via ARTIFACT_TO_LOCATION_TYPE).
+ADDITIONAL_LOCATION_TYPES: dict[str, list[str]] = {
+    "D3-DF": ["network_share"],
+}
+
+# D3-DNR : "Decoy network resources are deployed to web application
+# servers, network file shares, or other network based sharing
+# services." -> deux categories d'actifs de deploiement explicitement
+# nommees (la clause ouverte "or other" n'est PAS encodee — rien de
+# concret a y inventer, voir audit).
+REQUIRED_ASSET_TYPES: dict[str, list[str]] = {
+    "D3-DNR": ["web_application_server", "file_server"],
 }
 
 
@@ -140,7 +185,11 @@ def _build_mechanism(concept: dict, *, mapping_rows: list[dict], release_version
         return None
 
     artifacts = list(concept.get("artifacts", []))
-    location_types = sorted({ARTIFACT_TO_LOCATION_TYPE[a] for a in artifacts if a in ARTIFACT_TO_LOCATION_TYPE})
+    location_types = sorted(
+        {ARTIFACT_TO_LOCATION_TYPE[a] for a in artifacts if a in ARTIFACT_TO_LOCATION_TYPE}
+        | set(ADDITIONAL_LOCATION_TYPES.get(concept_id, []))
+    )
+    required_asset_types = sorted(REQUIRED_ASSET_TYPES.get(concept_id, []))
     evidence = _build_evidence(concept, concept_id)
     attack_technique_count = len({row["attack_id"] for row in mapping_rows if row["d3fend_id"] == concept_id})
 
@@ -160,7 +209,7 @@ def _build_mechanism(concept: dict, *, mapping_rows: list[dict], release_version
         "version": release_version,
         "admissibility_profile": {
             "allowed_location_types": location_types,
-            "required_asset_types": [],
+            "required_asset_types": required_asset_types,
             "required_services": [],
             "required_artifacts": [],
             "exposure_mode": None,

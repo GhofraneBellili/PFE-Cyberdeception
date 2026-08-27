@@ -111,10 +111,10 @@
           "location_id": "auth-store",
           "mapping": "pass",
           "Autorise": "fail",
-          "PrerequisSatisfaits": "undetermined",
+          "PrerequisSatisfaits": "fail",
           "Pertinent": "fail",
           "admissible": false,
-          "rejection_reason": "Autorise=fail, PrerequisSatisfaits=undetermined, Pertinent=fail"
+          "rejection_reason": "Autorise=fail, PrerequisSatisfaits=fail, Pertinent=fail"
         },
         {
           "occurrence_id": "T1039@FS01",
@@ -122,10 +122,10 @@
           "location_id": "shared-drive",
           "mapping": "pass",
           "Autorise": "pass",
-          "PrerequisSatisfaits": "undetermined",
+          "PrerequisSatisfaits": "pass",
           "Pertinent": "pass",
-          "admissible": false,
-          "rejection_reason": "PrerequisSatisfaits=undetermined"
+          "admissible": true,
+          "rejection_reason": null
         },
         {
           "occurrence_id": "T1039@FS01",
@@ -150,14 +150,19 @@
           "rejection_reason": "mapping=faux (mecanisme absent de D_i pour cette technique)"
         }
       ],
-      "C_i_h": []
+      "C_i_h": [
+        {
+          "mechanism_id": "D3-DNR",
+          "location_id": "shared-drive"
+        }
+      ]
     }
   },
   "summary": {
     "occurrence_count": 2,
     "terminal_occurrence_count": 0,
     "candidate_count": 12,
-    "admissible_count": 0,
-    "rejected_count": 12
+    "admissible_count": 1,
+    "rejected_count": 11
   }
 }

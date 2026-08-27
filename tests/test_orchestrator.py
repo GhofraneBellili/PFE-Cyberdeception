@@ -269,13 +269,18 @@ class TestPipelineWithRealCatalogAndMapping:
     Charge data/deception/deception_catalog.json et
     data/deception/attack_deception_mapping.json (construits par
     tools/deception_kb/catalog_builder.py / mapping_builder.py) et fait
-    tourner l'orchestrateur complet dessus. Résultat honnête attendu
-    (documenté dans examples/sp1_real_example.py) : le catalogue réel ne
-    renseigne aucun required_asset_types/services/artifacts, donc
-    RequirementsSatisfied="undetermined" pour tout candidat -> aucun
-    candidat admissible -> plan de déploiement vide. Ce test vérifie que
-    le pipeline complet reste néanmoins robuste (ne plante pas) sur ce
-    cas réel, pas qu'il produit un plan non trivial.
+    tourner l'orchestrateur complet dessus, sur une instance qui n'exerce
+    QUE D3-DUC (T1110.001@DC01 -> T1003@DC01). D3-DUC ne possède aucune
+    preuve documentaire suffisante pour required_asset_types/services/
+    artifacts (réf. docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md) :
+    RequirementsSatisfied="undetermined" pour son unique candidat -> plan
+    de déploiement vide pour CETTE instance précise. Ce n'est pas vrai de
+    tout le catalogue : D3-DNR possède désormais un required_asset_types
+    réellement justifié et peut être admissible sur une autre instance
+    (voir examples/sp1_real_example.py). Ce test vérifie que le pipeline
+    complet reste robuste (ne plante pas) sur le cas dégénéré C_i_h=∅,
+    pas qu'il produit systématiquement un plan vide avec tout catalogue
+    réel.
     """
 
     def _real_instance(self):

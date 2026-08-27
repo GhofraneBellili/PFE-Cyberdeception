@@ -10,16 +10,18 @@ et exécute src/admissibility.py sur une petite instance explicite dont
 les technique_id (T1110.001, T1039) et les mécanismes (D3-DUC, D3-DNR)
 proviennent réellement de ce mapping — pas choisis arbitrairement.
 
-**Résultat attendu et honnête (documenté, pas un bug)** : le catalogue
-réel ne renseigne PAS `admissibility_profile.required_asset_types`/
-`required_services`/`required_artifacts` (aucune preuve documentaire ne
-les justifie, voir `tools/deception_kb/catalog_builder.py`). Sous la
-politique prudente déjà appliquée par `src/admissibility.py`
-(OPEN_DECISION 4), `RequirementsSatisfied` est donc `"undetermined"` pour
-tout candidat — jamais `"pass"` — donc `C_{i,h}` reste vide même quand
-`Allowed` et `Pertinent` passent. Ce n'est pas un défaut d'implémentation :
-c'est une lacune de couverture documentaire actuelle, que ce script rend
-visible via le diagnostic complet de SP1 (`rejection_reason`).
+**Résultat réel (après l'audit documentaire des prérequis, réf.
+`docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md`)** : `D3-DNR` est le seul
+mécanisme dont `admissibility_profile.required_asset_types` est
+renseigné par une preuve documentaire directe (D3FEND kb-article :
+« deployed to web application servers, network file shares... ») —
+`RequirementsSatisfied` peut donc réellement évaluer `"pass"`/`"fail"`
+pour lui, selon l'`asset_type` de l'emplacement candidat. Pour `D3-DF` et
+`D3-DUC`, aucune preuve suffisante n'a été trouvée : `RequirementsSatisfied`
+reste `"undetermined"` (politique prudente OPEN_DECISION 4, jamais
+`"pass"` par défaut). Ce script rend ce contraste visible via le
+diagnostic complet de SP1 (`rejection_reason`) — pas un résultat
+uniforme masquant la nuance.
 
 Exécution :
     python -m examples.sp1_real_example
@@ -122,10 +124,12 @@ def render_text_summary(report: dict) -> str:
     lines.append(f"Rejetes         : {summary['rejected_count']}")
     lines.append("-" * 78)
     lines.append(
-        "Note : RequirementsSatisfied='undetermined' pour tout candidat car le "
-        "catalogue reel ne renseigne aucun required_asset_types/services/artifacts "
-        "(aucune preuve documentaire ne les justifie) -- politique prudente "
-        "OPEN_DECISION 4, resultat honnete, pas un bug."
+        "Note : D3-DNR est le seul mecanisme dont required_asset_types est "
+        "renseigne par une preuve documentaire directe (D3FEND kb-article) -- "
+        "RequirementsSatisfied peut donc reellement passer pour lui. Pour D3-DF "
+        "et D3-DUC, aucune preuve suffisante trouvee : RequirementsSatisfied "
+        "reste 'undetermined' (politique prudente OPEN_DECISION 4). "
+        "Voir docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md."
     )
     return "\n".join(lines) + "\n"
 

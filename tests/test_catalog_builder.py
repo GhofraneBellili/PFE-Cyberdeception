@@ -44,16 +44,21 @@ class TestBuildCatalogFromRealStaging:
         for raw_mechanism in catalog["mechanisms"]:
             assert len(raw_mechanism["evidence"]) > 0
 
-    def test_admissibility_profile_required_fields_left_empty(self):
-        """Réf. docstring de module : aucune preuve documentaire ne
-        justifie required_asset_types/services/artifacts — laissés vides,
-        jamais inventés."""
+    def test_admissibility_profile_required_fields_left_empty_unless_audited(self):
+        """Réf. docstring de module + docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md :
+        required_services/required_artifacts restent vides pour tous les
+        mécanismes (aucune preuve) ; required_asset_types reste vide sauf
+        pour D3-DNR (seul cas où l'audit a trouvé une preuve documentaire
+        directe — jamais inventé)."""
         catalog = build_catalog()
         for raw_mechanism in catalog["mechanisms"]:
             profile = raw_mechanism["admissibility_profile"]
-            assert profile["required_asset_types"] == []
             assert profile["required_services"] == []
             assert profile["required_artifacts"] == []
+            if raw_mechanism["id"] == "D3-DNR":
+                assert profile["required_asset_types"] == ["file_server", "web_application_server"]
+            else:
+                assert profile["required_asset_types"] == []
 
     def test_progression_effects_left_empty(self):
         """Réf. docstring de module : progression_effects appartient au
@@ -72,7 +77,9 @@ class TestBuildCatalogFromRealStaging:
         duc = next(m for m in catalog["mechanisms"] if m["id"] == "D3-DUC")
         assert duc["admissibility_profile"]["allowed_location_types"] == ["credential_store"]
         df = next(m for m in catalog["mechanisms"] if m["id"] == "D3-DF")
-        assert df["admissibility_profile"]["allowed_location_types"] == ["filesystem"]
+        # Réf. audit : "made available as a local or network resource" (kb-article)
+        # -> network_share ajouté en complément de filesystem (dérivé de target_artifacts).
+        assert df["admissibility_profile"]["allowed_location_types"] == ["filesystem", "network_share"]
         dnr = next(m for m in catalog["mechanisms"] if m["id"] == "D3-DNR")
         assert dnr["admissibility_profile"]["allowed_location_types"] == ["network_resource"]
 
