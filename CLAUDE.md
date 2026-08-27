@@ -2226,7 +2226,7 @@ INTERDIT
 - [x] `risk_engine.py`
 - [x] `cost_engine.py`
 - [x] `optimizer.py`
-- [ ] `reporter.py`
+- [x] `reporter.py`
 - [x] test analytique de référence
 - [x] validation exhaustive du solveur sur petite instance
 

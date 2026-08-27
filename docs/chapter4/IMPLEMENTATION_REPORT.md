@@ -17,12 +17,15 @@ risque (SP3) lisent ensuite exclusivement la table figée, sans jamais
 rappeler le LLM. Cet invariant est vérifié par un test dédié pour chaque
 module qui existe réellement (section 12) : ce test contrôle qu'il
 n'importe jamais `src/annotator_llm.py` ni `src/rag_indexer.py`/
-`src/rag_retriever.py`. **`src/risk_engine.py` (SP3) et `src/optimizer.py`
-sont désormais implémentés et ces deux tests sont verts**
-(`tests/test_risk_engine.py::TestLlmOutOfExecutionPath`,
-`tests/test_optimizer.py::TestLlmOutOfExecutionPath`, vérification par
-analyse `ast` de l'arbre syntaxique). Le volet symétrique pour un futur
-`reporter.py`/orchestrateur sera ajouté dès que ces modules existeront.
+`src/rag_retriever.py`. **Tous les modules du chemin d'exécution
+(`src/risk_engine.py`, `src/optimizer.py`, `src/annotator_llm.py`,
+`src/annotation_validator.py`, `src/reporter.py`) sont désormais
+implémentés et ce test est vert sur chacun d'eux**
+(vérification par analyse `ast` de l'arbre syntaxique, jamais une
+recherche de sous-chaîne). Au niveau de l'orchestrateur
+(`src/orchestrator.py`), l'invariant est en outre vérifié dynamiquement :
+l'annotateur n'est appelé qu'une seule fois par candidat admissible,
+jamais pendant le coût/le risque/`(P)`/le rapport.
 
 ---
 
@@ -45,8 +48,8 @@ déclaration d'intention) :
 | `src/risk_engine.py` | ~150 | **IMPLEMENTE** (SP3, `test_reference_example` vert) |
 | `src/cost_engine.py` | ~140 | **IMPLEMENTE** (Cost(d;H)) |
 | `src/optimizer.py` | ~270 | **IMPLEMENTE** (unicité, budget, Pareto, `test_reference_example`-style validation exhaustive) |
-| `src/reporter.py` | 8 (stub) | NON IMPLEMENTE (rôle partiellement couvert par `src/orchestrator.py`, voir section 11) |
-| `src/orchestrator.py` | ~230 | **IMPLEMENTE** (point d'entrée unique, hors liste §26 — ajout spécifique à la tâche chapitre 4) |
+| `src/reporter.py` | ~90 | **IMPLEMENTE** (transformation y* -> Y*, §17.6) |
+| `src/orchestrator.py` | ~250 | **IMPLEMENTE** (point d'entrée unique, hors liste §26 — ajout spécifique à la tâche chapitre 4) |
 
 En complément, une couche **hors runtime** (`tools/deception_kb/`)
 construit, hors ligne et de façon déterministe, les sources documentaires
@@ -77,15 +80,13 @@ optimizer.py                          ← IMPLEMENTE (unicité, budget, Pareto, 
   ↓
 Pareto                                ← IMPLEMENTE (dans optimizer.py)
   ↓
-Y* (reporter.py)                      ← NON IMPLEMENTE (reporter dédié) ;
-                                         matérialisation minimale de Y* déjà
-                                         produite par optimizer.py
-                                         (`Configuration.to_deployment_plan`)
+Y* (reporter.py)                      ← IMPLEMENTE (build_deployment_report,
+                                         risque avant/après, preuves)
   ↓
 orchestrator.py (point d'entrée unique) ← IMPLEMENTE
                                            (SP1 -> RAG -> annotation -> gel
-                                           -> cout -> (P) -> risque avant/après,
-                                           runs/<run_id>/*.json)
+                                           -> cout -> (P) -> risque avant/après
+                                           -> reporter, runs/<run_id>/*.json)
 ```
 
 ### Capture associée
@@ -950,9 +951,10 @@ interne pour ce document, pas de capture de chapitre 4.
   sont la sortie de référence de `(P)`.
 - `DE` et `Cost` sont reçus déjà calculés (SP2/coût) : ce module ne les
   recalcule jamais.
-- Pas de `reporter.py` dédié : `Configuration.to_deployment_plan()`
-  fournit une matérialisation minimale de `Y*`, pas encore un rapport
-  explicatif complet (preuves, justification par placement).
+- `Configuration.to_deployment_plan()` fournit une matérialisation
+  minimale de `Y*` ; le rapport interprétable (risque avant/après,
+  preuves) est produit séparément par `src/reporter.py` (section 11), pas
+  par `optimizer.py` lui-même.
 
 ---
 
@@ -974,18 +976,23 @@ n'est appelé qu'une seule fois par candidat, avant le gel).
 
 ### Fichiers concernés
 
-`src/orchestrator.py`, `tests/test_orchestrator.py`,
-`examples/orchestrator_example.py`. **Ce module n'appartient pas à la
-liste `§26` de CLAUDE.md** (`schemas`…`reporter`) : c'est un ajout
-spécifique à la tâche d'implémentation du chapitre 4, qui demande
-explicitement un point d'entrée unique — il ne remplace pas
-`src/reporter.py` (toujours un stub), dont il ne couvre qu'une partie du
-rôle (matérialisation de `Y*` et risque avant/après ; pas de rapport
-explicatif textuel par placement).
+`src/orchestrator.py`, `src/reporter.py`, `tests/test_orchestrator.py`,
+`tests/test_reporter.py`, `examples/orchestrator_example.py`.
+**`orchestrator.py` n'appartient pas à la liste `§26` de CLAUDE.md**
+(`schemas`…`reporter`) : c'est un ajout spécifique à la tâche
+d'implémentation du chapitre 4, qui demande explicitement un point
+d'entrée unique. `reporter.py`, lui, appartient bien à `§26`/`§17.6` :
+transformation de `y*` en `Y*`, avec occurrence protégée, mécanisme,
+emplacement, coût, effet attendu, risque avant/après, variation,
+preuves — assemblé à partir des sorties déjà calculées par `optimizer.py`,
+`risk_engine.py` et `annotation_validator.py` (`reporter.py` ne recalcule
+jamais rien).
 
 ### Classes / fonctions principales
 
-`run_pipeline` (orchestration complète), `OrchestratorError`.
+`run_pipeline` (orchestration complète), `OrchestratorError` ;
+`build_deployment_report`, `render_text_report`, `DeploymentReportRow`,
+`ReporterError` (`src/reporter.py`).
 
 ### Entrées
 
@@ -1003,15 +1010,30 @@ par candidat**) → gel (`freeze_table`) → coût
 (`compute_cost_by_mechanism`) → résolution de `(P)` (`optimizer.solve`,
 lit exclusivement `frozen_table.de_by_candidate()`, plus aucun appel à
 l'annotateur à partir d'ici) → propagation du risque avant/après pour la
-configuration sélectionnée (`risk_engine.propagate_risk`, reporting).
+configuration sélectionnée (`risk_engine.propagate_risk`) →
+transformation en `Y*` (`reporter.build_deployment_report`, §17.6).
 Chaque étape est sérialisée en JSON dans `runs/<run_id>/` (non
 versionné, régénérable — voir `.gitignore`).
+
+**Lecture importante (documentée dans `src/reporter.py`)** :
+`risk_before`/`risk_after` d'une ligne de `Y*` portent sur le risque
+PROPRE de l'occurrence protégée, pas sur le risque terminal en aval.
+`Gamma_{i,h}` (§14.3) agit sur la transmission de `i,h` vers SES ENFANTS,
+jamais sur `R_{i,h}` lui-même : une ligne non terminale affiche donc
+normalement `risk_variation=0` (vérifié explicitement,
+`tests/test_orchestrator.py::test_report_row_variation_is_zero_while_terminal_risk_differs`)
+alors que le risque de l'occurrence terminale en aval diminue réellement
+(`risks_payload`/`risks.json`, exemple ci-dessous). `reporter.py`
+n'attribue pas la variation d'un risque terminal à un placement
+particulier — attribution non triviale dès que plusieurs placements
+interagissent sur un même chemin, non implémentée.
 
 ### Sorties
 
 `runs/<run_id>/{input_manifest,candidates,retrieval,annotations_raw,
-annotations_frozen,costs,pareto,deployment_plan,risks,run_manifest}.json`
-et un résumé en mémoire pour usage programmatique immédiat.
+annotations_frozen,costs,pareto,deployment_plan,risks,deployment_report,
+run_manifest}.json` et un résumé en mémoire pour usage programmatique
+immédiat.
 
 ### Technologie utilisée
 
@@ -1025,14 +1047,20 @@ python -m examples.orchestrator_example
 
 ### Tests
 
-`tests/test_orchestrator.py` — 8 tests : tous les fichiers attendus sont
-créés, le plan de déploiement correspond exactement à la sélection de
-l'optimiseur, le risque avec/sans déception est présent, le `DE` gelé
-utilisé dans le plan correspond à celui de la table figée, le manifeste
-de run est lisible et cohérent, un budget invalide lève
-`OrchestratorError`, et **l'annotateur n'est appelé qu'une seule fois par
-candidat admissible** (compté explicitement, invariant central du
-projet). Tous verts.
+`tests/test_orchestrator.py` — 10 tests : tous les fichiers attendus sont
+créés (y compris `deployment_report.json`), le plan de déploiement
+correspond exactement à la sélection de l'optimiseur, le rapport `Y*`
+reprend exactement le plan et les risques déjà calculés, le risque
+avec/sans déception est présent, le `DE` gelé utilisé dans le plan
+correspond à celui de la table figée, le manifeste de run est lisible et
+cohérent, un budget invalide lève `OrchestratorError`,
+**l'annotateur n'est appelé qu'une seule fois par candidat admissible**
+(compté explicitement, invariant central du projet), et la variation nulle
+d'une ligne non terminale est explicitement documentée comme un
+comportement attendu (pas un bug). `tests/test_reporter.py` — 10 tests
+(champs du rapport, plan vide, risque avant/après manquant rejeté,
+variation relative non définie si risque avant nul, jointure des preuves
+depuis la table figée, rendu texte, invariant d'importation). Tous verts.
 
 ### Exemple réel disponible
 
@@ -1040,9 +1068,11 @@ projet). Tous verts.
 sur l'instance `(T1078@DC01 → T1003@DC01)` avec un index RAG réel (124
 chunks D3FEND/Engage/littérature) : 2 candidats évalués, 1 admissible, 2
 configurations énumérées et faisables, front de Pareto de taille 1,
-risque terminal réduit de 0.2974 à 0.2864 avec la déception sélectionnée.
-`DE` provient du repli déterministe `rule_based_stub` — pas un résultat
-expérimental du chapitre 5.
+rapport `Y*` avec une ligne (`T1078@DC01`/`D3-DUC`/`auth-store`,
+`risk_variation=+0.0000` — comportement attendu, voir ci-dessus), risque
+terminal (`T1003@DC01`) réduit de 0.2974 à 0.2864 avec la déception
+sélectionnée. `DE` provient du repli déterministe `rule_based_stub` — pas
+un résultat expérimental du chapitre 5.
 
 ### Capture associée
 
@@ -1056,9 +1086,10 @@ capture supplémentaire.
 - Pas de réduction ni de sélection Top-K de l'espace de décision (§24) :
   hérite directement des limites d'`optimizer.py` (exploration
   exhaustive, réservée aux petites instances).
-- Pas d'intégration avec un futur `reporter.py` explicatif (justification
-  textuelle par placement, preuves associées) : `deployment_plan.json` et
-  `risks.json` restent des structures de données, pas un rapport rédigé.
+- `reporter.py` ne produit pas de justification textuelle rédigée par
+  placement (uniquement des identifiants de preuve, `evidence_ids`) et
+  n'attribue pas la variation d'un risque terminal à un placement
+  particulier (voir « Lecture importante » ci-dessus).
 - `runs/<run_id>/` n'est pas versionné (régénérable) — seule
   `docs/chapter4/outputs/pipeline_example.txt` est retenue comme preuve
   d'exécution pour le chapitre 4.
@@ -1081,12 +1112,17 @@ jamais `src/annotator_llm.py`, `src/rag_indexer.py` ni
 `tests/test_annotation_validator.py::TestLlmOutOfExecutionPath` vérifient
 que `src/annotator_llm.py` et `src/annotation_validator.py` n'importent
 jamais `src/risk_engine.py` ni `src/optimizer.py` — **les deux sont
-verts**. Au niveau de l'orchestrateur (`src/orchestrator.py`), l'invariant
-est reformulé et vérifié dynamiquement : l'annotateur n'est appelé
-**exactement une fois par candidat admissible**, jamais pendant le coût,
-le risque ou `(P)` (`tests/test_orchestrator.py::TestLlmOutOfExecutionPath`,
-comptage explicite des appels) — **vert**. Le volet reste à ajouter pour
-un futur `reporter.py` dès qu'il existera.
+verts**. `tests/test_reporter.py::TestLlmOutOfExecutionPath` vérifie de
+même que `src/reporter.py` n'importe jamais `src/annotator_llm.py`,
+`src/rag_indexer.py` ni `src/rag_retriever.py` — **vert**. Au niveau de
+l'orchestrateur (`src/orchestrator.py`), l'invariant est en outre vérifié
+dynamiquement : l'annotateur n'est appelé **exactement une fois par
+candidat admissible**, jamais pendant le coût, le risque, `(P)` ou le
+rapport (`tests/test_orchestrator.py::TestLlmOutOfExecutionPath`,
+comptage explicite des appels) — **vert**. Tous les modules du chemin
+d'exécution testent désormais cet invariant ; seul un futur
+enrichissement de `reporter.py` (justification textuelle par placement)
+resterait à re-vérifier s'il venait à importer de nouvelles dépendances.
 
 ### Déterminisme du LLM
 
@@ -1133,10 +1169,11 @@ et testés (503 tests verts). Limites qui subsistent :
   configurations (§23), sans réduction ni heuristique (§24) : réservé aux
   petites instances de validation, pas dimensionné pour un SI de grande
   taille.
-- Pas de `src/reporter.py` explicatif dédié (justification textuelle par
-  placement, preuves associées) : `src/orchestrator.py` produit des
-  structures de données (`deployment_plan.json`, `risks.json`), pas un
-  rapport rédigé.
+- `src/reporter.py` assemble un rapport structuré (`deployment_report.json`)
+  avec `evidence_ids` par ligne, mais ne rédige pas de justification
+  textuelle narrative par placement ; il n'attribue pas non plus la
+  variation d'un risque terminal à un placement particulier (voir section
+  11, « Lecture importante »).
 - `Pertinent` (SP1) reste simplifié à une relation topologique directe
   (même actif ou arête à un saut), pas une analyse complète des chemins
   vers les nœuds terminaux.
@@ -1162,4 +1199,4 @@ et testés (503 tests verts). Limites qui subsistent :
 | `Gamma`, `A`, `P`, `R` | `src/risk_engine.py` | `propagate_risk` | `test_reference_example` | `risk_example.csv` | C8 | IMPLEMENTE |
 | unicité + budget | `src/optimizer.py` | `enumerate_configurations` / `filter_by_budget` | `test_optimizer.py` | `optimizer_example.txt` | (chapitre 5) | IMPLEMENTE |
 | Pareto | `src/optimizer.py` | `pareto_front` | `test_optimizer.py` | `optimizer_example.txt` | (chapitre 5) | IMPLEMENTE |
-| `y*` / `Y*` | `src/optimizer.py` (`select_by_sum_aggregation`, `to_deployment_plan`) / `src/reporter.py` | `solve` | `test_optimizer.py` | `optimizer_example.txt` | (chapitre 5) | IMPLEMENTE (`optimizer.py`) ; `reporter.py` dédié NON IMPLEMENTE |
+| `y*` / `Y*` | `src/optimizer.py` (`select_by_sum_aggregation`, `to_deployment_plan`) + `src/reporter.py` (`build_deployment_report`) | `solve` / `build_deployment_report` | `test_optimizer.py` / `test_reporter.py` / `test_orchestrator.py` | `optimizer_example.txt` / `pipeline_example.txt` | (chapitre 5) | IMPLEMENTE |

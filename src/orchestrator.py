@@ -8,8 +8,8 @@ Point d'entrée unique enchaînant, sur une instance déjà validée :
     annotation des 11 sous-métriques (annotator_llm) ->
     validation + agrégation + gel (annotation_validator) ->
     coût (cost_engine) -> résolution de (P) (optimizer) -> propagation
-    du risque de la configuration sélectionnée (risk_engine, pour
-    reporting avant/après)
+    du risque de la configuration sélectionnée (risk_engine, avant/après)
+    -> transformation de y* en Y* (reporter, §17.6)
 
 Chaque étape est déjà testée indépendamment dans son propre module ; ce
 module ne fait qu'assembler les appels et sérialiser les résultats
@@ -41,6 +41,7 @@ from src.cost_engine import compute_cost_by_mechanism
 from src.optimizer import OptimizerError, solve
 from src.rag_indexer import RagIndex
 from src.rag_retriever import retrieve, to_deception_evidence
+from src.reporter import build_deployment_report
 from src.risk_engine import propagate_risk
 from src.schemas import (
     AnnotationContext,
@@ -246,6 +247,32 @@ def run_pipeline(
     }
     _write_json(run_dir / "risks.json", risks_payload)
 
+    # --- Rapport Y* (§17.6) — assemble des valeurs deja calculees ------------
+    report_rows = build_deployment_report(
+        deployment_plan,
+        risks_before=risks_payload["sans_deception"],
+        risks_after=risks_payload["avec_deception"],
+        frozen_table=frozen_table,
+    )
+    _write_json(
+        run_dir / "deployment_report.json",
+        [
+            {
+                "occurrence_id": row.occurrence_id,
+                "mechanism_id": row.mechanism_id,
+                "location_id": row.location_id,
+                "cost": row.cost,
+                "DE": row.de,
+                "risk_before": row.risk_before,
+                "risk_after": row.risk_after,
+                "risk_variation": row.risk_variation,
+                "risk_variation_relative": row.risk_variation_relative,
+                "evidence_ids": list(row.evidence_ids),
+            }
+            for row in report_rows
+        ],
+    )
+
     run_manifest = {
         "run_id": run_id,
         "completed_at": datetime.now(timezone.utc).isoformat(),
@@ -267,6 +294,7 @@ def run_pipeline(
         "optimization_result": optimization_result,
         "deployment_plan": deployment_plan,
         "risks": risks_payload,
+        "deployment_report": report_rows,
         "run_manifest": run_manifest,
         "run_dir": run_dir,
     }

@@ -29,6 +29,7 @@ from pathlib import Path
 from src.annotator_llm import RuleBasedStubAnnotator
 from src.orchestrator import run_pipeline
 from src.rag_indexer import build_index, load_d3fend_chunks, load_engage_chunks, load_literature_chunks
+from src.reporter import render_text_report
 from src.schemas import (
     Asset,
     AttackGraph,
@@ -163,7 +164,8 @@ def main() -> None:
         f"Configurations enumerees / faisables : {manifest['configurations_enumerated']} / {manifest['configurations_feasible']}",
         f"Taille du front de Pareto : {manifest['pareto_front_size']}",
         "",
-        f"Plan de deploiement (illustratif, DE issu du repli rule_based_stub) : {result['deployment_plan']}",
+        "Rapport de deploiement Y* (src/reporter.py, illustratif, DE issu du repli rule_based_stub) :",
+        render_text_report(result["deployment_report"]).rstrip("\n"),
         "",
         "Risque terminal (T1003@DC01) :",
         f"  avec deception : {risks['avec_deception']['T1003@DC01']:.4f}",

@@ -1583,10 +1583,80 @@ pas un rapport rédigé avec justification textuelle par placement.
 
 #### Lien avec l'étape suivante
 
-Tous les modules de l'ordre imposé sont désormais implémentés. Travaux
-restants ouverts : `src/reporter.py` (rapport explicatif dédié),
-composition réelle du catalogue `\mathcal D` (OPEN_DECISION), intégration
-d'une API LLM réelle si elle devient disponible.
+Tous les modules de l'ordre imposé (10 étapes) sont désormais
+implémentés. `src/reporter.py` (§17.6, dernier module de la liste `§26`
+de CLAUDE.md restant) a été ajouté et intégré à l'orchestrateur — voir
+Étape 16.
+
+---
+
+### Étape 16 — Transformation y* → Y* (`src/reporter.py`)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Fermer la dernière case de la liste `§26` de CLAUDE.md (`reporter.py`) :
+transformer `y*` en `Y*`, un rapport interprétable par placement
+(occurrence protégée, mécanisme, emplacement, coût, effet attendu,
+risque avant, risque après, variation, preuves — §17.6), à partir de
+valeurs déjà calculées ailleurs (jamais recalculées ici).
+
+#### Traitement réalisé
+
+`build_deployment_report` assemble une ligne par placement du plan de
+déploiement, avec le risque avant/après de l'occurrence PROTÉGÉE et la
+variation associée, plus les `evidence_ids` joints depuis la table figée
+si elle est fournie. `render_text_report` produit un rendu texte lisible.
+Intégré à `src/orchestrator.py` (nouveau fichier `deployment_report.json`
+par run).
+
+**Point important, documenté explicitement dans le module** :
+`risk_before`/`risk_after` portent sur le risque PROPRE de l'occurrence
+protégée, pas sur le risque terminal en aval — `Gamma_{i,h}` (§14.3) agit
+sur la transmission vers les enfants, jamais sur `R_{i,h}` lui-même. Une
+ligne non terminale affiche donc normalement `risk_variation=0` (vérifié
+explicitement par un test dédié) alors que le risque terminal en aval
+diminue réellement (visible séparément dans `risks.json`).
+
+#### Sorties
+
+`docs/chapter4/outputs/pipeline_example.txt` mis à jour : la section
+« Rapport de deploiement Y* » affiche désormais la ligne réelle
+`T1078@DC01 / D3-DUC / auth-store / Cout=4039.20 / DE=0.037 / R
+avant=0.3225 / R apres=0.3225 / Variation=+0.0000 (+0.0%)`.
+
+#### Fichiers concernés
+
+`src/reporter.py`, `src/orchestrator.py` (intégration),
+`tests/test_reporter.py`, mise à jour de `tests/test_orchestrator.py` et
+`examples/orchestrator_example.py`.
+
+#### Tests et validation
+
+`tests/test_reporter.py` — 10 tests (champs du rapport, plan vide,
+risque avant/après manquant rejeté, variation relative non définie si
+risque avant nul, jointure des preuves, rendu texte, invariant
+d'importation). 2 tests ajoutés à `tests/test_orchestrator.py`
+(`deployment_report.json` créé, cohérence rapport/plan/risques, variation
+nulle documentée comme attendue). **515 tests** au total au moment de la
+validation. Détail complet : `docs/chapter4/IMPLEMENTATION_REPORT.md`,
+section 11.
+
+#### Limites actuelles
+
+Pas de justification textuelle narrative par placement ; pas
+d'attribution de la variation d'un risque terminal à un placement
+particulier (problème d'attribution non trivial en cas de placements
+multiples sur un même chemin).
+
+#### Lien avec l'étape suivante
+
+Tous les modules de l'ordre imposé et de la liste `§26` de CLAUDE.md sont
+désormais implémentés. Travaux restants ouverts : composition réelle du
+catalogue `\mathcal D` (OPEN_DECISION), intégration d'une API LLM réelle
+si elle devient disponible, justification textuelle narrative pour
+`reporter.py`.
 
 ## OPEN_DECISION en cours
 

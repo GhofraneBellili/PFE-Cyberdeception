@@ -10,7 +10,7 @@ effectivement importées par du code réel sont incluses.
 | Python | ≥ 3.11 (`pyproject.toml`) | Langage d'implémentation unique du projet | tous |
 | Pydantic | 2.x (`pydantic>=2,<3`) | Modèles de données validés (occurrences `T_{i,h}`, graphe, mécanisme de déception, annotation, contexte d'annotation, instance système) | `src/schemas.py` |
 | NetworkX | 3.x (`networkx>=3,<4`) | Représentation du graphe d'attaque comme `DiGraph`, utilitaires de parcours (parents/enfants) | `src/graph_builder.py` |
-| pytest | ≥ 8.0 (dépendance `dev`) | Suite de tests (503 tests au moment de ce document) | `tests/` |
+| pytest | ≥ 8.0 (dépendance `dev`) | Suite de tests (515 tests au moment de ce document) | `tests/` |
 
 ## Technologies explicitement NON utilisées à ce stade
 

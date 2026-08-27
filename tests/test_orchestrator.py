@@ -155,6 +155,7 @@ class TestRunPipeline:
             "pareto.json",
             "deployment_plan.json",
             "risks.json",
+            "deployment_report.json",
             "run_manifest.json",
         }
         actual_files = {p.name for p in run_dir.glob("*.json")}
@@ -189,6 +190,37 @@ class TestRunPipeline:
             plan_entries = [p for p in result["deployment_plan"] if p["occurrence_id"] == occurrence_id]
             if plan_entries:
                 assert plan_entries[0]["DE"] == pytest.approx(de)
+
+    def test_deployment_report_matches_plan_and_risks(self, tmp_path):
+        """Réf. §17.6 : Y* (deployment_report) doit reprendre exactement le
+        plan et les risques avant/après déjà calculés, sans les
+        recalculer."""
+        result = run_pipeline(**run_kwargs("run-009", tmp_path))
+        plan = result["deployment_plan"]
+        rows = result["deployment_report"]
+        assert len(rows) == len(plan)
+        for row, placement in zip(rows, plan):
+            assert row.occurrence_id == placement["occurrence_id"]
+            assert row.cost == pytest.approx(placement["Cost"])
+            assert row.de == pytest.approx(placement["DE"])
+            assert row.risk_before == pytest.approx(result["risks"]["sans_deception"][row.occurrence_id])
+            assert row.risk_after == pytest.approx(result["risks"]["avec_deception"][row.occurrence_id])
+
+    def test_report_row_variation_is_zero_while_terminal_risk_differs(self, tmp_path):
+        """Documente un comportement attendu (pas un bug, réf. docstring de
+        src/reporter.py) : la ligne de rapport pour l'occurrence PROTEGEE
+        (non terminale, T1078@DC01) affiche une variation nulle -- Gamma
+        agit sur la transmission vers les enfants (§14.3), jamais sur le
+        risque propre de l'occurrence -- alors que le risque de l'occurrence
+        TERMINALE en aval (T1003@DC01) diminue reellement."""
+        result = run_pipeline(**run_kwargs("run-010", tmp_path))
+        report_row = result["deployment_report"][0]
+        assert report_row.occurrence_id == "T1078@DC01"
+        assert report_row.risk_variation == pytest.approx(0.0, abs=1e-9)
+
+        terminal_before = result["risks"]["sans_deception"]["T1003@DC01"]
+        terminal_after = result["risks"]["avec_deception"]["T1003@DC01"]
+        assert terminal_after < terminal_before
 
     def test_run_manifest_json_is_readable(self, tmp_path):
         result = run_pipeline(**run_kwargs("run-006", tmp_path))
