@@ -23,6 +23,7 @@ rag = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+addopts = "-m \"not real_llm\""
 markers = [
-    "real_llm: integration test requiring a real configured LLM provider (skipped by default, run with -m real_llm)",
+    "real_llm: integration test requiring a real configured LLM provider (excluded by default via addopts, run with -m real_llm)",
 ]
