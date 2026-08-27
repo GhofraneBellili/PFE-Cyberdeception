@@ -366,17 +366,22 @@ python -m examples.sp1_real_example   # catalogue et mapping réels
 / `.txt`, généré par `examples/sp1_real_example.py` sur deux occurrences
 réelles (`T1110.001@DC01`, `T1039@FS01`) : `D_i` correctement peuplé
 (`['D3-DUC']`, `['D3-DNR']` — issu du mapping réel), `Autorise`/`Pertinent`
-passent au bon emplacement, mais **`PrerequisSatisfaits="undetermined"`
-pour les 12 candidats bruts** → `C_{i,h}=∅`, `admissible_count=0`. Un
-résultat honnête (section 4.3.3), qui démontre la profondeur diagnostique
-de SP1 plutôt que de la masquer.
+passent au bon emplacement. **Après audit documentaire des prérequis**
+(`docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md`), `D3-DNR` possède
+désormais un `required_asset_types` réellement justifié par le kb-article
+D3FEND : `PrerequisSatisfaits` s'évalue réellement pour lui, et **1
+candidat est admissible** (`T1039@FS01`/`D3-DNR`/`shared-drive`) sur 12
+candidats bruts — pour `D3-DUC` et `D3-DF`, `PrerequisSatisfaits` reste
+`"undetermined"` (aucune preuve suffisante trouvée). Un résultat honnête
+(section 4.3.3), obtenu sans jamais assouplir la politique
+d'admissibilité ni inventer de prérequis.
 
 **Capture associée.** C3 — voir `SCREENSHOT_MANIFEST.md`.
 
 **Limites.** `Pertinent` simplifié à une relation topologique directe
 (pas une analyse complète des chemins vers les nœuds terminaux) ; `D_i`
 reçu en paramètre, pas construit par ce module ; avec le catalogue réel
-v1, `C_{i,h}` est systématiquement vide (section 4.3.3) — un futur
+v1, `C_{i,h}` reste vide pour `D3-DUC`/`D3-DF` (section 4.3.3) — un futur
 enrichissement du catalogue (`required_asset_types`/`services`/
 `artifacts` justifiés par preuve) est nécessaire pour obtenir des
 candidats réellement admissibles.
@@ -678,9 +683,12 @@ python -m examples.orchestrator_example
 
 **Tests.** `tests/test_orchestrator.py` (11 tests, dont l'intégration
 avec le catalogue et le mapping RÉELS — `TestPipelineWithRealCatalogAndMapping`
-— qui vérifie que le pipeline complet reste robuste même quand
-`C_{i,h}=∅`, cf. section 4.4.1 : `deployment_plan == []`, `status ==
-"completed"`, aucun plantage). Tous verts.
+— qui vérifie que le pipeline complet reste robuste sur une instance
+n'exerçant que `D3-DUC` (`C_{i,h}=∅` pour ce mécanisme précis, cf.
+section 4.4.1) : `deployment_plan == []`, `status == "completed"`, aucun
+plantage. Après l'audit des prérequis, `D3-DNR` peut produire un plan non
+vide sur une autre instance — voir `examples/sp1_real_example.py`). Tous
+verts.
 
 **Exemple réel disponible.** `docs/chapter4/outputs/pipeline_example.txt` :
 2 candidats évalués, 1 admissible (catalogue synthétique de démonstration
@@ -787,23 +795,26 @@ elles-mêmes sont réelles et indépendantes de la source des scores bruts.
 Synthèse technique (pas la conclusion rédigée du mémoire) :
 
 - **Tous les modules de l'architecture (CLAUDE.md §26 + orchestrateur)
-  sont implémentés et testés** : 583 tests, tous verts, sur
+  sont implémentés et testés** : 588 tests, tous verts, sur
   `implementation/chapter4`.
-- **Deux lacunes documentées, pas masquées :**
-  1. Le catalogue de déception réel est volontairement restreint à 3
-     mécanismes (D3-DF, D3-DNR, D3-DUC), et ne renseigne aucun
-     `required_asset_types`/`services`/`artifacts` faute de preuve — SP1
-     produit donc `C_{i,h}=∅` avec ce catalogue (section 4.3.3/4.4.1).
-  2. Aucun provider LLM réel n'est exploitable dans cet environnement —
-     le code (`RealLlmAnnotator`, `detect_provider`) est implémenté et
-     testé par mocks HTTP, mais jamais exécuté contre un vrai service
-     (section 4.4.2). Les commandes exactes pour le faire localement sont
-     documentées.
-- **Ce que ces deux lacunes n'empêchent pas de démontrer** : la chaîne
-  complète SP1 → RAG → annotation → gel → coût → SP3 → optimisation →
-  reporter → orchestrateur s'exécute de bout en bout sur des données
-  réelles (catalogue, mapping, corpus RAG, graphe) à chaque étape, y
-  compris dans le cas dégénéré `C_{i,h}=∅` (testé explicitement).
+- **Le catalogue de déception réel reste volontairement restreint à 3
+  mécanismes** (D3-DF, D3-DNR, D3-DUC). Après un audit documentaire
+  systématique des prérequis (`docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md`),
+  `D3-DNR` possède un `required_asset_types` réellement justifié — SP1
+  produit **1 candidat admissible** sur cette base
+  (`T1039@FS01`/`D3-DNR`/`shared-drive`) ; `D3-DUC`/`D3-DF` restent sans
+  candidat admissible, faute de preuve suffisante (section 4.3.3/4.4.1).
+- **Aucun provider LLM réel n'est exploitable dans cet environnement** —
+  le code (`RealLlmAnnotator`, `detect_provider`) est implémenté et
+  testé par mocks HTTP, et récupère désormais le candidat à annoter
+  DIRECTEMENT depuis la sortie réelle de SP1, mais n'a jamais été
+  exécuté contre un vrai service (section 4.4.2). Les commandes exactes
+  pour le faire localement sont documentées
+  (`docs/chapter4/FINAL_TECHNICAL_REPORT.md`).
+- **Voir `docs/chapter4/FINAL_TECHNICAL_REPORT.md` pour la synthèse
+  technique définitive** (structure A–L par sous-section, table de
+  traçabilité) — ce document (`IMPLEMENTATION_REPORT.md`) reste la
+  matière détaillée module par module.
 - **Réservé au chapitre 5** : SP3 détaillé sur un cas d'étude complet,
   front de Pareto, réduction de risque quantifiée, plan `Y*` final,
   comparaison avec/sans déception — tous les modules nécessaires existent
@@ -919,7 +930,7 @@ Synthèse technique (pas la conclusion rédigée du mémoire) :
 - **Entrée** : `SystemInstance`, catalogue réel, mapping réel, seuils `theta`.
 - **Traitement** : diagnostic `Autorise`/`PrerequisSatisfaits`/`Pertinent` par candidat.
 - **Sortie** : `sp1_real_example.json`/`.txt`.
-- **Détail important** : avec le catalogue réel, `C_{i,h}=∅` systématiquement (`RequirementsSatisfied="undetermined"`) — un résultat honnête à expliquer explicitement, pas à cacher.
+- **Détail important** : après audit documentaire des prérequis, `D3-DNR` a un `required_asset_types` réellement justifié — 1 candidat admissible réel (`T1039@FS01`/`D3-DNR`/`shared-drive`) ; `D3-DUC`/`D3-DF` restent `C_{i,h}=∅` (`RequirementsSatisfied="undetermined"`, aucune preuve suffisante) — un résultat honnête à expliquer explicitement, pas à cacher.
 - **Limite** : `Pertinent` simplifié (topologie directe uniquement).
 - **Capture recommandée** : C3.
 

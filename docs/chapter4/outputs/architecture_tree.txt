@@ -69,6 +69,8 @@ pfe-cyberdeception/
 |   |   |   |   +-- .gitkeep
 |   |   |   +-- 09_pipeline/
 |   |   |       +-- .gitkeep
+|   |   |-- ADMISSIBILITY_EVIDENCE_AUDIT.md
+|   |   |-- FINAL_TECHNICAL_REPORT.md
 |   |   |-- IMPLEMENTATION_REPORT.md
 |   |   |-- SCREENSHOT_MANIFEST.md
 |   |   +-- TECHNOLOGIES.md
@@ -80,6 +82,7 @@ pfe-cyberdeception/
 |   |-- annotator_llm_real_example.py
 |   |-- cost_example.py
 |   |-- freeze_example.py
+|   |-- freeze_real_example.py
 |   |-- optimizer_example.py
 |   |-- orchestrator_example.py
 |   |-- rag_example.py
@@ -111,6 +114,7 @@ pfe-cyberdeception/
 |   |-- test_cost_engine.py
 |   |-- test_d3fend_seed_builder.py
 |   |-- test_engage_seed_builder.py
+|   |-- test_freeze_real_example.py
 |   |-- test_graph_builder.py
 |   |-- test_knowledge_attack.py
 |   |-- test_knowledge_deception.py

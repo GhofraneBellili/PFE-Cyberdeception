@@ -76,7 +76,7 @@ environnement — le code est prêt, testé par mocks HTTP, et documenté).
 
 CI GitHub Actions : verte sur `implementation/chapter4` à chaque commit
 documenté ci-dessous (`.github/workflows/tests.yml`, déclenchée sur
-`push`/`pull_request`). 583 tests au moment de ce document.
+`push`/`pull_request`). 588 tests au moment de ce document.
 
 ## 3. Étapes techniques validées
 
@@ -1810,6 +1810,85 @@ Tous les modules et données prévus par la tâche de finalisation du
 chapitre 4 sont désormais en place. Reste ouvert : exécution locale
 réelle du provider LLM par l'utilisateur (commande documentée),
 élargissement du catalogue de déception.
+
+---
+
+### Étape 19 — Audit des prérequis d'admissibilité et fermeture de la chaîne réelle
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Vérifier si les sources déjà versionnées (D3FEND, MITRE Engage,
+littérature) permettent de renseigner
+`required_asset_types`/`required_services`/`required_artifacts`/
+`possible_placements` pour les 3 mécanismes réels, sans jamais
+transformer une recommandation en prérequis ni inventer une exigence
+pour obtenir artificiellement des candidats admissibles.
+
+#### Traitement réalisé
+
+Audit documentaire systématique (`docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md`)
+: chaque affirmation candidate classée RETENUE/REJETÉE avec preuve
+(source, passage, locator, justification). Deux enrichissements
+évidence-based en sont ressortis, implémentés dans
+`tools/deception_kb/catalog_builder.py` (jamais dans le JSON à la main) :
+`D3-DF.allowed_location_types += "network_share"` (kb-article : « made
+available as a local or network resource ») et
+`D3-DNR.required_asset_types = ["web_application_server", "file_server"]`
+(kb-article : « deployed to web application servers, network file
+shares... »). Analyse de la distinction « aucun prérequis »
+(`known_none`) vs « prérequis inconnu » (`unknown`) : aucun cas
+`known_none` trouvé parmi les 3 mécanismes — la représentation actuelle
+(liste vide → `undetermined`) reste donc sémantiquement correcte,
+**aucun nouveau champ de statut introduit** (décision documentée, pas
+une omission). `examples/annotator_llm_real_example.py` récupère
+désormais le candidat directement depuis la sortie réelle de SP1.
+`examples/freeze_real_example.py` (nouveau) prépare le gel automatique
+après une future exécution LLM réelle.
+
+#### Résultat réel (CAS A atteint)
+
+`python -m examples.sp1_real_example` produit désormais **1 candidat
+réellement admissible** : `T1039@FS01` / `D3-DNR` / `shared-drive` (sur
+12 candidats bruts). `D3-DUC`/`D3-DF` restent sans candidat admissible,
+faute de preuve suffisante — pas un assouplissement de la politique
+d'admissibilité.
+
+#### Sorties
+
+`docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md`,
+`docs/chapter4/FINAL_TECHNICAL_REPORT.md` (source de vérité définitive
+pour la rédaction du chapitre 4, structure A–L par sous-section + table
+de traçabilité), catalogue et mapping réels régénérés,
+`docs/chapter4/outputs/sp1_real_example.json`/`.txt` mis à jour.
+
+#### Fichiers concernés
+
+`docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md`,
+`docs/chapter4/FINAL_TECHNICAL_REPORT.md`,
+`tools/deception_kb/catalog_builder.py`,
+`examples/sp1_real_example.py`, `examples/annotator_llm_real_example.py`,
+`examples/freeze_real_example.py`, `tests/test_freeze_real_example.py`,
+mises à jour de `tests/test_catalog_builder.py` et
+`tests/test_orchestrator.py`.
+
+#### Tests et validation
+
+`tests/test_freeze_real_example.py` (5 tests, nouveau), mises à jour de
+2 tests dans `tests/test_catalog_builder.py` pour refléter
+l'enrichissement audité. **588 tests** au total, tous verts.
+
+#### Limites actuelles
+
+Aucun provider LLM réel exécuté (inchangé) ; catalogue toujours restreint
+à 3 mécanismes ; `D3-DUC`/`D3-DF` sans candidat admissible.
+
+#### Lien avec l'étape suivante
+
+Exécution locale réelle du provider LLM par l'utilisateur, puis
+`python -m examples.freeze_real_example` pour geler le résultat. Chapitre
+5 explicitement hors périmètre de cette passe.
 
 ## OPEN_DECISION en cours
 
