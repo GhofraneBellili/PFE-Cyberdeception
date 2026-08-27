@@ -98,3 +98,8 @@ Condition de déblocage: REMPLIE — test_reference_example (ancre §11) est ver
   volontairement réservés au chapitre 5 (résultats/validation), même une
   fois l'optimiseur implémenté, sauf besoin ponctuel de illustrer un
   mécanisme technique au chapitre 4.
+- `src/optimizer.py` est désormais implémenté et testé
+  (`tests/test_optimizer.py`, 22 tests verts ; sortie réelle
+  `docs/chapter4/outputs/optimizer_example.txt`) — conformément à la note
+  ci-dessus, aucune capture C9 n'est créée pour lui : Pareto/`Y*` restent
+  réservés au chapitre 5.

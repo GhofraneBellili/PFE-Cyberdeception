@@ -1268,6 +1268,67 @@ une OPEN_DECISION non résolue.
 
 `optimizer.py` (unicité, budget, dominance, front de Pareto, `Y*`).
 
+---
+
+### Étape 11 — Implémentation de l'optimiseur (`src/optimizer.py`)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Résoudre `(P)` : minimisation multiobjectif des risques terminaux sous
+contrainte d'unicité locale (§16.1) et de budget (§16.2), produire le
+front de Pareto et un `y*` illustratif.
+
+#### Traitement réalisé
+
+Construction des candidats à partir de `C_i_h` (SP1) enrichis de `DE` et
+`Cost` déjà calculés ; énumération exhaustive des configurations
+(« aucune déception » + chaque candidat par occurrence, unicité garantie
+par construction, garde-fou explicite contre l'explosion combinatoire —
+pas une réduction arbitraire, §24) ; filtrage budgétaire ; évaluation SP3
+de chaque configuration faisable (risques terminaux uniquement) ; front
+de Pareto par non-dominance ; sélection illustrative par somme des
+risques terminaux sur le front (politique explicite, autorisée par §16
+mais pas imposée par le chapitre 3).
+
+#### Sorties
+
+`docs/chapter4/outputs/optimizer_example.txt`, généré par
+`python -m examples.optimizer_example` (T1078@DC01 → T1003@DC01
+Terminal, `B_total=5000`) : 2 configurations énumérées, 2 faisables, la
+configuration avec déception domine (risque terminal réduit de 0.297 à
+0.172). `DE` y est une valeur illustrative (SP2 non implémenté) — pas un
+résultat expérimental du chapitre 5.
+
+#### Fichiers concernés
+
+`src/optimizer.py`, `tests/test_optimizer.py`,
+`examples/optimizer_example.py`.
+
+#### Tests et validation
+
+`tests/test_optimizer.py` — 22 tests (construction des candidats,
+énumération/unicité, budget, dominance, front de Pareto, agrégation,
+résolution de bout en bout, **validation exhaustive sur petite instance**
+conforme à CLAUDE.md §23, invariant LLM hors du chemin d'exécution).
+**426 tests** au total au moment de la validation. Détail complet :
+`docs/chapter4/IMPLEMENTATION_REPORT.md`, section 10.
+
+#### Limites actuelles
+
+Exploration exhaustive uniquement (réservé aux petites instances de
+validation, §23) ; la politique de sélection par somme des risques est
+illustrative, pas une règle imposée ; pas de `reporter.py` dédié pour un
+rapport explicatif complet (preuves, justification par placement) — seule
+une matérialisation minimale de `Y*` existe (`to_deployment_plan`).
+
+#### Lien avec l'étape suivante
+
+RAG (`src/rag_indexer.py` / `src/rag_retriever.py`), puis annotation LLM
+(`src/annotator_llm.py`) avec repli déterministe `rule_based_stub`
+explicitement marqué comme tel si aucune API LLM réelle n'est disponible.
+
 ## OPEN_DECISION en cours
 
 Ces points sont volontairement non résolus et ne doivent pas l'être

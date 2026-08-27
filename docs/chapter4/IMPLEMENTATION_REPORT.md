@@ -17,13 +17,12 @@ risque (SP3) lisent ensuite exclusivement la table figée, sans jamais
 rappeler le LLM. Cet invariant est vérifié par un test dédié pour chaque
 module qui existe réellement (section 12) : ce test contrôle qu'il
 n'importe jamais `src/annotator_llm.py` ni `src/rag_indexer.py`/
-`src/rag_retriever.py`. **`src/risk_engine.py` (SP3) est désormais
-implémenté et ce test est vert**
-(`tests/test_risk_engine.py::TestLlmOutOfExecutionPath`, vérification par
-analyse `ast` de l'arbre syntaxique). Le volet symétrique pour
-`src/optimizer.py` sera ajouté dès que ce module existera ; jusque-là,
-l'invariant y reste vrai par absence de code, mais pas encore *testé* —
-ce document ne prétend pas le contraire.
+`src/rag_retriever.py`. **`src/risk_engine.py` (SP3) et `src/optimizer.py`
+sont désormais implémentés et ces deux tests sont verts**
+(`tests/test_risk_engine.py::TestLlmOutOfExecutionPath`,
+`tests/test_optimizer.py::TestLlmOutOfExecutionPath`, vérification par
+analyse `ast` de l'arbre syntaxique). Le volet symétrique pour un futur
+`reporter.py`/orchestrateur sera ajouté dès que ces modules existeront.
 
 ---
 
@@ -45,7 +44,7 @@ déclaration d'intention) :
 | `src/annotation_validator.py` | 8 (stub) | NON IMPLEMENTE |
 | `src/risk_engine.py` | ~150 | **IMPLEMENTE** (SP3, `test_reference_example` vert) |
 | `src/cost_engine.py` | ~140 | **IMPLEMENTE** (Cost(d;H)) |
-| `src/optimizer.py` | 7 (stub) | NON IMPLEMENTE |
+| `src/optimizer.py` | ~270 | **IMPLEMENTE** (unicité, budget, Pareto, `test_reference_example`-style validation exhaustive) |
 | `src/reporter.py` | 8 (stub) | NON IMPLEMENTE |
 
 En complément, une couche **hors runtime** (`tools/deception_kb/`)
@@ -73,11 +72,14 @@ frozen annotations                    ← NON IMPLEMENTE
 Cost (cost_engine.py)                ← IMPLEMENTE (Cost(d;H))
 SP3 (risk_engine.py)                 ← IMPLEMENTE (test_reference_example vert)
   ↓
-optimizer.py                          ← NON IMPLEMENTE
+optimizer.py                          ← IMPLEMENTE (unicité, budget, Pareto, y*)
   ↓
-Pareto                                ← NON IMPLEMENTE
+Pareto                                ← IMPLEMENTE (dans optimizer.py)
   ↓
-Y* (reporter.py)                      ← NON IMPLEMENTE
+Y* (reporter.py)                      ← NON IMPLEMENTE (reporter dédié) ;
+                                         matérialisation minimale de Y* déjà
+                                         produite par optimizer.py
+                                         (`Configuration.to_deployment_plan`)
 ```
 
 ### Capture associée
@@ -525,9 +527,118 @@ tests). L'intégration avec `cost_engine.py`/`optimizer.py` (sélection de
 
 ## 10. Optimisation et Pareto
 
-**Status : NON IMPLEMENTE.**
+**Status : IMPLEMENTE (périmètre « petite instance », voir Limites).**
 
-`src/optimizer.py` est un stub de 7 lignes.
+### Objectif
+
+Résoudre le problème global `(P)` : minimisation multiobjectif des
+risques terminaux, sous contrainte d'unicité locale et de budget, en
+produisant le front de Pareto puis un `y*` illustratif.
+
+### Correspondance avec le chapitre 3
+
+CLAUDE.md §16 intégralement : §16.1 (unicité), §16.2 (budget), §16.3
+(domaine binaire, `y` n'existe que pour `(d,l) ∈ C_{i,h}`). §23
+(validation exhaustive sur petite instance) et §24 (interdiction de toute
+réduction arbitraire de l'espace de décision, respectée par le garde-fou
+explicite `max_configurations`, qui refuse d'énumérer plutôt que
+d'omettre silencieusement).
+
+### Fichiers concernés
+
+`src/optimizer.py`, `tests/test_optimizer.py`,
+`examples/optimizer_example.py`.
+
+### Classes / fonctions principales
+
+`Candidate`, `Configuration` (`total_cost`, `de_by_occurrence`,
+`to_deployment_plan`), `build_candidates_from_admissibility`,
+`enumerate_configurations`, `filter_by_budget`, `evaluate_configuration`,
+`dominates`, `pareto_front`, `select_by_sum_aggregation`, `solve`
+(orchestration complète).
+
+### Entrées
+
+Le rapport SP1 (`C_{i,h}` via `build_admissibility_report`), `DE`
+déjà figé par candidat `(occurrence_id, mechanism_id, location_id)`,
+`Cost(d;H)` déjà calculé par mécanisme (`cost_engine`), `q`/`I` par
+occurrence, `B_total`, et les seuils `theta_c`/`theta_i`/`theta_a`
+(pour identifier les occurrences Terminal, objectifs de `(P)`).
+
+### Traitement
+
+Construction des candidats à partir de `C_{i,h}` ; énumération
+exhaustive des configurations (« aucune déception » + chaque candidat,
+par occurrence, unicité garantie par construction) ; filtrage budgétaire
+(§16.2) ; évaluation SP3 (`propagate_risk`) de chaque configuration
+faisable, restreinte au vecteur des risques terminaux ; front de Pareto
+(non-dominance, minimisation) ; sélection illustrative d'un `y*` par
+somme des risques terminaux sur le front (politique explicite, pas une
+règle imposée par le chapitre 3 — §16 l'autorise explicitement si
+justifiée).
+
+### Sorties
+
+`configurations_enumerated`, `configurations_feasible`, `pareto_front`
+(liste d'`EvaluatedConfiguration`), `selected` (`y*` illustratif), chaque
+configuration exposant `to_deployment_plan()` (matérialisation minimale
+de `Y*` : liste de `{occurrence_id, mechanism_id, location_id, DE, Cost}`).
+
+### Technologie utilisée
+
+Python pur (énumération exhaustive, pas de solveur externe).
+
+### Commande réelle d'exécution
+
+```bash
+python -m examples.optimizer_example
+```
+
+### Tests
+
+`tests/test_optimizer.py` — 22 tests : construction des candidats,
+énumération (unicité, garde-fou de taille), filtrage budgétaire,
+dominance, front de Pareto, sélection par agrégation, résolution de bout
+en bout, **validation exhaustive sur petite instance** (§23 : toutes les
+configurations faisables sont énumérées « à la main » indépendamment de
+`enumerate_configurations`, leur objectif recalculé directement via
+`propagate_risk`, et la meilleure solution exacte comparée à celle de
+`solve()`), et invariant LLM hors du chemin d'exécution (analyse `ast`).
+Tous verts.
+
+### Exemple réel disponible
+
+`docs/chapter4/outputs/optimizer_example.txt`, généré par
+`examples/optimizer_example.py` (T1078@DC01 → T1003@DC01 Terminal, 1
+candidat admissible D3-DUC après application des règles SP1, `B_total=5000`) :
+2 configurations énumérées, 2 faisables, la configuration avec déception
+domine (risque terminal réduit de 0.297 à 0.172).
+
+**`DE` y est une valeur illustrative fournie directement en entrée** (SP2
+non implémenté, §5/§6/§7 non implémentées) — ce script démontre
+uniquement que `(P)` s'exécute de bout en bout sur des sorties réelles de
+SP1/coût, ce n'est pas un résultat expérimental du chapitre 5.
+
+### Capture associée
+
+Aucune. Réf. tâche §8 : le front de Pareto et le plan `Y*` final sont
+réservés au chapitre 5. La sortie ci-dessus sert de preuve d'exécution
+interne pour ce document, pas de capture de chapitre 4.
+
+### Limites
+
+- Exploration exhaustive uniquement (§23) : aucune réduction ni
+  heuristique (§24 l'interdit avant validation du modèle) — le module
+  refuse explicitement d'énumérer au-delà de `max_configurations` plutôt
+  que d'omettre silencieusement des configurations.
+- La politique de décision `select_by_sum_aggregation` est illustrative,
+  pas une règle du chapitre 3 ; seuls l'énumération et le front de Pareto
+  sont la sortie de référence de `(P)`.
+- `DE` et `Cost` sont reçus déjà calculés (SP2/coût) : ce module ne les
+  recalcule jamais.
+- Pas de `reporter.py` dédié : `Configuration.to_deployment_plan()`
+  fournit une matérialisation minimale de `Y*`, pas encore un rapport
+  explicatif complet (preuves, justification par placement).
 
 ---
 
@@ -543,13 +654,15 @@ Aucun point d'entrée `runs/<run_id>/...` n'existe encore.
 
 ### Invariant testé — LLM hors du chemin d'exécution
 
-**Status : PARTIELLEMENT TESTÉ.** `tests/test_risk_engine.py::TestLlmOutOfExecutionPath::test_risk_engine_does_not_import_llm_or_rag`
-vérifie, par analyse de l'arbre syntaxique (`ast`, pas une recherche de
-sous-chaîne), que `src/risk_engine.py` n'importe jamais
-`src/annotator_llm.py`, `src/rag_indexer.py` ni `src/rag_retriever.py` —
-**ce test est vert**. Le volet symétrique pour `src/optimizer.py` sera
-ajouté dès que ce module existera (section 10) ; à ce stade, l'invariant
-y est vrai par absence totale de code, mais pas encore testé.
+**Status : TESTÉ sur les deux modules d'exécution existants.**
+`tests/test_risk_engine.py::TestLlmOutOfExecutionPath::test_risk_engine_does_not_import_llm_or_rag`
+et
+`tests/test_optimizer.py::TestLlmOutOfExecutionPath::test_optimizer_does_not_import_llm_or_rag`
+vérifient, par analyse de l'arbre syntaxique (`ast`, pas une recherche de
+sous-chaîne), que `src/risk_engine.py` et `src/optimizer.py` n'importent
+jamais `src/annotator_llm.py`, `src/rag_indexer.py` ni
+`src/rag_retriever.py` — **les deux tests sont verts**. Le volet reste à
+ajouter pour un futur `reporter.py`/orchestrateur dès qu'ils existeront.
 
 ### Déterminisme du LLM
 
@@ -594,6 +707,6 @@ lorsque `src/annotator_llm.py` sera implémenté.
 | `DE` | (calcul déterministe SP2) | — | — | — | C7 | NON IMPLEMENTE |
 | `Cout(d;H)` | `src/cost_engine.py` | `compute_cost_by_mechanism` | `test_cost_engine.py` | `cost_example.txt` | — | IMPLEMENTE |
 | `Gamma`, `A`, `P`, `R` | `src/risk_engine.py` | `propagate_risk` | `test_reference_example` | `risk_example.csv` | C8 | IMPLEMENTE |
-| budget | `src/optimizer.py` | — | — | — | — | NON IMPLEMENTE |
-| Pareto | `src/optimizer.py` | — | — | — | (chapitre 5) | NON IMPLEMENTE |
-| `y*` / `Y*` | `src/optimizer.py` / `src/reporter.py` | — | — | — | (chapitre 5) | NON IMPLEMENTE |
+| unicité + budget | `src/optimizer.py` | `enumerate_configurations` / `filter_by_budget` | `test_optimizer.py` | `optimizer_example.txt` | (chapitre 5) | IMPLEMENTE |
+| Pareto | `src/optimizer.py` | `pareto_front` | `test_optimizer.py` | `optimizer_example.txt` | (chapitre 5) | IMPLEMENTE |
+| `y*` / `Y*` | `src/optimizer.py` (`select_by_sum_aggregation`, `to_deployment_plan`) / `src/reporter.py` | `solve` | `test_optimizer.py` | `optimizer_example.txt` | (chapitre 5) | IMPLEMENTE (`optimizer.py`) ; `reporter.py` dédié NON IMPLEMENTE |

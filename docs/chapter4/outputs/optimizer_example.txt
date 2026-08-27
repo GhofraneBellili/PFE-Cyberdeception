@@ -1,0 +1,12 @@
+Optimizer - resultats reels (DE illustratif, SP2 non implemente)
+----------------------------------------------------------------------
+Occurrences Terminal : ['T1003@DC01']
+Configurations enumerees : 2
+Configurations faisables (budget=5000.0) : 2
+
+Front de Pareto (risques terminaux) :
+  cout=  4039.20  risques={'T1003@DC01': 0.17247750000000006}  plan=[D3-DUC@auth-store]
+
+Selection illustrative (somme des risques terminaux, politique explicite) :
+  cout=4039.20  risques={'T1003@DC01': 0.17247750000000006}
+  plan Y* = [{'occurrence_id': 'T1078@DC01', 'mechanism_id': 'D3-DUC', 'location_id': 'auth-store', 'DE': 0.42, 'Cost': 4039.2}]

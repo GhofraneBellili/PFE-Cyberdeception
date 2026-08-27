@@ -2225,10 +2225,10 @@ INTERDIT
 - [ ] `annotation_validator.py`
 - [x] `risk_engine.py`
 - [x] `cost_engine.py`
-- [ ] `optimizer.py`
+- [x] `optimizer.py`
 - [ ] `reporter.py`
 - [x] test analytique de référence
-- [ ] validation exhaustive du solveur sur petite instance
+- [x] validation exhaustive du solveur sur petite instance
 
 ---
 
