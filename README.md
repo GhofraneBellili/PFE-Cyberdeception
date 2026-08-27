@@ -43,16 +43,20 @@ Graphe d'attaque
 **Tous les blocs de cette chaîne sont désormais implémentés** (branche
 `implementation/chapter4`) : schémas de données, graphe d'attaque, deux
 bases de connaissances structurées, une couche offline de construction
-de données pour la KB déception (staging **et désormais catalogue +
-mapping réels**, voir Étape 17), SP1, RAG, annotation LLM (repli
-déterministe `rule_based_stub` **et provider LLM réel testé mais non
-exécuté dans cet environnement**, voir Étape 18), gel des annotations
-(SP2 déterministe), coût, SP3, optimiseur, reporter, et un orchestrateur
-qui enchaîne l'ensemble. Ce qui reste hors périmètre : un catalogue de
-déception plus large que les 3 mécanismes réels actuels (composition
-finale de `\mathcal D` = OPEN_DECISION non résolue) et une exécution LLM
-réelle (aucun service Ollama/OpenAI-compatible disponible dans cet
-environnement — le code est prêt, testé par mocks HTTP, et documenté).
+de données pour la KB déception (staging, **catalogue réel étendu à 26
+mécanismes et mapping réel de 591 relations**, voir Étape 17 puis Étape
+20), SP1 (instance riche : 4 candidats admissibles réels, voir Étape 20),
+RAG (**moteur sémantique `sentence-transformers`+FAISS principal, TF-IDF
+haché en baseline lexicale expérimentale**, voir Étape 20), annotation
+LLM (repli déterministe `rule_based_stub` **et provider LLM réel testé
+par mocks**, voir Étape 18 et la suite du journal pour le statut
+d'exécution réelle), gel des annotations (SP2 déterministe), coût, SP3,
+optimiseur, reporter, et un orchestrateur qui enchaîne l'ensemble
+(dispatché sur les trois moteurs RAG). Ce qui reste hors périmètre :
+composition finale exhaustive de `\mathcal D` (OPEN_DECISION non
+résolue — 26 mécanismes réels, pas une clôture définitive du catalogue)
+et le statut de l'exécution LLM réelle (voir la fin du journal pour
+l'état le plus à jour).
 
 ## 2. Architecture logicielle
 
@@ -63,9 +67,9 @@ environnement — le code est prêt, testé par mocks HTTP, et documenté).
 | `src/knowledge_attack.py` | KB structurée MITRE ATT&CK | Validé |
 | `src/knowledge_deception.py` | Catalogue cyberdéception + mapping \(M_{i,d}\) (chargement) | Validé (catalogue et mapping réels chargeables) |
 | `tools/deception_kb/d3fend_seed_builder.py` | Staging offline D3FEND (branche Deceive) | Validé |
-| `tools/deception_kb/catalog_builder.py` / `mapping_builder.py` | Construction du catalogue \(D\) et du mapping \(M_{i,d}\) réels | Validé (3 mécanismes, 127 relations) |
-| `src/admissibility.py` | SP1 — espace admissible \(C_{i,h}\) | Validé |
-| `src/rag_indexer.py` / `src/rag_retriever.py` | RAG (chunks tracés, TF-IDF haché, retrieval) | Validé |
+| `tools/deception_kb/catalog_builder.py` / `mapping_builder.py` | Construction du catalogue \(D\) et du mapping \(M_{i,d}\) réels | Validé (26 mécanismes, 591 relations — v1 3 mécanismes/127 relations conservée inchangée) |
+| `src/admissibility.py` | SP1 — espace admissible \(C_{i,h}\) | Validé (instance riche : 4 candidats admissibles) |
+| `src/rag_indexer.py` / `src/rag_retriever.py` / `src/semantic_embedder.py` / `src/vector_index.py` | RAG (chunks tracés, moteur sémantique principal + baseline TF-IDF haché + fusion hybride) | Validé |
 | `src/annotator_llm.py` / `src/llm_provider.py` | Annotation des 11 sous-métriques | Validé (repli `rule_based_stub` + provider réel Ollama/OpenAI-compatible testé, non exécuté ici) |
 | `src/annotation_validator.py` | SP2 déterministe (Realisme/P_interaction/P_engagement/Effet_prog/DE) + gel | Validé |
 | `src/cost_engine.py` | Calcul du coût \(Cost(d;H)\) | Validé |
@@ -76,7 +80,8 @@ environnement — le code est prêt, testé par mocks HTTP, et documenté).
 
 CI GitHub Actions : verte sur `implementation/chapter4` à chaque commit
 documenté ci-dessous (`.github/workflows/tests.yml`, déclenchée sur
-`push`/`pull_request`). 588 tests au moment de ce document.
+`push`/`pull_request`). 664 tests (+ 2 optionnels `pytest -m real_llm`,
+exclus par défaut) au moment de ce document.
 
 ## 3. Étapes techniques validées
 
@@ -1889,6 +1894,138 @@ Aucun provider LLM réel exécuté (inchangé) ; catalogue toujours restreint
 Exécution locale réelle du provider LLM par l'utilisateur, puis
 `python -m examples.freeze_real_example` pour geler le résultat. Chapitre
 5 explicitement hors périmètre de cette passe.
+
+### Étape 20 — RAG sémantique, catalogue étendu (≥25 mécanismes) et instance SP1 riche
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Éliminer quatre limitations techniques identifiées avant cette passe
+(voir `docs/chapter4/BEFORE_UPGRADE_STATE.md`, état de référence) : (1)
+le RAG utilisait uniquement du TF-IDF haché, pas une représentation
+sémantique ; (2) le catalogue réel ne contenait que 3 mécanismes ; (3)
+le provider LLM réel n'avait jamais été réellement exécuté ; (4)
+l'exemple SP1 réel ne produisait qu'un seul candidat admissible. Le
+modèle scientifique du chapitre 3 (équations, 11 sous-métriques,
+contraintes de `(P)`) reste strictement inchangé.
+
+#### Traitement réalisé
+
+**RAG sémantique** (`src/semantic_embedder.py`, `src/vector_index.py`,
+extension de `src/rag_indexer.py`/`src/rag_retriever.py`) : nouveau
+moteur `SemanticRagIndex` (`sentence-transformers`, modèle configurable
+`RAG_EMBEDDING_MODEL`, défaut `BAAI/bge-small-en-v1.5`, repli documenté
+`all-MiniLM-L6-v2`) indexé par FAISS (`IndexFlatIP`, repli NumPy pur) —
+devient le moteur RAG **principal** ; le TF-IDF haché (`RagIndex`) reste
+disponible comme **baseline lexicale expérimentale**, comparée
+quantitativement sur 17 requêtes à vérité terrain relue humainement
+(`data/rag/rag_eval_queries.json`, `examples/rag_semantic_evaluation.py`)
+: Recall@5 sémantique 0.396 > lexical 0.331, MRR@5 0.578 > 0.522, nDCG@5
+0.400 > 0.342
+(`docs/chapter4/outputs/rag_semantic_evaluation.json`/`.txt`). Un mode
+hybride (`retrieve_hybrid`, fusion alpha-pondérée) a ensuite été ajouté
+**uniquement parce que** l'évaluation démontre un gain réel supplémentaire
+(alpha testé parmi {0.5, 0.7, 0.8, 0.9}, retenu à 0.8, Recall@5=0.470) —
+pas un choix arbitraire. `src/orchestrator.py::run_pipeline` dispatché
+sur les trois moteurs (lexical/sémantique/hybride) sans casser la
+compatibilité des runs lexicaux existants.
+
+**Catalogue étendu à 26 mécanismes** (`tools/deception_kb/catalog_builder.py::build_expanded_catalog`,
+`tools/deception_kb/mapping_builder.py::build_expanded_mapping`) :
+`build_catalog()`/`build_mapping()` (v1, 3 mécanismes D3FEND) restent
+**inchangées et testées** ; l'extension ajoute 6 concepts D3FEND
+supplémentaires (feuilles réelles de la branche « Deceive », sans
+relation ATT&CK tracée — `interaction_mechanism` construit par citation
+exacte du kb-article, jamais une paraphrase), 15 activités MITRE Engage
+« Engagement » (sur 23 — les 8 « Strategic » et 8 autres « Engagement »
+explicitement exclues avec justification, `EAC0012` fusionné dans
+`D3-DP`) et 2 mécanismes génériques de littérature (Honeypot,
+Honeytoken). Décision INCLUDE/MERGE/EXCLUDE documentée mécanisme par
+mécanisme dans `docs/chapter4/CATALOG_AUDIT.md`. Mapping M_{i,d} étendu
+à 591 relations (464 **directes**, matrice officielle MITRE Engage↔ATT&CK
+`engage_attack_mapping_seed_1.0.json` — 792 lignes déjà versionnées mais
+jusqu'ici inutilisées — + 127 **dérivées**, inférence SPARQL D3FEND
+inchangée) — chaque relation porte `mapping_type: "direct"|"derived"`,
+jamais présentée comme une relation officielle si elle est dérivée.
+Statistiques réelles : `docs/chapter4/outputs/catalog_statistics.json`/`.txt`
+(271 techniques ATT&CK couvertes, contre 125 avant cette passe).
+
+**Admissibilité SP1** : relecture ciblée a permis de documenter
+`required_services=["email"]` pour 2 mécanismes Engage supplémentaires
+(`EAC0009`, `EAC0021`, citation exacte du `long_description` sur
+l'infrastructure de messagerie) — portant à 3 (sur 26) le nombre de
+mécanismes pouvant réellement atteindre `PrerequisSatisfaits="pass"`
+(`docs/chapter4/CATALOG_AUDIT.md`, section 6bis). Nouvel exemple
+`examples/sp1_extended_real_example.py` : instance à 10 occurrences, 6
+actifs (poste, serveur web, contrôleur de domaine, serveur d'application,
+serveur de fichiers, base de données), 13 emplacements, scénario cohérent
+(hameçonnage/exploitation → compromission d'identifiants → exécution →
+découverte/collecte divergente → exfiltration terminale convergente).
+
+**Tests LLM réel optionnels** (`tests/test_annotator_llm_real_integration.py`,
+marqueur pytest `real_llm`, exclu par défaut via `addopts = -m "not
+real_llm"` dans `pyproject.toml`, activé par `pytest -m real_llm`) :
+vérifie, si un provider réel est configuré, exactement 11 sous-métriques,
+scores/confiances dans `[0,1]`, `evidence_ids` non vides, aucune formule
+dérivée retournée par le LLM.
+
+#### Résultat réel
+
+`python -m examples.sp1_extended_real_example` produit **4 candidats
+réellement admissibles** (sur 3042 candidats bruts), couvrant 3
+mécanismes distincts (`D3-DNR`, `EAC0009`, `EAC0021`) sur 2 occurrences —
+analyse de la cause explicitement documentée dans la sortie du script :
+ce n'était pas un manque de richesse d'instance, mais un manque de preuve
+documentaire de prérequis pour 23 des 26 mécanismes. Tentative
+d'exécution LLM réelle (Phase 12) : aucun Ollama ni endpoint
+OpenAI-compatible configuré dans l'environnement au moment de cette
+passe — voir la suite de ce journal pour le statut final.
+
+#### Sorties
+
+`data/deception/deception_catalog.json`/`attack_deception_mapping.json`
+(régénérés, 26 mécanismes/591 relations), `data/rag/rag_eval_queries.json`,
+`docs/chapter4/CATALOG_AUDIT.md`, `docs/chapter4/BEFORE_UPGRADE_STATE.md`,
+`docs/chapter4/outputs/{rag_semantic_evaluation,catalog_statistics,sp1_extended_real_example}.{json,txt}`.
+
+#### Fichiers concernés
+
+`src/semantic_embedder.py` (nouveau), `src/vector_index.py` (nouveau),
+`src/rag_indexer.py`, `src/rag_retriever.py`, `src/orchestrator.py`,
+`tools/deception_kb/catalog_builder.py`,
+`tools/deception_kb/mapping_builder.py`,
+`examples/rag_semantic_evaluation.py` (nouveau),
+`examples/catalog_statistics.py` (nouveau),
+`examples/sp1_extended_real_example.py` (nouveau),
+`tests/test_semantic_embedder.py` (nouveau), `tests/test_vector_index.py`
+(nouveau), `tests/test_annotator_llm_real_integration.py` (nouveau),
+mises à jour de `tests/test_rag_indexer.py`, `tests/test_rag_retriever.py`,
+`tests/test_orchestrator.py`, `tests/test_catalog_builder.py`,
+`tests/test_mapping_builder.py`, `tests/test_risk_engine.py`,
+`tests/test_optimizer.py`, `tests/test_reporter.py`, `pyproject.toml`.
+
+#### Tests et validation
+
+**664 tests verts** (+ 2 optionnels `pytest -m real_llm`, exclus par
+défaut). Aucune régression sur les tests v1 existants (`build_catalog`/
+`build_mapping` inchangées et toujours testées séparément de l'extension).
+
+#### Limites actuelles
+
+8 des 26 mécanismes (6 D3FEND étendus + 2 littérature) n'ont encore
+aucune relation `M_{i,d}` tracée (aucun staging disponible ne l'établit).
+Seuls 3 mécanismes sur 26 ont un `required_*` documenté. Aucun service
+LLM réel exécuté au moment de la rédaction de cette étape (voir suite du
+journal).
+
+#### Lien avec l'étape suivante
+
+Exécution réelle du LLM (Ollama ou endpoint OpenAI-compatible) sur les
+candidats admissibles réels produits par `examples.sp1_extended_real_example`,
+gel des annotations réelles, rejeu complet du pipeline avec RAG sémantique
++ LLM réel, mise à jour finale des figures C1-C7. Chapitre 5 explicitement
+hors périmètre.
 
 ## OPEN_DECISION en cours
 

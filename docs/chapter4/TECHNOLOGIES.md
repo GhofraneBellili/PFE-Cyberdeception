@@ -10,9 +10,11 @@ effectivement importées par du code réel sont incluses.
 | Python | ≥ 3.11 (`pyproject.toml`) | Langage d'implémentation unique du projet | tous |
 | Pydantic | 2.x (`pydantic>=2,<3`) | Modèles de données validés (occurrences `T_{i,h}`, graphe, mécanisme de déception, annotation, contexte d'annotation, instance système) | `src/schemas.py` |
 | NetworkX | 3.x (`networkx>=3,<4`) | Représentation du graphe d'attaque comme `DiGraph`, utilitaires de parcours (parents/enfants) | `src/graph_builder.py` |
-| pytest | ≥ 8.0 (dépendance `dev`) | Suite de tests (588 tests au moment de ce document) | `tests/` |
+| pytest | ≥ 8.0 (dépendance `dev`) | Suite de tests (664 tests + 2 optionnels `pytest -m real_llm` au moment de ce document) | `tests/` |
 | `urllib.request` (bibliothèque standard) | — | Appel HTTP vers un provider LLM réel (Ollama local ou endpoint OpenAI-compatible) — choix technique explicite pour éviter une nouvelle dépendance (`requests`) alors que la bibliothèque standard suffit | `src/llm_provider.py` |
-| matplotlib | 3.x (`matplotlib>=3.8,<4`, dépendance optionnelle `docs`) | Génération reproductible des 5 figures PNG du chapitre 4 (C1/C2/C3/C4/C7) à partir des sorties réelles du dépôt — outil de documentation, jamais importé par `src/` (voir `pyproject.toml`, groupe `[project.optional-dependencies].docs`) | `tools/chapter4_figures/` |
+| `sentence-transformers` | 3.x (`sentence-transformers>=3,<4`, dépendance optionnelle `rag`) | Modèle d'embeddings sémantiques réel pour le RAG — **moteur principal** depuis cette passe (réf. tâche « remplacer le TF-IDF par un vrai RAG sémantique »). Modèle configurable (`RAG_EMBEDDING_MODEL`), jamais codé en dur : défaut `BAAI/bge-small-en-v1.5` (dimension 384), repli documenté `sentence-transformers/all-MiniLM-L6-v2` | `src/semantic_embedder.py` |
+| `faiss-cpu` | 1.x (`faiss-cpu>=1.8,<2`, dépendance optionnelle `rag`) | Index vectoriel local (`IndexFlatIP`, produit scalaire normalisé = cosinus) pour la recherche par similarité sémantique — jamais un service externe ; repli NumPy pur si `faiss-cpu` n'est pas installable | `src/vector_index.py` |
+| matplotlib | 3.x (`matplotlib>=3.8,<4`, dépendance optionnelle `docs`) | Génération reproductible des figures PNG du chapitre 4 à partir des sorties réelles du dépôt — outil de documentation, jamais importé par `src/` (voir `pyproject.toml`, groupe `[project.optional-dependencies].docs`) | `tools/chapter4_figures/` |
 
 ## Technologies explicitement NON utilisées à ce stade
 
@@ -20,7 +22,10 @@ Conformément à la consigne de ne pas ajouter de complexité artificielle,
 aucun des éléments suivants n'est présent dans le dépôt : frontend web,
 dashboard, chatbot, API REST, microservices, Docker/Docker Compose,
 base SQL, Redis, Kafka, MongoDB, bibliothèque cliente HTTP tierce
-(`requests`), base vectorielle externe (FAISS/Chroma).
+(`requests`), service de base vectorielle externe managé (Chroma serveur,
+Pinecone, Weaviate). **FAISS est utilisé, mais exclusivement en local, en
+mémoire, sans service externe** — voir la ligne `faiss-cpu` ci-dessus,
+distincte de ce qui est exclu ici.
 
 ## API LLM réelle — code intégré, non exécutée dans cet environnement
 
@@ -49,6 +54,9 @@ chapitre 3 :
 
 | Besoin | Choix réalisé | Module |
 |---|---|---|
-| Vectorisation des chunks RAG | TF-IDF avec « hashing trick » (`hashlib.blake2b`), 256 dimensions, normalisation L2 | `src/rag_indexer.py` |
-| Index/recherche de similarité | Index en mémoire (`dict` Python) + similarité cosinus | `src/rag_indexer.py` / `src/rag_retriever.py` |
+| Vectorisation des chunks RAG (baseline lexicale, sans dépendance) | TF-IDF avec « hashing trick » (`hashlib.blake2b`), 256 dimensions, normalisation L2 | `src/rag_indexer.py` |
+| Index/recherche de similarité (baseline lexicale) | Index en mémoire (`dict` Python) + similarité cosinus | `src/rag_indexer.py` / `src/rag_retriever.py` |
+| Vectorisation des chunks RAG (moteur principal) | Embeddings `sentence-transformers` réels, normalisés L2 | `src/semantic_embedder.py` |
+| Index/recherche de similarité (moteur principal) | Index vectoriel FAISS `IndexFlatIP` (repli NumPy pur si FAISS indisponible) | `src/vector_index.py` |
+| Fusion lexical/sémantique | `score = alpha·score_sémantique + (1-alpha)·score_lexical`, alpha=0.8 retenu après évaluation réelle (Recall@5/MRR@5/nDCG@5 sur `data/rag/rag_eval_queries.json`) | `src/rag_retriever.py::retrieve_hybrid` |
 | Résolution de `(P)` sur petite instance | Énumération exhaustive (§23), pas de solveur externe | `src/optimizer.py` |
