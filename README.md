@@ -40,10 +40,16 @@ Graphe d'attaque
   → plan de déploiement Y*
 ```
 
-**Tous les blocs de cette chaîne ne sont pas encore implémentés.** À la
-date de ce document, seules les fondations (schémas de données, graphe
-d'attaque, deux bases de connaissances structurées, et une première couche
-de construction de données offline pour la KB déception) existent.
+**Tous les blocs de cette chaîne sont désormais implémentés** (branche
+`implementation/chapter4`) : schémas de données, graphe d'attaque, deux
+bases de connaissances structurées, une couche offline de construction
+de données pour la KB déception, SP1, RAG, annotation LLM (repli
+déterministe `rule_based_stub`, aucune API LLM réelle disponible dans cet
+environnement — voir Étape 13), gel des annotations (SP2 déterministe),
+coût, SP3, optimiseur, reporter, et un orchestrateur qui enchaîne
+l'ensemble. Ce qui reste hors périmètre : un catalogue de déception réel
+(`data/deception/deception_catalog.json` n'existe pas — OPEN_DECISION non
+résolue) et une API LLM réelle (repli déterministe utilisé à la place).
 
 ## 2. Architecture logicielle
 
@@ -52,18 +58,21 @@ de construction de données offline pour la KB déception) existent.
 | `src/schemas.py` | Modèles Pydantic (contrats de données) | Validé |
 | `src/graph_builder.py` | Construction/navigation du graphe d'attaque | Validé |
 | `src/knowledge_attack.py` | KB structurée MITRE ATT&CK | Validé |
-| `src/knowledge_deception.py` | Moteur du catalogue cyberdéception normalisé | Validé |
+| `src/knowledge_deception.py` | Moteur du catalogue cyberdéception normalisé | Validé (chargeur ; catalogue réel absent) |
 | `tools/deception_kb/d3fend_seed_builder.py` | Staging offline D3FEND (branche Deceive) | Validé (staging uniquement, pas le catalogue final) |
-| `src/admissibility.py` | SP1 — espace admissible \(C_{i,h}\) | Non implémenté à ce stade |
-| `src/rag_indexer.py` / `src/rag_retriever.py` | RAG | Non implémenté à ce stade |
-| `src/annotator_llm.py` / `src/annotation_validator.py` | SP2 — annotation LLM | Non implémenté à ce stade |
-| `src/risk_engine.py` | SP3 — propagation du risque | Non implémenté à ce stade |
-| `src/cost_engine.py` | Calcul du coût | Non implémenté à ce stade |
-| `src/optimizer.py` | Résolution du problème global \((P)\) | Non implémenté à ce stade |
-| `src/reporter.py` | Production du rapport \(Y^*\) | Non implémenté à ce stade |
+| `src/admissibility.py` | SP1 — espace admissible \(C_{i,h}\) | Validé |
+| `src/rag_indexer.py` / `src/rag_retriever.py` | RAG (chunks tracés, TF-IDF haché, retrieval) | Validé |
+| `src/annotator_llm.py` | Annotation des 11 sous-métriques | Validé (repli déterministe `rule_based_stub`, pas d'API LLM réelle) |
+| `src/annotation_validator.py` | SP2 déterministe (Realisme/P_interaction/P_engagement/Effet_prog/DE) + gel | Validé |
+| `src/cost_engine.py` | Calcul du coût \(Cost(d;H)\) | Validé |
+| `src/risk_engine.py` | SP3 — propagation du risque | Validé (`test_reference_example` vert) |
+| `src/optimizer.py` | Résolution du problème global \((P)\) | Validé (exploration exhaustive, petite instance) |
+| `src/reporter.py` | Transformation \(y^*\) en \(Y^*\), rapport interprétable | Validé |
+| `src/orchestrator.py` | Point d'entrée unique du pipeline complet | Validé |
 
-CI GitHub Actions : verte sur `master` à chaque commit documenté ci-dessous
-(`.github/workflows/tests.yml`, déclenchée sur `push`/`pull_request`).
+CI GitHub Actions : verte sur `implementation/chapter4` à chaque commit
+documenté ci-dessous (`.github/workflows/tests.yml`, déclenchée sur
+`push`/`pull_request`). 515 tests au moment de ce document.
 
 ## 3. Étapes techniques validées
 

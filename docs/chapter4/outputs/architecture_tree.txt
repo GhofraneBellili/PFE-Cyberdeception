@@ -1,11 +1,11 @@
 pfe-cyberdeception/
-|-- CLAUDE.md
-|-- README.md
+|-- .github/
+|   +-- workflows/
+|       +-- tests.yml
 |-- data/
 |   |-- attack/
 |   |   +-- README.md
 |   +-- deception/
-|       |-- README.md
 |       |-- literature/
 |       |   |-- evidence_candidates.json
 |       |   |-- literature_sources.json
@@ -13,40 +13,73 @@ pfe-cyberdeception/
 |       |-- raw/
 |       |   |-- d3fend/
 |       |   |   +-- 1.5.0/
-|       |   |       +-- (2 fichiers officiels bruts, non versionnes)
+|       |   |       +-- (fichiers officiels bruts, non versionnes : 2)
 |       |   |-- engage/
 |       |   |   +-- 1.0/
-|       |   |       +-- (10 fichiers officiels bruts, non versionnes)
+|       |   |       +-- (fichiers officiels bruts, non versionnes : 10)
 |       |   +-- literature/
-|       |       +-- (26 fichiers officiels bruts, non versionnes)
-|       |-- source_manifest.json
-|       +-- staging/
-|           |-- d3fend_attack_mapping_seed_1.5.0.json
-|           |-- d3fend_deception_seed_1.5.0.json
-|           |-- d3fend_seed_report_1.5.0.json
-|           |-- engage_activity_seed_1.0.json
-|           |-- engage_attack_mapping_seed_1.0.json
-|           |-- engage_seed_report_1.0.json
-|           |-- literature_document_seed_1.2.json
-|           |-- literature_evidence_seed_1.2.json
-|           +-- literature_seed_report_1.2.json
+|       |       +-- (fichiers officiels bruts, non versionnes : 26)
+|       |-- staging/
+|       |   |-- d3fend_attack_mapping_seed_1.5.0.json
+|       |   |-- d3fend_deception_seed_1.5.0.json
+|       |   |-- d3fend_seed_report_1.5.0.json
+|       |   |-- engage_activity_seed_1.0.json
+|       |   |-- engage_attack_mapping_seed_1.0.json
+|       |   |-- engage_seed_report_1.0.json
+|       |   |-- literature_document_seed_1.2.json
+|       |   |-- literature_evidence_seed_1.2.json
+|       |   +-- literature_seed_report_1.2.json
+|       |-- README.md
+|       +-- source_manifest.json
 |-- docs/
+|   |-- chapter4/
+|   |   |-- outputs/
+|   |   |   |-- architecture_tree.txt
+|   |   |   |-- cost_example.txt
+|   |   |   |-- frozen_annotations_example.csv
+|   |   |   |-- llm_annotation_example.json
+|   |   |   |-- optimizer_example.txt
+|   |   |   |-- pipeline_example.txt
+|   |   |   |-- rag_chunks_example.json
+|   |   |   |-- rag_retrieval_example.txt
+|   |   |   |-- risk_example.csv
+|   |   |   |-- risk_example.txt
+|   |   |   |-- sp1_candidates.json
+|   |   |   +-- sp1_example.txt
+|   |   |-- screenshots/
+|   |   |   |-- 01_architecture/
+|   |   |   |   +-- .gitkeep
+|   |   |   |-- 02_knowledge/
+|   |   |   |   +-- .gitkeep
+|   |   |   |-- 03_sp1/
+|   |   |   |   +-- .gitkeep
+|   |   |   |-- 04_rag/
+|   |   |   |   +-- .gitkeep
+|   |   |   |-- 05_llm/
+|   |   |   |   +-- .gitkeep
+|   |   |   |-- 06_sp2/
+|   |   |   |   +-- .gitkeep
+|   |   |   |-- 07_risk/
+|   |   |   |   +-- .gitkeep
+|   |   |   |-- 08_optimization/
+|   |   |   |   +-- .gitkeep
+|   |   |   +-- 09_pipeline/
+|   |   |       +-- .gitkeep
+|   |   |-- IMPLEMENTATION_REPORT.md
+|   |   |-- SCREENSHOT_MANIFEST.md
+|   |   +-- TECHNOLOGIES.md
 |   |-- Présentation de la méthodologie corrigée.pdf
-|   |-- architecture_complete_cyberdeception_PFE.pdf
-|   +-- chapter4/
-|       |-- outputs/
-|       |   +-- architecture_tree.txt
-|       +-- screenshots/
-|           |-- 01_architecture/
-|           |-- 02_knowledge/
-|           |-- 03_sp1/
-|           |-- 04_rag/
-|           |-- 05_llm/
-|           |-- 06_sp2/
-|           |-- 07_risk/
-|           |-- 08_optimization/
-|           +-- 09_pipeline/
-|-- pyproject.toml
+|   +-- architecture_complete_cyberdeception_PFE.pdf
+|-- examples/
+|   |-- __init__.py
+|   |-- annotator_llm_example.py
+|   |-- cost_example.py
+|   |-- freeze_example.py
+|   |-- optimizer_example.py
+|   |-- orchestrator_example.py
+|   |-- rag_example.py
+|   |-- sp1_example.py
+|   +-- sp3_example.py
 |-- src/
 |   |-- __init__.py
 |   |-- admissibility.py
@@ -57,12 +90,17 @@ pfe-cyberdeception/
 |   |-- knowledge_attack.py
 |   |-- knowledge_deception.py
 |   |-- optimizer.py
+|   |-- orchestrator.py
 |   |-- rag_indexer.py
 |   |-- rag_retriever.py
 |   |-- reporter.py
 |   |-- risk_engine.py
 |   +-- schemas.py
 |-- tests/
+|   |-- test_admissibility.py
+|   |-- test_annotation_validator.py
+|   |-- test_annotator_llm.py
+|   |-- test_cost_engine.py
 |   |-- test_d3fend_seed_builder.py
 |   |-- test_engage_seed_builder.py
 |   |-- test_graph_builder.py
@@ -70,13 +108,23 @@ pfe-cyberdeception/
 |   |-- test_knowledge_deception.py
 |   |-- test_literature_seed_builder.py
 |   |-- test_normalization_builder.py
+|   |-- test_optimizer.py
+|   |-- test_orchestrator.py
+|   |-- test_rag_indexer.py
+|   |-- test_rag_retriever.py
+|   |-- test_reporter.py
+|   |-- test_risk_engine.py
 |   +-- test_schemas.py
-+-- tools/
-    |-- __init__.py
-    +-- deception_kb/
-        |-- README.md
-        |-- __init__.py
-        |-- d3fend_seed_builder.py
-        |-- engage_seed_builder.py
-        |-- literature_seed_builder.py
-        +-- normalization_builder.py
+|-- tools/
+|   |-- deception_kb/
+|   |   |-- README.md
+|   |   |-- __init__.py
+|   |   |-- d3fend_seed_builder.py
+|   |   |-- engage_seed_builder.py
+|   |   |-- literature_seed_builder.py
+|   |   +-- normalization_builder.py
+|   +-- __init__.py
+|-- .gitignore
+|-- CLAUDE.md
+|-- README.md
++-- pyproject.toml
