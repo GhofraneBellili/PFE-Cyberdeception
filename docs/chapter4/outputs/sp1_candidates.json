@@ -1,6 +1,6 @@
 {
   "schema": "sp1_admissibility_report",
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "occurrences": {
     "T1078@DC01": {
       "is_terminal": false,
@@ -14,28 +14,31 @@
           "mechanism_id": "D3-DF",
           "location_id": "auth-store",
           "mapping": "pass",
+          "organization": "pass",
           "Autorise": "fail",
           "PrerequisSatisfaits": "undetermined",
           "Pertinent": "pass",
           "admissible": false,
-          "rejection_reason": "Autorise=fail, PrerequisSatisfaits=undetermined"
+          "rejection_reason": "Autorise=fail, PrerequisSatisfaits=undetermined (missing organization configuration)"
         },
         {
           "occurrence_id": "T1078@DC01",
           "mechanism_id": "D3-DF",
           "location_id": "/tmp",
           "mapping": "pass",
+          "organization": "pass",
           "Autorise": "pass",
           "PrerequisSatisfaits": "undetermined",
           "Pertinent": "pass",
           "admissible": false,
-          "rejection_reason": "PrerequisSatisfaits=undetermined"
+          "rejection_reason": "PrerequisSatisfaits=undetermined (missing organization configuration)"
         },
         {
           "occurrence_id": "T1078@DC01",
           "mechanism_id": "D3-DUC",
           "location_id": "auth-store",
           "mapping": "pass",
+          "organization": "pass",
           "Autorise": "pass",
           "PrerequisSatisfaits": "pass",
           "Pertinent": "pass",
@@ -47,6 +50,7 @@
           "mechanism_id": "D3-DUC",
           "location_id": "/tmp",
           "mapping": "pass",
+          "organization": "pass",
           "Autorise": "fail",
           "PrerequisSatisfaits": "fail",
           "Pertinent": "pass",
@@ -63,6 +67,7 @@
     }
   },
   "summary": {
+    "d_org_size": 2,
     "occurrence_count": 1,
     "terminal_occurrence_count": 0,
     "candidate_count": 4,

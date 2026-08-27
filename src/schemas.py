@@ -327,10 +327,16 @@ class DeceptionMechanism(StrictModel):
     version: str = Field(..., min_length=1)
     admissibility_profile: DeceptionAdmissibilityProfile = Field(
         default_factory=DeceptionAdmissibilityProfile,
-        description="Représentation normalisée préparant l'admissibilité "
-        "SP1 (§10.4) — ne remplace pas requirements/target_artifacts/"
-        "possible_placements, qui restent les champs documentaires de "
-        "référence.",
+        description="Champ hérité (documentaire, KNOWLEDGE) — depuis la "
+        "séparation connaissance/capacité organisationnelle (réf. tâche "
+        "« separate knowledge and organization capabilities »), "
+        "src/admissibility.py ne lit PLUS ce champ pour évaluer Autorise/"
+        "PrerequisSatisfaits : ces décisions viennent désormais "
+        "exclusivement d'OrganizationDeceptionCapability (catalogue "
+        "opérationnel fourni par l'organisation, ci-dessous). Conservé "
+        "uniquement pour compatibilité ascendante des fiches déjà "
+        "versionnées — ne jamais y ajouter de nouvelle donnée "
+        "organisationnelle.",
     )
     metadata: dict[str, Any] = Field(
         default_factory=dict,
@@ -338,6 +344,69 @@ class DeceptionMechanism(StrictModel):
         "autorisés par §9.2, sans changer le sens des champs de référence "
         "ci-dessus.",
     )
+
+
+# ---------------------------------------------------------------------------
+# Capacité organisationnelle — réf. tâche « separate knowledge and
+# organization capabilities » : un mécanisme du catalogue de connaissances
+# (DeceptionMechanism, ci-dessus) décrit CE QU'EST un mécanisme et dans
+# quels contextes généraux il peut être utilisé (source : D3FEND/Engage/
+# littérature). Il ne peut jamais décider qu'une organisation PARTICULIÈRE
+# l'autorise sur un emplacement précis de SON système d'information — cette
+# décision appartient exclusivement au profil opérationnel fourni par
+# l'organisation, représenté ici.
+# ---------------------------------------------------------------------------
+
+
+class OrganizationDeceptionCapability(StrictModel):
+    """Réf. tâche §3 : une entrée du catalogue OPÉRATIONNEL d'une
+    organisation — jamais une vérité extraite de D3FEND/Engage/littérature.
+    Référence un `mechanism_id` du catalogue de connaissances (validé
+    séparément, réf. `src/organization_catalog.py::validate_against_knowledge_catalog`,
+    jamais par ce modèle lui-même qui ne connaît pas le catalogue de
+    connaissances)."""
+
+    mechanism_id: str = Field(..., min_length=1)
+    enabled: bool = Field(
+        ..., description="D_org = ensemble des mechanism_id activés (enabled=True) par l'organisation (réf. tâche §5)."
+    )
+    allowed_asset_types: list[str] = Field(default_factory=list)
+    allowed_location_types: list[str] = Field(default_factory=list)
+    required_services: list[str] = Field(default_factory=list)
+    required_artifacts: list[str] = Field(default_factory=list)
+    forbidden_asset_types: list[str] = Field(default_factory=list)
+    forbidden_locations: list[str] = Field(
+        default_factory=list, description="Liste de `location_id` explicitement interdits pour ce mécanisme."
+    )
+    operational_parameters: dict[str, Any] = Field(default_factory=dict)
+    cost_profile_id: str | None = Field(
+        default=None,
+        description="Pointeur optionnel vers un profil déjà utilisé par "
+        "src/cost_engine.py — ne duplique jamais sa logique de calcul "
+        "(réf. tâche §20).",
+    )
+    notes: str | None = None
+
+
+class OrganizationDeceptionCatalog(StrictModel):
+    """Réf. tâche §3 : catalogue opérationnel d'UNE organisation — une
+    entrée fournie par l'organisation, distincte du catalogue de
+    connaissances général (§2 de la tâche)."""
+
+    organization_id: str = Field(..., min_length=1)
+    catalog_version: str = Field(..., min_length=1)
+    capabilities: list[OrganizationDeceptionCapability] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _no_duplicate_mechanism_id(self) -> "OrganizationDeceptionCatalog":
+        seen: set[str] = set()
+        for capability in self.capabilities:
+            if capability.mechanism_id in seen:
+                raise ValueError(
+                    f"mechanism_id dupliqué dans le catalogue organisationnel : '{capability.mechanism_id}'."
+                )
+            seen.add(capability.mechanism_id)
+        return self
 
 
 # ---------------------------------------------------------------------------

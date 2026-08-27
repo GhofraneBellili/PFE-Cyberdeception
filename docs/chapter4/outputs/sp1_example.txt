@@ -1,8 +1,8 @@
 SP1 - Resultats d'admissibilite
 ------------------------------------------------------------------
 Occurrence  Mecanisme Emplacement   Decision
-T1078@DC01  D3-DF     auth-store    REJETE (Autorise=fail, PrerequisSatisfaits=undetermined)
-T1078@DC01  D3-DF     /tmp          REJETE (PrerequisSatisfaits=undetermined)
+T1078@DC01  D3-DF     auth-store    REJETE (Autorise=fail, PrerequisSatisfaits=undetermined (missing organization configuration))
+T1078@DC01  D3-DF     /tmp          REJETE (PrerequisSatisfaits=undetermined (missing organization configuration))
 T1078@DC01  D3-DUC    auth-store    ADMISSIBLE
 T1078@DC01  D3-DUC    /tmp          REJETE (Autorise=fail, PrerequisSatisfaits=fail)
 ------------------------------------------------------------------

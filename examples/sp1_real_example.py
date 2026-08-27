@@ -1,6 +1,11 @@
 """
 Réf. architecture : CLAUDE.md §10 (SP1) — exemple exécutable réel
-utilisant le catalogue et le mapping RÉELS (pas une fixture synthétique).
+utilisant le catalogue de connaissances et le mapping RÉELS (pas une
+fixture synthétique). Réf. tâche « separate knowledge and organization
+capabilities » : SP1 est un module RUNTIME — l'admissibilité vient
+exclusivement d'un catalogue OPÉRATIONNEL fourni ici par une petite
+organisation d'exemple (`build_example_organization_catalog`), jamais du
+catalogue de connaissances D3FEND/Engage/littérature.
 
 Charge :
     data/deception/deception_catalog.json          (tools/deception_kb/catalog_builder.py)
@@ -10,18 +15,9 @@ et exécute src/admissibility.py sur une petite instance explicite dont
 les technique_id (T1110.001, T1039) et les mécanismes (D3-DUC, D3-DNR)
 proviennent réellement de ce mapping — pas choisis arbitrairement.
 
-**Résultat réel (après l'audit documentaire des prérequis, réf.
-`docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md`)** : `D3-DNR` est le seul
-mécanisme dont `admissibility_profile.required_asset_types` est
-renseigné par une preuve documentaire directe (D3FEND kb-article :
-« deployed to web application servers, network file shares... ») —
-`RequirementsSatisfied` peut donc réellement évaluer `"pass"`/`"fail"`
-pour lui, selon l'`asset_type` de l'emplacement candidat. Pour `D3-DF` et
-`D3-DUC`, aucune preuve suffisante n'a été trouvée : `RequirementsSatisfied`
-reste `"undetermined"` (politique prudente OPEN_DECISION 4, jamais
-`"pass"` par défaut). Ce script rend ce contraste visible via le
-diagnostic complet de SP1 (`rejection_reason`) — pas un résultat
-uniforme masquant la nuance.
+Pour une instance beaucoup plus représentative (organisation référençant
+la quasi-totalité du catalogue de connaissances, plusieurs actifs/
+occurrences), voir `examples/sp1_extended_real_example.py`.
 
 Exécution :
     python -m examples.sp1_real_example
@@ -43,6 +39,7 @@ from src.schemas import (
     AttackGraph,
     Location,
     NodeAttributes,
+    OrganizationDeceptionCapability,
     SIInventory,
     SITopologyEdge,
     SystemInstance,
@@ -52,6 +49,26 @@ from src.schemas import (
 CATALOG_PATH = Path("data/deception/deception_catalog.json")
 MAPPING_PATH = Path("data/deception/attack_deception_mapping.json")
 OUT_DIR = Path("docs/chapter4/outputs")
+
+
+def build_example_organization_catalog() -> dict[str, OrganizationDeceptionCapability]:
+    """Catalogue OPÉRATIONNEL d'une petite organisation d'exemple : active
+    D3-DUC et D3-DNR avec des prérequis satisfaits par
+    `build_example_instance` ci-dessous."""
+    return {
+        "D3-DUC": OrganizationDeceptionCapability(
+            mechanism_id="D3-DUC",
+            enabled=True,
+            allowed_location_types=["credential_store"],
+            allowed_asset_types=["domain_controller"],
+        ),
+        "D3-DNR": OrganizationDeceptionCapability(
+            mechanism_id="D3-DNR",
+            enabled=True,
+            allowed_location_types=["network_resource"],
+            allowed_asset_types=["file_server", "web_application_server"],
+        ),
+    }
 
 
 def build_example_instance() -> SystemInstance:
@@ -124,12 +141,10 @@ def render_text_summary(report: dict) -> str:
     lines.append(f"Rejetes         : {summary['rejected_count']}")
     lines.append("-" * 78)
     lines.append(
-        "Note : D3-DNR est le seul mecanisme dont required_asset_types est "
-        "renseigne par une preuve documentaire directe (D3FEND kb-article) -- "
-        "RequirementsSatisfied peut donc reellement passer pour lui. Pour D3-DF "
-        "et D3-DUC, aucune preuve suffisante trouvee : RequirementsSatisfied "
-        "reste 'undetermined' (politique prudente OPEN_DECISION 4). "
-        "Voir docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md."
+        "Note : l'admissibilite vient exclusivement du catalogue OPERATIONNEL "
+        "d'exemple (build_example_organization_catalog), jamais du catalogue de "
+        "connaissances D3FEND/Engage/litterature (reference tache "
+        "'separate knowledge and organization capabilities')."
     )
     return "\n".join(lines) + "\n"
 
@@ -141,8 +156,11 @@ def main() -> None:
 
     instance = build_example_instance()
     catalog = dict(kb.mechanisms_by_id)
+    organization_catalog = build_example_organization_catalog()
 
-    report = build_admissibility_report(instance, catalog, sp1_mapping, theta_c=0.85, theta_i=0.85, theta_a=0.85)
+    report = build_admissibility_report(
+        instance, catalog, organization_catalog, sp1_mapping, theta_c=0.85, theta_i=0.85, theta_a=0.85
+    )
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "sp1_real_example.json").write_text(

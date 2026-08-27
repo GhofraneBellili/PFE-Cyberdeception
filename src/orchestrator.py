@@ -49,6 +49,7 @@ from src.schemas import (
     DeceptionMechanism,
     DeceptionRef,
     GraphContext,
+    OrganizationDeceptionCapability,
     SystemInstance,
 )
 
@@ -76,6 +77,7 @@ def run_pipeline(
     run_id: str,
     instance: SystemInstance,
     catalog: dict[str, DeceptionMechanism],
+    organization_catalog: dict[str, OrganizationDeceptionCapability],
     mapping: dict[str, list[str]],
     rag_index: RagIndex | SemanticRagIndex,
     rag_hybrid_lexical_index: RagIndex | None = None,
@@ -97,6 +99,15 @@ def run_pipeline(
     """Réf. §19 (workflow complet) : enchaîne SP1 -> RAG -> annotation ->
     gel -> coût -> `(P)` -> reporting avant/après, et sauvegarde chaque
     étape dans `runs/<run_id>/`.
+
+    `catalog` : catalogue de CONNAISSANCES (réf. tâche « separate
+    knowledge and organization capabilities ») — décrit ce que sont les
+    mécanismes. `organization_catalog` : catalogue OPÉRATIONNEL de
+    l'organisation (`dict[str, OrganizationDeceptionCapability]`, réf.
+    `src/organization_catalog.py::capabilities_by_id`) — seule source des
+    décisions Autorise/PrerequisSatisfaits de SP1 (`src/admissibility.py`).
+    SP1 est exécuté ICI, au runtime, à partir du graphe/SI COURANTS —
+    jamais pré-calculé hors ligne.
 
     Trois moteurs RAG possibles pour `rag_index`, réf. tâche « RAG
     sémantique » / §3 « fusion hybride » :
@@ -138,6 +149,8 @@ def run_pipeline(
         "started_at": datetime.now(timezone.utc).isoformat(),
         "occurrence_count": len(instance.graph.nodes),
         "mechanism_ids": sorted(catalog),
+        "organization_mechanism_ids": sorted(organization_catalog),
+        "organization_enabled_count": sum(1 for c in organization_catalog.values() if c.enabled),
         "mapping": mapping,
         "horizon": horizon,
         "budget_total": budget_total,
@@ -152,7 +165,7 @@ def run_pipeline(
 
     # --- SP1 : admissibilité -------------------------------------------------
     admissibility_report = build_admissibility_report(
-        instance, catalog, mapping, theta_c=theta_c, theta_i=theta_i, theta_a=theta_a
+        instance, catalog, organization_catalog, mapping, theta_c=theta_c, theta_i=theta_i, theta_a=theta_a
     )
     _write_json(run_dir / "candidates.json", admissibility_report)
 

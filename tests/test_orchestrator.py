@@ -21,6 +21,7 @@ from src.schemas import (
     DeceptionMechanism,
     Location,
     NodeAttributes,
+    OrganizationDeceptionCapability,
     SIInventory,
     SITopologyEdge,
     SystemInstance,
@@ -96,6 +97,22 @@ def make_catalog() -> dict[str, DeceptionMechanism]:
     return {"D3-DUC": duc}
 
 
+def make_organization_catalog() -> dict[str, OrganizationDeceptionCapability]:
+    """Réf. tâche « separate knowledge and organization capabilities » :
+    catalogue OPÉRATIONNEL d'une organisation fictive de test — seule
+    source des décisions Autorise/PrerequisSatisfaits de SP1, distincte de
+    `make_catalog()` (connaissance)."""
+    return {
+        "D3-DUC": OrganizationDeceptionCapability(
+            mechanism_id="D3-DUC",
+            enabled=True,
+            allowed_location_types=["credential_store"],
+            allowed_asset_types=["domain_controller"],
+            required_services=["ldap"],
+        )
+    }
+
+
 def make_rag_chunks() -> list[Chunk]:
     return [
         Chunk(
@@ -153,6 +170,7 @@ def run_kwargs(run_id: str, tmp_path, *, budget_total: float = 5000.0) -> dict:
         run_id=run_id,
         instance=make_instance(),
         catalog=make_catalog(),
+        organization_catalog=make_organization_catalog(),
         mapping={"T1078": ["D3-DUC"]},
         rag_index=make_rag_index(),
         annotator=RuleBasedStubAnnotator(),
@@ -325,23 +343,22 @@ class TestLlmOutOfExecutionPath:
 
 
 class TestPipelineWithRealCatalogAndMapping:
-    """Réf. tâche 12 : "pipeline utilisant catalogue + mapping réels".
+    """Réf. tâche 12 (session précédente) + réf. tâche « separate
+    knowledge and organization capabilities » (cette session) : "pipeline
+    utilisant catalogue + mapping réels".
 
     Charge data/deception/deception_catalog.json et
     data/deception/attack_deception_mapping.json (construits par
     tools/deception_kb/catalog_builder.py / mapping_builder.py) et fait
     tourner l'orchestrateur complet dessus, sur une instance qui n'exerce
-    QUE D3-DUC (T1110.001@DC01 -> T1003@DC01). D3-DUC ne possède aucune
-    preuve documentaire suffisante pour required_asset_types/services/
-    artifacts (réf. docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md) :
-    RequirementsSatisfied="undetermined" pour son unique candidat -> plan
-    de déploiement vide pour CETTE instance précise. Ce n'est pas vrai de
-    tout le catalogue : D3-DNR possède désormais un required_asset_types
-    réellement justifié et peut être admissible sur une autre instance
-    (voir examples/sp1_real_example.py). Ce test vérifie que le pipeline
-    complet reste robuste (ne plante pas) sur le cas dégénéré C_i_h=∅,
-    pas qu'il produit systématiquement un plan vide avec tout catalogue
-    réel.
+    QUE D3-DUC (T1110.001@DC01 -> T1003@DC01). Le catalogue de
+    CONNAISSANCES réel (26 mécanismes) ne fournit plus aucune donnée
+    d'admissibilité (champ hérité `admissibility_profile` non consulté) :
+    l'admissibilité vient exclusivement d'un catalogue OPÉRATIONNEL de
+    test (`_organization_catalog`, ci-dessous), qui active D3-DUC avec des
+    prérequis satisfaits par l'instance -> `C_i_h` non vide, plan de
+    déploiement produit. Vérifie que le pipeline complet fonctionne de
+    bout en bout avec le catalogue de connaissances réel.
     """
 
     def _real_instance(self):
@@ -374,9 +391,33 @@ class TestPipelineWithRealCatalogAndMapping:
             ),
         )
         graph = AttackGraph(nodes=[t1110, t1003], edges=[AttackGraphEdge(source_id="T1110.001@DC01", target_id="T1003@DC01")])
-        assets = [Asset(asset_id="DC01", asset_type="domain_controller", critical=False, accessible=True, properties={})]
+        assets = [
+            Asset(
+                asset_id="DC01",
+                asset_type="domain_controller",
+                critical=False,
+                accessible=True,
+                properties={"services": ["ldap"]},
+            )
+        ]
         locations = [Location(location_id="auth-store", location_type="credential_store", asset_id="DC01")]
         return SystemInstance(graph=graph, si_inventory=SIInventory(assets=assets, locations=locations, topology_edges=[]))
+
+    def _organization_catalog(self) -> dict[str, OrganizationDeceptionCapability]:
+        """Réf. tâche « separate knowledge and organization capabilities » :
+        seule D3-DUC est activée par cette organisation de test, avec des
+        prérequis opérationnels satisfaits par `_real_instance` — le
+        catalogue de connaissances réel (26 mécanismes) n'influence pas
+        cette décision."""
+        return {
+            "D3-DUC": OrganizationDeceptionCapability(
+                mechanism_id="D3-DUC",
+                enabled=True,
+                allowed_location_types=["credential_store"],
+                allowed_asset_types=["domain_controller"],
+                required_services=["ldap"],
+            )
+        }
 
     def test_pipeline_completes_with_real_catalog_and_mapping(self, tmp_path):
         from src.knowledge_deception import load_attack_deception_mapping, load_deception_catalog, to_sp1_mapping
@@ -406,6 +447,7 @@ class TestPipelineWithRealCatalogAndMapping:
             run_id="run-real-catalog",
             instance=self._real_instance(),
             catalog=dict(kb.mechanisms_by_id),
+            organization_catalog=self._organization_catalog(),
             mapping=sp1_mapping,
             rag_index=build_index(chunks),
             annotator=RuleBasedStubAnnotator(),
@@ -429,8 +471,10 @@ class TestPipelineWithRealCatalogAndMapping:
         )
 
         assert result["run_manifest"]["status"] == "completed"
-        # Réf. docstring de classe : résultat honnête, D_i réel mais C_i_h
-        # vide (RequirementsSatisfied="undetermined" partout).
+        # Réf. docstring de classe : D3-DUC active par l'organisation avec
+        # des prerequis satisfaits par l'instance -> candidat reellement
+        # admissible, plan de deploiement non vide.
         assert result["admissibility_report"]["occurrences"]["T1110.001@DC01"]["D_i"] == ["D3-DUC"]
-        assert result["admissibility_report"]["summary"]["admissible_count"] == 0
-        assert result["deployment_plan"] == []
+        assert result["admissibility_report"]["summary"]["admissible_count"] == 1
+        assert len(result["deployment_plan"]) == 1
+        assert result["deployment_plan"][0]["mechanism_id"] == "D3-DUC"

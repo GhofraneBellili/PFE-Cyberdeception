@@ -1,21 +1,25 @@
 """
 Réf. architecture : CLAUDE.md §10 (SP1) — contrat technique du PFE
-Cyberdéception.
-
-Tests unitaires de src/admissibility.py (§25.4 : pytest obligatoire).
+Cyberdéception. Réf. tâche « separate knowledge and organization
+capabilities » : SP1 est un module RUNTIME, l'admissibilité vient
+exclusivement du catalogue OPÉRATIONNEL de l'organisation
+(`OrganizationDeceptionCapability`), jamais du catalogue de connaissances
+(`DeceptionMechanism.admissibility_profile`, champ hérité non consulté).
 
 Les identifiants ATT&CK et actifs utilisés ici (T1078, T1041, DC, WS01,
 ...) reprennent volontairement le scénario de référence de CLAUDE.md §20 :
 contrairement aux couches offline de préparation de données (D3FEND/
 Engage/littérature), SP1 implémente directement la formalisation du
 chapitre 3 et doit être validé sur ce scénario, pas sur un cas
-générique arbitraire.
+générique arbitraire. Le moteur lui-même (src/admissibility.py) ne code
+en dur aucun de ces identifiants (vérifié par TestGenericity).
 """
 
 import pytest
 
 from src.admissibility import (
     build_admissibility_report,
+    enabled_mechanism_ids,
     evaluate_allowed,
     evaluate_relevant,
     evaluate_requirements_satisfied,
@@ -23,10 +27,10 @@ from src.admissibility import (
 from src.schemas import (
     Asset,
     AttackGraph,
-    DeceptionAdmissibilityProfile,
     DeceptionMechanism,
     Location,
     NodeAttributes,
+    OrganizationDeceptionCapability,
     SIInventory,
     SITopologyEdge,
     SystemInstance,
@@ -56,17 +60,25 @@ def make_attributes(**overrides):
     return NodeAttributes(**base)
 
 
-def make_mechanism(mechanism_id, *, profile=None, **overrides):
+def make_mechanism(mechanism_id, **overrides):
+    """Fiche de CONNAISSANCE minimale — plus aucun admissibility_profile
+    pertinent pour ces tests (champ hérité, non consulté par
+    src/admissibility.py depuis la séparation connaissance/organisation)."""
     base = dict(
         id=mechanism_id,
         name=f"Fixture {mechanism_id}",
         description="Fixture mechanism.",
         interaction_mechanism="use credential",
         version="1.0",
-        admissibility_profile=profile or DeceptionAdmissibilityProfile(),
     )
     base.update(overrides)
     return DeceptionMechanism(**base)
+
+
+def make_capability(mechanism_id, *, enabled=True, **overrides):
+    base = dict(mechanism_id=mechanism_id, enabled=enabled)
+    base.update(overrides)
+    return OrganizationDeceptionCapability(**base)
 
 
 def make_instance(*, occurrences, assets, locations, topology_edges=None, edges=None):
@@ -101,81 +113,112 @@ def default_topology_edges():
 
 
 # ---------------------------------------------------------------------------
-# A. Allowed(d, l)
+# A. enabled_mechanism_ids (D_org)
+# ---------------------------------------------------------------------------
+
+
+class TestEnabledMechanismIds:
+    def test_only_enabled_mechanisms_included(self):
+        org = {
+            "DT-A": make_capability("DT-A", enabled=True),
+            "DT-B": make_capability("DT-B", enabled=False),
+        }
+        assert enabled_mechanism_ids(org) == frozenset({"DT-A"})
+
+    def test_empty_organization_catalog_yields_empty_d_org(self):
+        assert enabled_mechanism_ids({}) == frozenset()
+
+
+# ---------------------------------------------------------------------------
+# B. Allowed(d, l) — réf. tâche §7
 # ---------------------------------------------------------------------------
 
 
 class TestAllowed:
     def test_pass_when_location_type_listed(self):
-        mechanism = make_mechanism(
-            "DT-CRED", profile=DeceptionAdmissibilityProfile(allowed_location_types=["credential_store"])
-        )
+        capability = make_capability("DT-CRED", allowed_location_types=["credential_store"])
         location = default_locations()[0]
-        assert evaluate_allowed(mechanism, location) == "pass"
+        assert evaluate_allowed(capability, location) == "pass"
 
     def test_fail_when_location_type_not_listed(self):
-        mechanism = make_mechanism(
-            "DT-CRED", profile=DeceptionAdmissibilityProfile(allowed_location_types=["credential_store"])
-        )
+        capability = make_capability("DT-CRED", allowed_location_types=["credential_store"])
         location = default_locations()[1]  # filesystem
-        assert evaluate_allowed(mechanism, location) == "fail"
+        assert evaluate_allowed(capability, location) == "fail"
 
     def test_undetermined_when_list_empty(self):
-        mechanism = make_mechanism("DT-EMPTY")
+        capability = make_capability("DT-EMPTY")
         location = default_locations()[0]
-        assert evaluate_allowed(mechanism, location) == "undetermined"
+        assert evaluate_allowed(capability, location) == "undetermined"
+
+    def test_fail_when_location_explicitly_forbidden(self):
+        capability = make_capability(
+            "DT-CRED", allowed_location_types=["credential_store"], forbidden_locations=["auth-store"]
+        )
+        location = default_locations()[0]
+        assert evaluate_allowed(capability, location) == "fail"
+
+    def test_fail_when_capability_absent(self):
+        assert evaluate_allowed(None, default_locations()[0]) == "fail"
 
 
 # ---------------------------------------------------------------------------
-# B. RequirementsSatisfied(d, l)
+# C. RequirementsSatisfied(d, l) — réf. tâche §8
 # ---------------------------------------------------------------------------
 
 
 class TestRequirementsSatisfied:
     def test_pass_when_all_requirements_met(self):
-        mechanism = make_mechanism(
-            "DT-CRED",
-            profile=DeceptionAdmissibilityProfile(
-                required_asset_types=["domain_controller"], required_services=["ldap"]
-            ),
+        capability = make_capability(
+            "DT-CRED", allowed_asset_types=["domain_controller"], required_services=["ldap"]
         )
         location = default_locations()[0]
         asset_by_id = {a.asset_id: a for a in default_assets()}
-        assert evaluate_requirements_satisfied(mechanism, location, asset_by_id) == "pass"
+        assert evaluate_requirements_satisfied(capability, location, asset_by_id) == "pass"
 
-    def test_fail_when_asset_type_mismatch(self):
-        mechanism = make_mechanism(
-            "DT-CRED", profile=DeceptionAdmissibilityProfile(required_asset_types=["workstation"])
-        )
+    def test_fail_when_asset_type_not_allowed(self):
+        capability = make_capability("DT-CRED", allowed_asset_types=["workstation"])
         location = default_locations()[0]  # tied to DC (domain_controller)
         asset_by_id = {a.asset_id: a for a in default_assets()}
-        assert evaluate_requirements_satisfied(mechanism, location, asset_by_id) == "fail"
+        assert evaluate_requirements_satisfied(capability, location, asset_by_id) == "fail"
+
+    def test_fail_when_asset_type_forbidden(self):
+        capability = make_capability("DT-CRED", forbidden_asset_types=["domain_controller"])
+        location = default_locations()[0]
+        asset_by_id = {a.asset_id: a for a in default_assets()}
+        assert evaluate_requirements_satisfied(capability, location, asset_by_id) == "fail"
 
     def test_fail_when_service_missing(self):
-        mechanism = make_mechanism(
-            "DT-CRED", profile=DeceptionAdmissibilityProfile(required_services=["smb"])
-        )
+        capability = make_capability("DT-CRED", required_services=["smb"])
         location = default_locations()[0]
         asset_by_id = {a.asset_id: a for a in default_assets()}
-        assert evaluate_requirements_satisfied(mechanism, location, asset_by_id) == "fail"
+        assert evaluate_requirements_satisfied(capability, location, asset_by_id) == "fail"
+
+    def test_fail_when_artifact_missing(self):
+        capability = make_capability("DT-CRED", required_artifacts=["kerberos_ticket"])
+        location = default_locations()[0]
+        asset_by_id = {a.asset_id: a for a in default_assets()}
+        assert evaluate_requirements_satisfied(capability, location, asset_by_id) == "fail"
 
     def test_undetermined_when_no_requirements_declared(self):
-        mechanism = make_mechanism("DT-EMPTY")
+        capability = make_capability("DT-EMPTY")
         location = default_locations()[0]
         asset_by_id = {a.asset_id: a for a in default_assets()}
-        assert evaluate_requirements_satisfied(mechanism, location, asset_by_id) == "undetermined"
+        assert evaluate_requirements_satisfied(capability, location, asset_by_id) == "undetermined"
 
     def test_fail_when_location_has_no_asset(self):
-        mechanism = make_mechanism(
-            "DT-CRED", profile=DeceptionAdmissibilityProfile(required_asset_types=["domain_controller"])
-        )
+        capability = make_capability("DT-CRED", allowed_asset_types=["domain_controller"])
         location = default_locations()[2]  # floating, asset_id=None
         asset_by_id = {a.asset_id: a for a in default_assets()}
-        assert evaluate_requirements_satisfied(mechanism, location, asset_by_id) == "fail"
+        assert evaluate_requirements_satisfied(capability, location, asset_by_id) == "fail"
+
+    def test_fail_when_capability_absent(self):
+        location = default_locations()[0]
+        asset_by_id = {a.asset_id: a for a in default_assets()}
+        assert evaluate_requirements_satisfied(None, location, asset_by_id) == "fail"
 
 
 # ---------------------------------------------------------------------------
-# C. Relevant(T_{i,h}, d, l)
+# D. Relevant(T_{i,h}, d, l) — inchangé
 # ---------------------------------------------------------------------------
 
 
@@ -211,7 +254,7 @@ class TestRelevant:
 
 
 # ---------------------------------------------------------------------------
-# D. Rapport d'admissibilité complet
+# E. Rapport d'admissibilité complet (réf. tâche §15, critères A-L)
 # ---------------------------------------------------------------------------
 
 
@@ -233,53 +276,152 @@ class TestAdmissibilityReport:
         )
 
     def _catalog(self):
-        cred_mechanism = make_mechanism(
-            "DT-CRED",
-            profile=DeceptionAdmissibilityProfile(
+        return {
+            "DT-CRED": make_mechanism("DT-CRED"),
+            "DT-EMPTY": make_mechanism("DT-EMPTY"),
+            "DT-DISABLED": make_mechanism("DT-DISABLED"),
+            "DT-UNREFERENCED": make_mechanism("DT-UNREFERENCED"),
+        }
+
+    def _organization_catalog(self):
+        return {
+            "DT-CRED": make_capability(
+                "DT-CRED",
+                enabled=True,
                 allowed_location_types=["credential_store"],
-                required_asset_types=["domain_controller"],
+                allowed_asset_types=["domain_controller"],
                 required_services=["ldap"],
             ),
-        )
-        undetermined_mechanism = make_mechanism("DT-EMPTY")
-        return {"DT-CRED": cred_mechanism, "DT-EMPTY": undetermined_mechanism}
+            "DT-EMPTY": make_capability("DT-EMPTY", enabled=True),
+            "DT-DISABLED": make_capability("DT-DISABLED", enabled=False),
+            # DT-UNREFERENCED volontairement absent : mécanisme du
+            # catalogue de connaissances jamais référencé par l'organisation.
+        }
 
     def test_admissible_candidate_appears_in_c_i_h(self):
         report = build_admissibility_report(
-            self._instance(), self._catalog(), {"T1078": ["DT-CRED"]}, **THETA
+            self._instance(), self._catalog(), self._organization_catalog(), {"T1078": ["DT-CRED"]}, **THETA
         )
         occ = report["occurrences"]["T1078@DC"]
         assert {"mechanism_id": "DT-CRED", "location_id": "auth-store"} in occ["C_i_h"]
 
-    def test_d_i_derived_from_mapping(self):
+    def test_d_i_is_mapping_intersected_with_d_org(self):
+        """Réf. tâche §5 : D_i = { d ∈ D_org | M_{i,d}=1 } — DT-DISABLED
+        est dans le mapping mais pas dans D_org (desactive), donc absent
+        de D_i."""
         report = build_admissibility_report(
-            self._instance(), self._catalog(), {"T1078": ["DT-CRED"]}, **THETA
+            self._instance(),
+            self._catalog(),
+            self._organization_catalog(),
+            {"T1078": ["DT-CRED", "DT-DISABLED"]},
+            **THETA,
         )
         assert report["occurrences"]["T1078@DC"]["D_i"] == ["DT-CRED"]
 
-    def test_mechanism_not_in_mapping_rejected_without_evaluation(self):
+    def test_criterion_a_mechanism_absent_from_organization_catalog_never_in_d_i(self):
         report = build_admissibility_report(
-            self._instance(), self._catalog(), {"T1078": ["DT-CRED"]}, **THETA
+            self._instance(),
+            self._catalog(),
+            self._organization_catalog(),
+            {"T1078": ["DT-UNREFERENCED"]},
+            **THETA,
         )
         occ = report["occurrences"]["T1078@DC"]
-        empty_candidates = [c for c in occ["candidates"] if c["mechanism_id"] == "DT-EMPTY"]
-        assert empty_candidates
-        for c in empty_candidates:
+        assert occ["D_i"] == []
+        assert occ["C_i_h"] == []
+        unreferenced = [c for c in occ["candidates"] if c["mechanism_id"] == "DT-UNREFERENCED"]
+        assert unreferenced
+        for c in unreferenced:
+            assert c["organization"] == "fail"
+            assert c["admissible"] is False
+            assert "absent du catalogue operationnel" in c["rejection_reason"]
+
+    def test_criterion_b_disabled_mechanism_never_admissible(self):
+        report = build_admissibility_report(
+            self._instance(), self._catalog(), self._organization_catalog(), {"T1078": ["DT-DISABLED"]}, **THETA
+        )
+        occ = report["occurrences"]["T1078@DC"]
+        assert occ["C_i_h"] == []
+        disabled = [c for c in occ["candidates"] if c["mechanism_id"] == "DT-DISABLED"]
+        assert disabled
+        for c in disabled:
+            assert c["organization"] == "fail"
+            assert c["admissible"] is False
+            assert "desactive" in c["rejection_reason"]
+
+    def test_criterion_c_mapping_zero_excludes_mechanism(self):
+        report = build_admissibility_report(
+            self._instance(), self._catalog(), self._organization_catalog(), {"T1078": ["DT-EMPTY"]}, **THETA
+        )
+        occ = report["occurrences"]["T1078@DC"]
+        cred_candidates = [c for c in occ["candidates"] if c["mechanism_id"] == "DT-CRED"]
+        assert cred_candidates
+        for c in cred_candidates:
             assert c["mapping"] == "fail"
             assert c["Autorise"] == "not_evaluated"
             assert c["admissible"] is False
             assert "mapping=faux" in c["rejection_reason"]
 
-    def test_undetermined_profile_excludes_candidate(self):
+    def test_criterion_d_location_not_allowed_autorise_fails(self):
         report = build_admissibility_report(
-            self._instance(), self._catalog(), {"T1078": ["DT-EMPTY"]}, **THETA
+            self._instance(), self._catalog(), self._organization_catalog(), {"T1078": ["DT-CRED"]}, **THETA
         )
         occ = report["occurrences"]["T1078@DC"]
-        assert occ["C_i_h"] == []
+        rejected = next(c for c in occ["candidates"] if c["mechanism_id"] == "DT-CRED" and c["location_id"] == "tmp-dir")
+        assert rejected["Autorise"] == "fail"
+        assert rejected["admissible"] is False
 
-    def test_terminal_occurrence_has_no_candidates(self):
+    def test_criterion_e_si_prerequisite_satisfied_pass(self):
         report = build_admissibility_report(
-            self._instance(), self._catalog(), {"T1041": ["DT-CRED"]}, **THETA
+            self._instance(), self._catalog(), self._organization_catalog(), {"T1078": ["DT-CRED"]}, **THETA
+        )
+        occ = report["occurrences"]["T1078@DC"]
+        candidate = next(c for c in occ["candidates"] if c["mechanism_id"] == "DT-CRED" and c["location_id"] == "auth-store")
+        assert candidate["PrerequisSatisfaits"] == "pass"
+
+    def test_criterion_f_si_prerequisite_missing_fail(self):
+        org = self._organization_catalog()
+        org["DT-CRED"] = make_capability(
+            "DT-CRED",
+            enabled=True,
+            allowed_location_types=["credential_store"],
+            required_services=["smb"],  # absent de l'actif DC
+        )
+        report = build_admissibility_report(
+            self._instance(), self._catalog(), org, {"T1078": ["DT-CRED"]}, **THETA
+        )
+        occ = report["occurrences"]["T1078@DC"]
+        candidate = next(c for c in occ["candidates"] if c["mechanism_id"] == "DT-CRED" and c["location_id"] == "auth-store")
+        assert candidate["PrerequisSatisfaits"] == "fail"
+
+    def test_criterion_g_insufficient_organization_configuration_undetermined(self):
+        report = build_admissibility_report(
+            self._instance(), self._catalog(), self._organization_catalog(), {"T1078": ["DT-EMPTY"]}, **THETA
+        )
+        occ = report["occurrences"]["T1078@DC"]
+        candidate = next(c for c in occ["candidates"] if c["mechanism_id"] == "DT-EMPTY" and c["location_id"] == "auth-store")
+        assert candidate["Autorise"] == "undetermined"
+        assert candidate["PrerequisSatisfaits"] == "undetermined"
+        assert candidate["admissible"] is False
+        assert "missing organization configuration" in candidate["rejection_reason"]
+
+    def test_criterion_h_contextually_irrelevant_location_pertinent_fails(self):
+        org = self._organization_catalog()
+        org["DT-CRED"] = make_capability(
+            "DT-CRED", enabled=True, allowed_location_types=["filesystem"]
+        )
+        # tmp-dir (filesystem, asset WS01) n'est pas topologiquement relie a DC ici (pas d'edge).
+        occurrence = TechniqueOccurrence(technique_id="T1078", asset_id="DC", attributes=make_attributes())
+        instance = make_instance(occurrences=[occurrence], assets=default_assets(), locations=default_locations())
+        report = build_admissibility_report(instance, self._catalog(), org, {"T1078": ["DT-CRED"]}, **THETA)
+        occ = report["occurrences"]["T1078@DC"]
+        candidate = next(c for c in occ["candidates"] if c["mechanism_id"] == "DT-CRED" and c["location_id"] == "tmp-dir")
+        assert candidate["Pertinent"] == "fail"
+        assert candidate["admissible"] is False
+
+    def test_criterion_i_terminal_node_has_no_candidates(self):
+        report = build_admissibility_report(
+            self._instance(), self._catalog(), self._organization_catalog(), {"T1041": ["DT-CRED"]}, **THETA
         )
         occ = report["occurrences"]["T1041@DC"]
         assert occ["is_terminal"] is True
@@ -287,19 +429,58 @@ class TestAdmissibilityReport:
         assert occ["C_i_h"] == []
         assert occ["D_i"] == []
 
-    def test_rejection_reason_lists_failing_checks(self):
+    def test_criterion_j_same_organization_different_graph_different_c_i_h(self):
+        """Réf. tâche §14 : même D_org + M, graphes différents -> C_i_h
+        différents — preuve que SP1 dépend réellement du contexte online."""
+        org = self._organization_catalog()
+        mapping = {"T1078": ["DT-CRED"]}
+
+        occurrence_g1 = TechniqueOccurrence(technique_id="T1078", asset_id="DC", attributes=make_attributes())
+        instance_g1 = make_instance(occurrences=[occurrence_g1], assets=default_assets(), locations=default_locations())
+        report_g1 = build_admissibility_report(instance_g1, self._catalog(), org, mapping, **THETA)
+
+        occurrence_g2 = TechniqueOccurrence(technique_id="T1078", asset_id="WS01", attributes=make_attributes())
+        instance_g2 = make_instance(occurrences=[occurrence_g2], assets=default_assets(), locations=default_locations())
+        report_g2 = build_admissibility_report(instance_g2, self._catalog(), org, mapping, **THETA)
+
+        c_i_h_g1 = report_g1["occurrences"]["T1078@DC"]["C_i_h"]
+        c_i_h_g2 = report_g2["occurrences"]["T1078@WS01"]["C_i_h"]
+        assert c_i_h_g1 != c_i_h_g2
+        assert c_i_h_g1  # T1078@DC : auth-store admissible (DT-CRED)
+        assert c_i_h_g2 == []  # T1078@WS01 : aucun emplacement credential_store colocalise/adjacent
+
+    def test_criterion_k_no_llm_dependency(self):
+        import ast
+        from pathlib import Path
+
+        source = Path("src/admissibility.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        imported_modules = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported_modules.update(alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imported_modules.add(node.module)
+        assert "src.annotator_llm" not in imported_modules
+
+    def test_criterion_l_no_budget_dependency(self):
+        import inspect
+
+        import src.admissibility as module
+
+        source = inspect.getsource(module)
+        for token in ("budget", "Budget", "B_total"):
+            assert token not in source
+
+    def test_d_org_size_reported_in_summary(self):
         report = build_admissibility_report(
-            self._instance(), self._catalog(), {"T1078": ["DT-CRED"]}, **THETA
+            self._instance(), self._catalog(), self._organization_catalog(), {"T1078": ["DT-CRED"]}, **THETA
         )
-        occ = report["occurrences"]["T1078@DC"]
-        # DT-CRED contre tmp-dir (filesystem) : Autorise doit echouer (pas credential_store).
-        rejected = next(c for c in occ["candidates"] if c["mechanism_id"] == "DT-CRED" and c["location_id"] == "tmp-dir")
-        assert rejected["admissible"] is False
-        assert "Autorise=fail" in rejected["rejection_reason"]
+        assert report["summary"]["d_org_size"] == 2  # DT-CRED + DT-EMPTY (enabled), DT-DISABLED exclu
 
     def test_summary_counts_consistent(self):
         report = build_admissibility_report(
-            self._instance(), self._catalog(), {"T1078": ["DT-CRED"]}, **THETA
+            self._instance(), self._catalog(), self._organization_catalog(), {"T1078": ["DT-CRED"]}, **THETA
         )
         summary = report["summary"]
         assert summary["occurrence_count"] == 2
@@ -310,23 +491,57 @@ class TestAdmissibilityReport:
     def test_deterministic_output(self):
         instance = self._instance()
         catalog = self._catalog()
+        org = self._organization_catalog()
         mapping = {"T1078": ["DT-CRED"]}
-        report_a = build_admissibility_report(instance, catalog, mapping, **THETA)
-        report_b = build_admissibility_report(instance, catalog, mapping, **THETA)
+        report_a = build_admissibility_report(instance, catalog, org, mapping, **THETA)
+        report_b = build_admissibility_report(instance, catalog, org, mapping, **THETA)
         assert report_a == report_b
 
 
 # ---------------------------------------------------------------------------
-# E. Généralité minimale (pas de dépendance réseau/LLM)
+# F. Généricité — réf. tâche §12 : aucun identifiant codé en dur dans le
+# moteur SP1 lui-même
 # ---------------------------------------------------------------------------
 
 
-class TestGenerality:
+class TestGenericity:
     def test_no_network_or_llm_dependency(self):
         import src.admissibility as module
-
         from pathlib import Path
 
         source = Path(module.__file__).read_text(encoding="utf-8").lower()
         for token in ("requests.get", "urllib.request", "openai", "anthropic", "httpx"):
             assert token not in source
+
+    def test_engine_has_no_hardcoded_domain_identifiers(self):
+        """Réf. tâche §12 : aucun mechanism_id/attack_id/asset_id/location_id
+        de scénario codé en dur dans src/admissibility.py — le moteur doit
+        rester générique, prouvé par le fait que d'autres identifiants
+        totalement différents (voir test_engine_works_with_arbitrary_identifiers)
+        produisent le même comportement."""
+        import src.admissibility as module
+        from pathlib import Path
+
+        source = Path(module.__file__).read_text(encoding="utf-8")
+        for forbidden in ("D3-DNR", "D3-DUC", "EAC0009", "EAC0021", "T1078", "T1039", "FS01", "WS01", "DC01"):
+            assert forbidden not in source
+
+    def test_engine_works_with_arbitrary_identifiers(self):
+        """Le même moteur, appliqué à des identifiants totalement
+        arbitraires (sans rapport avec le scénario de référence), produit
+        un résultat cohérent — preuve de généricité."""
+        mechanism = make_mechanism("ZZZ-999")
+        capability = make_capability(
+            "ZZZ-999", enabled=True, allowed_location_types=["weird_place"], allowed_asset_types=["odd_asset"]
+        )
+        occurrence = TechniqueOccurrence(
+            technique_id="T9999.001", asset_id="ASSET-ALPHA", attributes=make_attributes()
+        )
+        asset = Asset(asset_id="ASSET-ALPHA", asset_type="odd_asset", critical=False, accessible=True, properties={})
+        location = Location(location_id="LOC-OMEGA", location_type="weird_place", asset_id="ASSET-ALPHA")
+        instance = make_instance(occurrences=[occurrence], assets=[asset], locations=[location])
+        report = build_admissibility_report(
+            instance, {"ZZZ-999": mechanism}, {"ZZZ-999": capability}, {"T9999.001": ["ZZZ-999"]}, **THETA
+        )
+        occ = report["occurrences"]["T9999.001@ASSET-ALPHA"]
+        assert {"mechanism_id": "ZZZ-999", "location_id": "LOC-OMEGA"} in occ["C_i_h"]
