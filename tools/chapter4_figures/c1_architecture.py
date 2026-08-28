@@ -4,8 +4,9 @@ Réf. tâche « finaliser les artefacts visuels du chapitre 4 » — Capture C1
 
 Source : structure réelle du dépôt (les mêmes répertoires que
 `docs/chapter4/outputs/architecture_tree.txt`), curatée aux répertoires
-importants (`src/`, `tools/deception_kb/`, `data/deception/`,
-`examples/`, `tests/`, `docs/chapter4/`) pour éviter une arborescence
+importants (`src/`, `tools/deception_kb/`, `tools/attack_kb/`,
+`data/deception/`, `examples/`, `tests/`, `docs/chapter4/`) pour éviter
+une arborescence
 trop longue (réf. tâche §2, C1) — les répertoires volumineux
 (`tests/`, `docs/chapter4/outputs/`, `docs/chapter4/screenshots/`,
 `data/deception/staging/`, `data/deception/raw/`) sont résumés par un
@@ -56,6 +57,10 @@ def build_tree_lines() -> list[str]:
 
     lines.append("├── tools/deception_kb/  (construction offline de la KB déception)")
     for name in _py_files(REPO_ROOT / "tools" / "deception_kb"):
+        lines.append(f"│     ├── {name}")
+
+    lines.append("├── tools/attack_kb/  (construction offline du corpus RAG ATT&CK)")
+    for name in _py_files(REPO_ROOT / "tools" / "attack_kb"):
         lines.append(f"│     ├── {name}")
 
     lines.append("├── data/deception/  (catalogue et mapping réels + staging)")

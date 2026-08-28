@@ -12,16 +12,31 @@
 > artefact/capture disponible, (L) formulation à NE PAS utiliser dans le
 > mémoire.
 >
-> État au moment de la rédaction (mise à jour post-upgrade « separate
-> knowledge and organization capabilities », voir
-> `docs/chapter4/BEFORE_UPGRADE_STATE.md` pour l'état avant la toute
-> première passe RAG/catalogue) : **697 tests verts** (+ 2 tests
-> d'intégration optionnels `pytest -m real_llm`). **RAG sémantique**
-> (`sentence-transformers` + FAISS) reste le **moteur principal** — le
-> TF-IDF haché reste une baseline lexicale expérimentale (Recall@5
-> sémantique 0.352 > lexical 0.331 sur le corpus actuel de 149 chunks ;
-> mode hybride retenu, alpha=0.5, Recall@5=0.409 —
-> `docs/chapter4/outputs/rag_semantic_evaluation.*`).
+> État au moment de la rédaction (mise à jour post-tâche « renforcer
+> l'architecture et l'implémentation du module RAG utilisé par SP2 »,
+> voir `docs/chapter4/BEFORE_UPGRADE_STATE.md` pour l'état avant la toute
+> première passe RAG/catalogue) : **761 tests verts** (+ 4 tests
+> d'intégration optionnels : 2 `pytest -m real_llm`, 2
+> `pytest -m real_reranker`).
+>
+> **RAG désormais CONTEXTUEL par candidat** (réf. tâche ci-dessus, voir
+> section 4.4.2) : pour chaque candidat admissible `(T_{i,h}, d, l)`, trois
+> requêtes déterministes distinctes (Q_realism/Q_interaction/Q_effect,
+> `src/rag_query_builder.py`) sont récupérées en deux étapes — retrieval
+> large (lexical + sémantique, `src/rag_evidence.py`) puis reranking
+> contextuel par un **cross-encoder réel**
+> (`cross-encoder/ms-marco-MiniLM-L-6-v2`, `src/reranker.py`, jamais le
+> LLM principal) — puis diversifiées et assemblées en
+> `CandidateEvidenceBundle`. Le corpus RAG combine désormais **quatre
+> sources** : ATT&CK (nouveau, 1157 chunks, 271 techniques réellement
+> référencées par `M_{i,d}`, `tools/attack_kb/`), D3FEND (44), Engage
+> (62), littérature (43) — **1306 chunks au total** (contre 149 avant
+> cette passe). `sentence-transformers` + FAISS reste le moteur
+> d'embeddings sémantiques principal ; le TF-IDF haché reste une baseline
+> lexicale expérimentale de première étape (les métriques Recall@5/MRR@5/
+> nDCG@5 déjà mesurées portent sur l'ancien corpus 149 chunks et ne sont
+> PAS re-validées ici, réf. tâche §18 — validation comparative reportée au
+> chapitre 5).
 >
 > **Catalogue de connaissances réel étendu à 51 mécanismes** (9 D3FEND, 15
 > MITRE Engage, 25 littérature — `docs/chapter4/CATALOG_AUDIT.md`),
@@ -39,14 +54,15 @@
 > D3FEND/Engage/littérature). Sur l'instance runtime représentative
 > (`examples/sp1_extended_real_example.py`, catalogue opérationnel
 > d'exemple 42 mécanismes référencés/30 activés) : **46 candidats
-> réellement admissibles** (contre 4 avec l'ancienne architecture fondée
-> sur D3FEND), couvrant **9 mécanismes distincts** sur les **9**
-> occurrences non terminales de l'instance — voir section 4.4.1 et
+> réellement admissibles**, couvrant **9 mécanismes distincts** sur les
+> **9** occurrences non terminales de l'instance — voir section 4.4.1 et
 > `docs/chapter4/outputs/sp1_runtime_statistics.*`.
 >
 > État de l'exécution LLM réelle et des figures C5/C6 : voir la note de
-> clôture — inchangé par cette passe (SP1/catalogue uniquement, aucune
-> exécution LLM effectuée ici).
+> clôture — un exemple RAG contextuel bout-en-bout RÉEL (jusqu'au
+> `CandidateEvidenceBundle`, jamais le LLM) a été produit par cette passe,
+> `examples/rag_sp2_context_example.py` /
+> `docs/chapter4/outputs/rag_evidence_bundle_example.json`.
 
 ---
 
@@ -310,15 +326,41 @@ identifiant, extraction tactiques/plateformes.
 ici — rôle strictement réservé à `knowledge_deception.py` (section
 4.3.3), pour respecter la séparation des responsabilités (§17.1).
 
+**Corpus RAG ATT&CK (réf. tâche « renforcer le RAG utilisé par SP2 »,
+§3).** `tools/attack_kb/attack_seed_builder.py` réutilise directement
+`load_attack_knowledge` (jamais un second parseur STIX) pour construire
+un STAGING RAG dédié, `data/attack/staging/attack_rag_seed_19.2.json` —
+limité aux **271 techniques** réellement référencées par `M_{i,d}`
+(`data/deception/attack_deception_mapping.json`), pas les ~700 techniques
+de la base complète. La base est chargée avec `include_revoked=True,
+include_deprecated=True` : 264 des 271 techniques sont courantes dans le
+bundle STIX 19.2 pinné, 7 (`T1053.004`, `T1070.002`, `T1142`,
+`T1547.011`, `T1562`, `T1562.003`, `T1574.002`) y sont toujours présentes
+mais désormais marquées `revoked`/`deprecated` par MITRE — texte MITRE
+réel dans les deux cas, statut de cycle de vie conservé explicitement
+dans chaque chunk plutôt que masqué. **271/271 techniques couvertes,
+aucune fabriquée.** `src/rag_indexer.py::load_attack_chunks` transforme
+ce staging en `Chunk` (`source_type="attack"`, un chunk par
+name/description/tactique/plateformes réellement présents) —
+**1157 chunks ATT&CK**, portés par le RAG contextuel de SP2 (section
+4.4.2).
+
 **I. Écart modèle↔implémentation.** Aucun.
 
-**J. Limites réelles.** Aucune connue.
+**J. Limites réelles.** Le bundle STIX officiel
+(`data/attack/raw/enterprise-attack.json`, ~51 Mo) n'est jamais versionné
+(`.gitignore`, voir `data/attack/README.md`) : reproductible en le
+retéléchargeant depuis la source officielle MITRE ; seul le staging dérivé
+(`data/attack/staging/`) est versionné.
 
-**K. Artefact/capture.** Aucune.
+**K. Artefact/capture.** Aucune dédiée à ce module (voir C4,
+section 4.4.2, pour le corpus RAG qui en dépend).
 
 **L. Formulation à ne pas utiliser.** Ne pas écrire que ce module
 « sélectionne les techniques pertinentes » — il ne fait qu'un accès en
-lecture à la base ATT&CK, aucune sélection ni filtrage métier.
+lecture à la base ATT&CK, aucune sélection ni filtrage métier (le
+périmètre des 271 techniques du corpus RAG est décidé par
+`tools/attack_kb/attack_seed_builder.py`, pas par `knowledge_attack.py`).
 
 ### 4.3.3 KB cyberdéception
 
@@ -704,110 +746,202 @@ désormais exclusivement du catalogue opérationnel de l'organisation.
 
 ### 4.4.2 SP2 — RAG + LLM
 
-**A. Objectif.** Récupérer des preuves documentaires pertinentes (RAG)
-et produire les 11 sous-métriques annotées pour un candidat admissible.
+**A. Objectif.** Pour chaque candidat admissible `(T_{i,h}, d, l)`,
+récupérer et ordonner des preuves documentaires PERTINENTES AU CONTEXTE
+(occurrence, mécanisme, emplacement, SI, graphe) et aux TROIS familles de
+sous-métriques (§11.3), puis produire les 11 sous-métriques annotées.
+Le RAG ne calcule jamais Realism/InteractionLikelihood/DE/le risque ; le
+LLM ne calcule jamais ces agrégats non plus (§11.5, §17.2) — la
+récupération documentaire, l'annotation et l'agrégation restent trois
+responsabilités strictement séparées.
 
-**B. Réellement implémenté.** **RAG à deux moteurs**, réf. tâche
-« remplacer le TF-IDF par un vrai RAG sémantique » : `SemanticRagIndex`
-(embeddings `sentence-transformers`, index vectoriel FAISS/NumPy) est
-désormais le **moteur principal** ; `RagIndex` (TF-IDF haché) reste une
-**baseline lexicale expérimentale**, comparée quantitativement (voir E).
-`retrieve_hybrid` (fusion alpha-pondérée) existe et est le mode RETENU
-pour la relecture finale (alpha=0.5, gain mesuré, réf. tâche §3).
-Orchestrateur (`src/orchestrator.py::run_pipeline`) dispatché sur les
-trois moteurs sans casser la compatibilité des runs lexicaux existants.
+**B. Réellement implémenté — RAG CONTEXTUEL (réf. tâche « renforcer
+l'architecture et l'implémentation du module RAG utilisé par SP2 »).**
+La chaîne a été entièrement reconstruite autour du candidat plutôt
+qu'autour d'une requête générique unique :
+
+```
+Candidat SP1 (T_i,h, d, l)
+  -> RagCandidateContext           (src/rag_candidate_context.py, §5)
+  -> Q_realism / Q_interaction / Q_effect
+                                    (src/rag_query_builder.py, §6/§7)
+  -> Stage A : retrieval large (lexical top-N + sémantique top-N,
+     fusionnés, 3 scores individuels conservés)
+                                    (src/rag_evidence.py, §8)
+  -> Stage B : reranking contextuel (cross-encoder RÉEL)
+                                    (src/reranker.py, §9/§10)
+  -> Diversification (max chunks/document, après reranking)
+                                    (src/rag_evidence.py, §12)
+  -> CandidateEvidenceBundle{candidate_id, realism, interaction, effect}
+                                    (src/rag_evidence.py, §13)
+  -> AnnotationContext (evidence_by_family) -> LLM (§14)
+```
+
+Le corpus RAG combine désormais **quatre sources simultanément** (§15) :
+ATT&CK (ce que fait l'attaquant, section 4.3.2), D3FEND/Engage (ce que
+fait le mécanisme), littérature (connaissance complémentaire), SI/graphe
+(contexte de déploiement/progression, via `RagCandidateContext`) —
+**1306 chunks** au total (1157 ATT&CK + 44 D3FEND + 62 Engage + 43
+littérature), contre 149 avant l'ajout du corpus ATT&CK.
+
 Annotation : repli déterministe `RuleBasedStubAnnotator` (opérationnel,
 testé) ET provider LLM réel `RealLlmAnnotator` (Ollama local ou endpoint
 OpenAI-compatible — code implémenté et testé par mocks HTTP ; statut
-d'exécution réelle : voir note de clôture). Le candidat annoté par
-`examples/annotator_llm_real_example.py` est récupéré directement depuis
-la sortie réelle de SP1 — plus aucun candidat codé manuellement dans
-cette chaîne.
+d'exécution réelle : voir note de clôture). Le prompt présente désormais
+les preuves REGROUPÉES PAR FAMILLE (`evidence_by_family`) plutôt qu'un
+bloc unique envoyé identiquement aux 11 sous-métriques (§14), avec repli
+rétrocompatible (bloc plat) si un contexte plus ancien ne fournit pas ce
+regroupement.
 
-**C. Fichiers/classes/fonctions.** `src/rag_indexer.py`
-(`load_d3fend_chunks`/`load_engage_chunks`/`load_literature_chunks`,
-`build_index`/`embed_text` [TF-IDF, baseline], `build_semantic_index`/
-`embed_query_semantic` [sémantique, principal]), `src/semantic_embedder.py`
-(`load_embedder`, `SentenceTransformerEmbedder`), `src/vector_index.py`
-(`build_vector_index`, `search_vector_index`, FAISS/NumPy),
-`src/rag_retriever.py` (`retrieve` [lexical], `retrieve_semantic`
-[sémantique], `retrieve_hybrid` [fusion], `cosine_similarity`,
-`to_deception_evidence`), `examples/rag_semantic_evaluation.py`
-(évaluation Recall@5/MRR@5/nDCG@5), `src/llm_provider.py`
+**C. Fichiers/classes/fonctions.**
+
+*Corpus et indexation (OFFLINE, §16).* `tools/attack_kb/attack_seed_builder.py`
+(corpus ATT&CK, section 4.3.2), `src/rag_indexer.py`
+(`load_attack_chunks`/`load_d3fend_chunks`/`load_engage_chunks`/
+`load_literature_chunks`, `build_index`/`embed_text` [TF-IDF, baseline],
+`build_semantic_index`/`embed_query_semantic` [sémantique, principal]),
+`src/semantic_embedder.py` (`load_embedder`, `SentenceTransformerEmbedder`),
+`src/vector_index.py` (`build_vector_index`, `search_vector_index`,
+FAISS/NumPy).
+
+*Contexte et requêtes candidat (ONLINE, §5-§7).* `src/schemas.py`
+(`RagCandidateContext`, `RagGraphContext`, `SIPlacementContext`),
+`src/rag_candidate_context.py` (`build_rag_candidate_context`),
+`src/rag_query_builder.py` (`build_rag_queries`, `build_realism_query`,
+`build_interaction_query`, `build_effect_query`).
+
+*Retrieval, reranking, diversification, bundle (ONLINE, §8-§13).*
+`src/rag_config.py` (`RAG_RETRIEVAL_CANDIDATES`, `RAG_RERANKER_MODEL`,
+`RAG_DIVERSITY_MAX_PER_DOCUMENT`, `RAG_FINAL_TOP_K` — centralisés, jamais
+une constante dispersée), `src/reranker.py` (`Reranker`,
+`CrossEncoderReranker`, `DeterministicFakeReranker` [double de test
+uniquement]), `src/rag_evidence.py` (`retrieve_large_pool`,
+`diversify_by_document`, `build_family_evidence`,
+`build_candidate_evidence_bundle`, `CandidateEvidenceBundle`,
+`to_annotation_evidence`), `src/rag_retriever.py` (`retrieve` [lexical],
+`retrieve_semantic` [sémantique], `retrieve_hybrid` [fusion historique,
+inchangé], `cosine_similarity`, `to_deception_evidence`),
+`examples/rag_sp2_context_example.py` (exemple réel bout-en-bout, un
+candidat SP1 réel, jusqu'au bundle — **PAS le LLM**), `examples/rag_semantic_evaluation.py`
+(évaluation Recall@5/MRR@5/nDCG@5, corpus D3FEND+Engage+littérature
+uniquement — voir J).
+
+*LLM (§14, inchangé sur le fond).* `src/llm_provider.py`
 (`LlmProviderConfig`, `call_ollama`, `call_openai_compatible`),
 `src/annotator_llm.py` (`RuleBasedStubAnnotator`, `RealLlmAnnotator`,
-`detect_provider`, `AnnotationCache`), `examples/annotator_llm_real_example.py`.
+`detect_provider`, `AnnotationCache`, `_build_evidence_block` [prompt
+regroupé par famille]), `examples/annotator_llm_real_example.py`.
 
-**D. Entrées (RAG).** Documents staging déjà versionnés (D3FEND, Engage,
-littérature). **Entrées (LLM).** `AnnotationContext` (occurrence,
-mécanisme, emplacement, contexte graphe, preuves RAG — **jamais** le
-budget).
+**D. Entrées (RAG).** `RagCandidateContext` — occurrence, mécanisme,
+emplacement, contexte SI/graphe compact, **jamais** budget/coût/risque
+(exclusion STRUCTURELLE : aucun champ libre dans le modèle, §5). **Entrées
+(LLM).** `AnnotationContext` (occurrence, mécanisme, emplacement, contexte
+graphe, preuves RAG regroupées par famille — **jamais** le budget).
 
 **E. Traitement algorithmique exact.**
-- RAG lexical (baseline) : chunking tracé → vecteur TF-IDF haché (256
-  dimensions, mots-outils exclus, normalisation L2) → similarité cosinus,
-  top-k.
-- RAG sémantique (principal) : chunking tracé (identique) → embedding
-  `sentence-transformers` (modèle configurable `RAG_EMBEDDING_MODEL`,
-  défaut `BAAI/bge-small-en-v1.5`, dimension 384, repli documenté
-  `all-MiniLM-L6-v2` si le modèle préféré est indisponible) → normalisation
-  L2 → index vectoriel FAISS `IndexFlatIP` (produit scalaire normalisé =
-  cosinus ; repli NumPy pur si FAISS n'est pas installable) → top-k.
-  Évaluation réelle sur 17 requêtes à vérité terrain relue humainement
-  (`data/rag/rag_eval_queries.json`) contre les 149 chunks réels du corpus
-  actuel (44 D3FEND + 62 Engage + 43 littérature) : Recall@5
-  = 0.352 (sémantique) vs 0.331 (lexical), MRR@5 = 0.549 vs 0.514, nDCG@5 =
-  0.360 vs 0.340 — gain mesuré, jamais supposé, recalculé après chaque
-  évolution réelle du corpus
-  (`docs/chapter4/outputs/rag_semantic_evaluation.json`).
-- RAG hybride : `score = alpha·score_sémantique + (1-alpha)·score_lexical`
-  — alpha testé parmi {0.5, 0.7, 0.8, 0.9}, retenu à 0.5 sur le corpus
-  actuel (Recall@5=0.409, meilleur que le sémantique seul) : implémenté
-  UNIQUEMENT parce que l'évaluation démontre ce gain réel (réf. tâche §3),
-  pas un choix
-  arbitraire.
+- Construction du contexte (§5) : `build_rag_candidate_context` assemble
+  occurrence/mécanisme/emplacement/SI compact (services/artefacts de
+  l'actif)/graphe compact (parents/enfants directs, Entry/Terminal,
+  tactiques voisines) — jamais le graphe entier, jamais l'inventaire
+  complet.
+- Construction des requêtes (§6/§7) : trois fonctions déterministes
+  (`build_realism_query`/`build_interaction_query`/`build_effect_query`)
+  assemblent du texte à partir des seuls champs du contexte — AUCUN appel
+  LLM, aucun identifiant codé en dur.
+- Stage A, retrieval large (§8) : pour chaque requête, `retrieve` (TF-IDF
+  haché) ET `retrieve_semantic` (sentence-transformers + FAISS) récupèrent
+  chacun `RAG_RETRIEVAL_CANDIDATES` (défaut 20) chunks, fusionnés par
+  `chunk_id` — `hybrid_score = alpha·score_sémantique + (1-alpha)·score_lexical`
+  (même formule que `retrieve_hybrid`), mais les trois scores
+  (sémantique/lexical/hybride) restent individuellement conservés (à la
+  différence de `retrieve_hybrid`, qui ne renvoie que le score fusionné).
+- Stage B, reranking contextuel (§9/§10) : le pool fusionné est passé à un
+  cross-encoder RÉEL (`sentence-transformers.CrossEncoder`, modèle
+  configurable `RAG_RERANKER_MODEL`, défaut
+  `cross-encoder/ms-marco-MiniLM-L-6-v2` — léger, CPU, public,
+  reproductible ; comparé à la réutilisation du bi-encodeur d'embeddings
+  déjà utilisé pour le retrieval sémantique, écartée car elle n'apporterait
+  aucun signal de reranking réellement nouveau, voir docstring de
+  `src/reranker.py`) — jamais le LLM principal comme reranker.
+- Diversification (§12) : APRÈS le reranking, `diversify_by_document`
+  retient au plus `RAG_DIVERSITY_MAX_PER_DOCUMENT` (défaut 2) chunks par
+  `document_id`, en conservant l'ordre de pertinence — jamais un quota
+  rigide par `source_type`.
+- Assemblage (§13) : `CandidateEvidenceBundle{candidate_id, realism,
+  interaction, effect}`, chaque preuve portant `chunk_id`, `source_type`,
+  `source_id`, `text`, `final_rank`, `semantic_score`, `lexical_score`,
+  `hybrid_score`, `reranker_score`, `metadata`, `provenance` — traçabilité
+  complète de bout en bout.
 - LLM réel : construction du prompt (JSON structuré demandé, 11
-  sous-métriques exactement, `evidence_ids` limités aux preuves
-  réellement fournies) → `POST {base_url}/api/chat` (Ollama) ou
-  `/chat/completions` (OpenAI-compatible), `temperature=0` → parsing
-  strict de la réponse → validation (11 métriques exactement, sans
-  doublon, scores/confiances `[0,1]`, `evidence_ids` référençant
-  réellement les preuves fournies) → `LlmOutputValidationError` sur toute
-  non-conformité, jamais une valeur de repli.
+  sous-métriques exactement, preuves désormais REGROUPÉES PAR FAMILLE —
+  `REALISM EVIDENCE`/`INTERACTION EVIDENCE`/`PROGRESSION-EFFECT EVIDENCE`
+  — `evidence_ids` limités aux preuves réellement fournies) → `POST
+  {base_url}/api/chat` (Ollama) ou `/chat/completions`
+  (OpenAI-compatible), `temperature=0` → parsing strict de la réponse →
+  validation (11 métriques exactement, sans doublon, scores/confiances
+  `[0,1]`, `evidence_ids` référençant réellement les preuves fournies) →
+  `LlmOutputValidationError` sur toute non-conformité, jamais une valeur
+  de repli.
 - `detect_provider()` : CAS A (Ollama, sondage `/api/tags`) / CAS B
   (endpoint OpenAI-compatible configuré) / CAS C (repli déterministe).
 
-**F. Sorties.** RAG : `RetrievalResult` (chunk + score). LLM : 11
-`Annotation` (score, confiance, justification, `evidence_ids`,
-`model_version`, `annotation_id`).
+**F. Sorties.** RAG : `CandidateEvidenceBundle` (trois familles de
+preuves, chacune `{query, evidence[]}`). LLM : 11 `Annotation` (score,
+confiance, justification, `evidence_ids`, `model_version`,
+`annotation_id`).
 
-**G. Technologies.** `sentence-transformers` + FAISS (moteur RAG
-principal, embeddings sémantiques réels) ; TF-IDF haché (`hashlib.blake2b`,
-baseline lexicale expérimentale, aucune dépendance) ; `urllib.request`
-pour l'appel LLM réel.
+**G. Technologies.** `sentence-transformers` (embeddings sémantiques
+réels ET cross-encoder de reranking réel — même dépendance, aucune
+nouvelle bibliothèque) + FAISS (index vectoriel) ; TF-IDF haché
+(`hashlib.blake2b`, baseline lexicale expérimentale, aucune dépendance) ;
+`urllib.request` pour l'appel LLM réel.
 
 **H. Décisions techniques importantes.** Le prompt exclut explicitement
 `system_context` (protection anti-budget supplémentaire, au-delà de la
-validation Pydantic déjà en place). Aucun modèle LLM n'est imposé dans le
-code — sélection entièrement par variables d'environnement.
+validation Pydantic déjà en place, elle-même désormais doublée d'une
+exclusion STRUCTURELLE côté `RagCandidateContext`). Aucun modèle LLM ni
+reranker n'est imposé dans le code — sélection entièrement par variables
+d'environnement (`RAG_RETRIEVAL_CANDIDATES`, `RAG_RERANKER_MODEL`,
+`RAG_DIVERSITY_MAX_PER_DOCUMENT`, `RAG_FINAL_TOP_K`), jamais une constante
+dispersée dans plusieurs fichiers. Aucun appel LLM pendant la construction
+des requêtes ni le retrieval/reranking (§17.2) — vérifié statiquement par
+`tests/test_rag_sp2_separation.py` (analyse des imports du module, pas
+seulement absence d'appel observé à l'exécution).
 
 **I. Écart modèle↔implémentation.** Le chapitre 3 (§11) définit le
 LLM+RAG comme une boîte conceptuelle produisant 11 scores annotés, sans
 préciser le mécanisme concret de récupération documentaire ni le format
 d'échange avec le modèle. L'implémentation matérialise ce vide par un
-choix technique explicite (TF-IDF haché, prompt JSON structuré,
-validation stricte) — techniquement nécessaire, scientifiquement neutre
-(n'affecte aucune formule du chapitre 3), à présenter comme tel.
+choix technique explicite (contexte candidat compact, trois requêtes
+déterministes par famille, retrieval en deux étapes, reranking
+cross-encoder, diversification, prompt JSON structuré, validation
+stricte) — techniquement nécessaire, scientifiquement neutre (n'affecte
+aucune formule du chapitre 3 : `Realism`, `InteractionLikelihood`,
+`P_engage`, `Effectiveness_prog`, `DE` restent calculés exactement comme
+définis §12), à présenter comme tel.
 
 **J. Limites réelles.** **Aucune annotation sémantique réelle n'a été
 produite dans cet environnement** — le repli déterministe produit un
 score identique pour les 11 sous-métriques (chevauchement lexical, pas
 une distinction Realism/InteractionLikelihood/Effectiveness) ; le
-provider réel n'a jamais été exercé contre un vrai service.
+provider réel n'a jamais été exercé contre un vrai service (voir note de
+clôture). Les métriques Recall@5/MRR@5/nDCG@5 déjà mesurées
+(`docs/chapter4/outputs/rag_semantic_evaluation.json`, Recall@5 = 0.396
+sémantique vs 0.331 lexical, hybride alpha=0.8 : 0.470) portent sur le
+corpus D3FEND+Engage+
+littérature (149 chunks) TEL QU'IL EXISTAIT AVANT l'ajout du corpus
+ATT&CK (1157 chunks supplémentaires) et avant l'introduction du reranking
+contextuel : elles restent utiles comme non-régression technique, mais ne
+sont PAS re-validées contre le corpus élargi ni contre le pipeline
+reranké dans cette passe — cette validation comparative appartient
+explicitement au chapitre 5 (réf. tâche §18, aucune optimisation
+artificielle de ces métriques n'a été recherchée ici).
 
 **K. Artefact/capture.** C4 (RAG, `AVAILABLE`) —
-`docs/chapter4/screenshots/04_rag/rag_retrieval.png` (2050×1084 px,
-généré par `tools/chapter4_figures/c4_rag.py`) ; C5 (LLM réel,
+`docs/chapter4/screenshots/04_rag/rag_architecture.png`, généré par
+`tools/chapter4_figures/c4_rag.py` (diagramme d'architecture OFFLINE/
+ONLINE, compteurs réels lus dans
+`docs/chapter4/outputs/rag_evidence_bundle_example.json`) ; C5 (LLM réel,
 `NOT_AVAILABLE`).
 
 **L. Formulation à ne pas utiliser.** Ne pas écrire « le système utilise
@@ -816,10 +950,17 @@ d'attaque » sans préciser le statut réel de l'exécution LLM (voir note de
 clôture). Ne pas écrire « le RAG utilise uniquement du TF-IDF » — c'est
 désormais FAUX : le TF-IDF haché est une baseline lexicale expérimentale,
 le moteur principal est un RAG sémantique réel (`sentence-transformers` +
-FAISS), démontré supérieur par une évaluation quantitative réelle (pas
-seulement affirmé). Ne pas présenter les scores du repli déterministe
+FAISS). Ne pas présenter les scores du repli déterministe
 (`RuleBasedStubAnnotator`) comme le résultat d'une annotation sémantique
-LLM réelle.
+LLM réelle. Ne pas écrire « le RAG calcule DE » ni « le RAG sélectionne le
+mécanisme » ni « le LLM décide si un mécanisme est admissible » ni « le
+reranker mesure l'efficacité du mécanisme » (§24) — formulation correcte :
+« le RAG récupère et ordonne les passages documentaires susceptibles
+d'apporter des éléments de preuve pour l'évaluation contextuelle du
+candidat ». Ne pas écrire « une seule requête/un seul jeu de preuves sert
+aux 11 sous-métriques » — c'est désormais FAUX : trois requêtes et trois
+jeux de preuves distincts (realism/interaction/effect), présentés au LLM
+regroupés par famille.
 
 ### 4.4.3 SP3
 
@@ -975,6 +1116,15 @@ mapping réels (`C_{i,h}` restreint à 1 candidat) : le pipeline reste
 robuste (`deployment_plan` non vide dans ce cas précis grâce à l'audit de
 la section 4.3.3), mais l'exemple `orchestrator_example.py` par défaut
 utilise encore un catalogue synthétique de démonstration distinct.
+**`run_pipeline` n'a PAS été rebranché sur le RAG contextuel par candidat**
+(réf. tâche « renforcer le RAG utilisé par SP2 », section 4.4.2) : il
+continue d'utiliser une requête unique par candidat
+(`retrieve`/`retrieve_semantic`/`retrieve_hybrid`), pas encore
+`RagCandidateContext` -> `build_rag_queries` ->
+`build_candidate_evidence_bundle` -> `evidence_by_family`. Les deux
+chaînes RAG restent fonctionnelles et testées séparément ; le rebranchement
+de l'orchestrateur sur le pipeline contextuel est une limite ouverte,
+explicitement hors du périmètre de cette passe.
 
 **K. Artefact/capture.** C7 (`AVAILABLE`) —
 `docs/chapter4/screenshots/09_pipeline/pipeline_result.png` (2067×1654 px,
@@ -1057,26 +1207,29 @@ annotation LLM réelle.
 | « Un audit documentaire a permis d'enrichir des propriétés d'admissibilité sans en inventer » | `catalog_builder.py` (`ADDITIONAL_LOCATION_TYPES`, `REQUIRED_ASSET_TYPES`, `ENGAGE_REQUIRED_SERVICES`) | `ADMISSIBILITY_EVIDENCE_AUDIT.md`, `CATALOG_AUDIT.md` §6bis | régénération du catalogue | C2 | **VALIDÉ** |
 | « Plusieurs candidats sont réellement admissibles sur une instance riche, catalogue de connaissances + catalogue opérationnel + mapping réels » | `src/admissibility.py`, `src/organization_catalog.py` | `sp1_extended_real_example.json`, `sp1_runtime_statistics.json` | `python -m examples.sp1_extended_real_example` | C3 | **VALIDÉ** (46 candidats, 9 mécanismes distincts, 9/9 occurrences couvertes) |
 | « SP1 dépend réellement du graphe/SI courants (module runtime, pas pré-calculé) » | `src/admissibility.py::build_admissibility_report` | — | `tests/test_admissibility.py::TestAdmissibilityReport::test_criterion_j_same_organization_different_graph_different_c_i_h` | — | **VALIDÉ** (même D_org + M, graphes différents ⇒ C_i_h différents) |
-| « Le RAG sémantique (embeddings) récupère des passages D3FEND/Engage/littérature, avec un Recall@5 supérieur au RAG lexical » | `src/semantic_embedder.py`/`src/vector_index.py`/`src/rag_indexer.py`/`src/rag_retriever.py` | staging (149 chunks), 17 requêtes réelles (`data/rag/rag_eval_queries.json`) | `rag_semantic_evaluation.json` | C4 | **VALIDÉ** (Recall@5 sémantique 0.352 > lexical 0.331 ; hybride alpha=0.5 : 0.409) |
-| « Le LLM réel produit les 11 sous-métriques » | `RealLlmAnnotator` | preuves RAG | `llm_annotation_real.json` | C5 | **NON VALIDÉ** — code prêt et testé (mocks), aucune exécution réelle dans cet environnement |
+| « Le RAG sémantique (embeddings) récupère des passages D3FEND/Engage/littérature, avec un Recall@5 supérieur au RAG lexical » | `src/semantic_embedder.py`/`src/vector_index.py`/`src/rag_indexer.py`/`src/rag_retriever.py` | staging (149 chunks D3FEND+Engage+littérature, avant ajout ATT&CK), 17 requêtes réelles (`data/rag/rag_eval_queries.json`) | `rag_semantic_evaluation.json` | — | **VALIDÉ SUR L'ANCIEN CORPUS** (Recall@5 sémantique 0.396 > lexical 0.331 ; hybride alpha=0.8 : 0.470) — non re-validé contre le corpus élargi ATT&CK, réf. chapitre 5 |
+| « Pour un candidat admissible réel, le RAG construit trois requêtes distinctes (realism/interaction/effect), récupère depuis ATT&CK+D3FEND+Engage+littérature, reranke avec un cross-encoder réel, et produit un `CandidateEvidenceBundle` tracé » | `src/rag_candidate_context.py`, `src/rag_query_builder.py`, `src/rag_evidence.py`, `src/reranker.py` | corpus réel 1306 chunks (`data/attack/staging/`, `data/deception/staging/`) | `python -m examples.rag_sp2_context_example` → `rag_candidate_context_example.json`, `rag_queries_example.json`, `rag_evidence_bundle_example.json` | C4 | **VALIDÉ** (candidat réel `T1566@WS01`/`EAC0009`/`mailbox-ws01`, reranker `cross-encoder/ms-marco-MiniLM-L-6-v2` réellement exécuté) |
+| « Le LLM réel produit les 11 sous-métriques » | `RealLlmAnnotator` | preuves RAG (regroupées par famille, `evidence_by_family`) | `llm_annotation_real.json` | C5 | **NON VALIDÉ** — code prêt et testé (mocks), aucune exécution réelle dans cet environnement |
 | « Le repli déterministe produit les 11 sous-métriques sans LLM réel » | `RuleBasedStubAnnotator` | preuves RAG | `llm_annotation_example.json` | — | **VALIDÉ** (explicitement marqué `rule_based_stub`) |
 | « Les agrégats `Realisme`/`P_interaction`/`P_engagement`/`Effet_prog`/`DE` sont calculés par code, jamais par le LLM » | `src/annotation_validator.py` | 11 `Annotation` (stub ou réel) | `frozen_annotations_example.csv` | C6 (stub) | **VALIDÉ** (formules) ; table figée à partir d'un LLM réel **NON VALIDÉE** |
 | « Le moteur SP3 reproduit exactement l'ancre de validation du chapitre 3 » | `src/risk_engine.py` | scénario analytique CLAUDE.md §20 | `test_reference_example` | — (chapitre 5) | **VALIDÉ** (tolérance `1e-3`) |
 | « L'optimiseur résout `(P)` par énumération exhaustive avec front de Pareto » | `src/optimizer.py` | `C_{i,h}` + coûts | `optimizer_example.txt` | — (chapitre 5) | **VALIDÉ** |
 | « L'orchestrateur exécute le pipeline complet de bout en bout » | `src/orchestrator.py` | catalogue/mapping réels + RAG réel | `pipeline_example.txt` | C7 | **VALIDÉ** (avec repli déterministe, pas de LLM réel) |
-| « Aucun appel LLM ni aucune dépendance RAG n'a lieu pendant le calcul du risque ou l'optimisation » | tests `ast` dédiés sur `risk_engine.py`/`optimizer.py`/`reporter.py` (incluant `semantic_embedder.py`/`vector_index.py` depuis cette passe) | — | `pytest -v` (697 tests + 2 optionnels `real_llm`) | — | **VALIDÉ** |
+| « Aucun appel LLM ni aucune dépendance RAG n'a lieu pendant le calcul du risque ou l'optimisation » | tests `ast` dédiés sur `risk_engine.py`/`optimizer.py`/`reporter.py`/`admissibility.py` (incluant `semantic_embedder.py`/`vector_index.py`/`rag_candidate_context.py`/`rag_query_builder.py`/`rag_evidence.py`/`reranker.py`, `tests/test_rag_sp2_separation.py`) | — | `pytest -v` (761 tests + 4 optionnels : 2 `real_llm`, 2 `real_reranker`) | — | **VALIDÉ** |
 
 ---
 
 ## Note de clôture
 
-Cette passe ferme la rupture identifiée dans la chaîne
-catalogue→mapping→SP1→candidat admissible→RAG→LLM : un candidat
-réellement admissible existe désormais (`T1039@FS01`/`D3-DNR`/`shared-drive`),
-obtenu par audit documentaire rigoureux (2 propriétés retenues, une
-dizaine rejetées comme non justifiées — voir
-`ADMISSIBILITY_EVIDENCE_AUDIT.md`), sans jamais assouplir la politique
-d'admissibilité ni inventer de prérequis. La seule rupture restante est
-l'absence d'un service LLM réel dans cet environnement d'exécution — le
-code, la validation stricte de sortie, et la commande de reproduction
-locale sont tous prêts et testés (588 tests verts).
+La chaîne catalogue→mapping→SP1→candidat admissible→RAG contextuel→LLM
+est désormais entièrement matérialisée jusqu'au RAG inclus : pour tout
+candidat réellement admissible produit par SP1, le RAG construit trois
+requêtes distinctes par famille de sous-métriques, récupère et reranke
+des preuves issues d'ATT&CK, D3FEND, Engage et de la littérature, et
+produit un `CandidateEvidenceBundle` entièrement tracé (voir
+`examples/rag_sp2_context_example.py` et section 4.4.2). La seule rupture
+restante est l'absence d'un service LLM réel dans cet environnement
+d'exécution — le code, la validation stricte de sortie (désormais avec
+preuves regroupées par famille), et la commande de reproduction locale
+sont tous prêts et testés (761 tests verts + 4 tests d'intégration
+optionnels : 2 `pytest -m real_llm`, 2 `pytest -m real_reranker`).

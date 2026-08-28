@@ -76,16 +76,17 @@ Ce qui est visible: bloc OFFLINE (ATT&CK/D3FEND/Engage/littérature → Knowledg
 Rôle dans le chapitre 4: nouvelle section « Préparation hors ligne vs exécution en ligne » de FINAL_TECHNICAL_REPORT.md.
 ```
 
-## Capture C4 — Récupération documentaire RAG
+## Capture C4 — Architecture RAG contextuelle (SP2)
 
 ```
 Status: AVAILABLE
-Module: src/rag_indexer.py / src/rag_retriever.py
-Fichier de sortie: docs/chapter4/outputs/rag_retrieval_example.txt (résultat de récupération)
+Module: src/rag_candidate_context.py / src/rag_query_builder.py / src/rag_evidence.py / src/reranker.py / src/rag_indexer.py
+Fichiers de sortie: docs/chapter4/outputs/rag_candidate_context_example.json, rag_queries_example.json, rag_evidence_bundle_example.json (produits par python -m examples.rag_sp2_context_example, candidat réel admissible T1566@WS01/EAC0009/mailbox-ws01)
 Générateur: tools/chapter4_figures/c4_rag.py (python -m tools.chapter4_figures.c4_rag)
-Capture: docs/chapter4/screenshots/04_rag/rag_retrieval.png (2050×1084 px, fond blanc)
-Ce qui est visible: la requête, un index réel de 124 chunks (44 D3FEND, 62 Engage, 18 littérature), le classement des 5 premiers résultats (Rang/Score/Type/chunk_id/Extrait) — premier résultat "d3fend:D3-DUC:0" (Decoy User Credential), pertinent pour la requête.
-Rôle dans le chapitre 4: Section 4.4.2 — Évaluation contextuelle par RAG et LLM (SP2).
+Capture: docs/chapter4/screenshots/04_rag/rag_architecture.png (fond blanc)
+Ce qui est visible: diagramme d'architecture OFFLINE (ATT&CK/D3FEND/Engage/littérature -> chunking+métadonnées -> embeddings sémantiques -> index vectoriel FAISS, 1306 chunks réels, BAAI/bge-small-en-v1.5) / ONLINE (candidat SP1 -> RagCandidateContext -> Q_realism/Q_interaction/Q_effect -> retrieval large -> reranking contextuel [cross-encoder/ms-marco-MiniLM-L-6-v2, réellement exécuté] -> diversification -> CandidateEvidenceBundle -> LLM), avec la requête Q_realism réellement construite pour le candidat et les compteurs réels de preuves par famille (realism=5, interaction=5, effect=5).
+Rôle dans le chapitre 4: Section 4.4.2 — SP2 : RAG contextuel + LLM.
+Remplace: l'ancienne capture C4 (tableau plat de retrieval TF-IDF seul, docs/chapter4/screenshots/04_rag/rag_retrieval.png), qui ne représentait plus l'architecture réellement implémentée depuis l'introduction du RAG sémantique puis du RAG contextuel par famille — fichier retiré du dépôt.
 ```
 
 ## Capture C5 — Annotation structurée provenant du vrai LLM

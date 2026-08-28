@@ -1,0 +1,12 @@
+{
+  "candidate": {
+    "occurrence_id": "T1566@WS01",
+    "mechanism_id": "EAC0009",
+    "location_id": "mailbox-ws01"
+  },
+  "queries": {
+    "realism": "Technical plausibility and realism of deploying deception mechanism Email Manipulation (Modify the flow of email in the environment.) on asset type workstation at location type mailbox in the context of attack technique T1566 (Phishing) expected attacker perception and behavior of the deception mechanism, interaction mechanism: adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis relevant services: email relevant artifacts:",
+    "interaction": "Object an attacker could interact with, required attacker action, and exposure of Email Manipulation target artifacts: email, mailbox in the behavior and path of attack technique T1566 (Phishing) tactics: initial-access deception mechanism interaction mechanism: adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis on location type mailbox of asset type workstation",
+    "effect": "Expected defensive effect (stop, redirect, contain, or delay attacker progression) of deception mechanism Email Manipulation against attack technique T1566 (Phishing) interaction mechanism: adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis downstream attack techniques potentially prevented: T1110"
+  }
+}

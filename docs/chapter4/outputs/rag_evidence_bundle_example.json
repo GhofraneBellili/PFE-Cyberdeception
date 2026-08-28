@@ -1,0 +1,434 @@
+{
+  "candidate_id": "T1566@WS01|EAC0009|mailbox-ws01",
+  "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+  "corpus_chunk_count": 1306,
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "vector_backend": "faiss",
+  "families": {
+    "realism": {
+      "query": "Technical plausibility and realism of deploying deception mechanism Email Manipulation (Modify the flow of email in the environment.) on asset type workstation at location type mailbox in the context of attack technique T1566 (Phishing) expected attacker perception and behavior of the deception mechanism, interaction mechanism: adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis relevant services: email relevant artifacts:",
+      "evidence": [
+        {
+          "chunk_id": "engage:EAC0009:long_description",
+          "source_type": "engage",
+          "source_id": "EAC0009",
+          "text": "Email Manipulation covers the various ways email flows in the environment can be affected. Email Manipulation can affect which mail appliances process mail flows, where mail is forwarded, or what mail is present in an inbox. A common use case for email manipulation is as a vector to introduce malware into the engagement environment.  Suspicious emails may be removed from production mailbox and placed into an inbox in an engagement environment. Then, any suspicious attachments or links could be detonated from within the environment. As another example, emails collected over a long period of time from a legitimate inbox outside the environment may be moved into the environment to reassure the adversary of the environment’s legitimacy by creating a mailbox that more closely resembles a real, lived-in inbox.",
+          "final_rank": 1,
+          "semantic_score": 0.8521175980567932,
+          "lexical_score": 0.4126210776129819,
+          "hybrid_score": 0.764218293968031,
+          "reranker_score": 0.283592164516449,
+          "metadata": {
+            "name": "Email Manipulation",
+            "detail_type": "Engagement",
+            "mechanism_ids": [
+              "EAC0009"
+            ]
+          },
+          "provenance": {
+            "document_id": "EAC0009",
+            "locator": "long_description",
+            "text_hash": "1969bf58dda1595267ae461d9184dd1e4bfa168b0e42ab359d0849e08d3a771a"
+          }
+        },
+        {
+          "chunk_id": "engage:EAC0015:long_description",
+          "source_type": "engage",
+          "source_id": "EAC0015",
+          "text": "Information Manipulation is used to support the engagement narrative and directly impact adversary activities. Revealed facts and fictions can be used to adjust the adversary’s trust in the environment. Concealed facts and fiction can be used to adjust the adversary’s sense of uncertainty towards the environment. Revealed facts may include OS type and version, geographic location, hardware type and version, accounts, credentials, etc. Revealed fictions may include the content of decoy files, emails, messages, etc. Revealed facts and fictions may or may not be believed by the adversary.  If an adversary believes a revealed fact or fiction, it may lend credibility to the environment or encourage a specific action. If an adversary is suspicious or does not believe a revealed fact or fiction, it may erode adversary trust in the environment or discourage a specific action. Therefore, revealed facts and fictions can be used to adjust the adversary’s trust in the environment in ways that support the operational objectives.  <br><br>Concealed facts may include virtualized systems disguised as physical systems, monitoring software, or collection efforts. Concealed fictions may include an encrypted, interestingly named, decoy file or a partially deleted email thread referencing high value, but decoy, assets. Concealed facts and fictions may or may not be discovered by the adversary. If the adversary discovers a concealed fact or fiction, it may increase the ambiguity of the environment and affect the adversary’s sense of uncertainty.  In this way, concealed facts and fictions can be used to adjust the ambiguity and affect the adversary’s sense of uncertainty in ways that support the operational objectives",
+          "final_rank": 2,
+          "semantic_score": 0.7539966106414795,
+          "lexical_score": 0.0,
+          "hybrid_score": 0.6031972885131837,
+          "reranker_score": -1.9859838485717773,
+          "metadata": {
+            "name": "Information Manipulation",
+            "detail_type": "Engagement",
+            "mechanism_ids": [
+              "EAC0015"
+            ]
+          },
+          "provenance": {
+            "document_id": "EAC0015",
+            "locator": "long_description",
+            "text_hash": "8c311417245658d2180ab138d1b7c9ffc388c1880a23a3770614890e4019a280"
+          }
+        },
+        {
+          "chunk_id": "engage:EAC0009:description",
+          "source_type": "engage",
+          "source_id": "EAC0009",
+          "text": "Modify the flow of email in the environment.",
+          "final_rank": 3,
+          "semantic_score": 0.0,
+          "lexical_score": 0.3679100965835674,
+          "hybrid_score": 0.07358201931671346,
+          "reranker_score": -2.0783698558807373,
+          "metadata": {
+            "name": "Email Manipulation",
+            "detail_type": "Engagement",
+            "mechanism_ids": [
+              "EAC0009"
+            ]
+          },
+          "provenance": {
+            "document_id": "EAC0009",
+            "locator": "description",
+            "text_hash": "6012c872771a13ec21a2581f27079c6627efaeb471e59dc587793f104077984c"
+          }
+        },
+        {
+          "chunk_id": "doi_10.1145_3337772__ev001",
+          "source_type": "literature",
+          "source_id": "doi_10.1145_3337772",
+          "text": "we propose a taxonomy that defines six types of deception: perturbation, moving target defense, obfuscation, mixing, honey-x, and attacker engagement.",
+          "final_rank": 4,
+          "semantic_score": 0.7324185967445374,
+          "lexical_score": 0.0,
+          "hybrid_score": 0.5859348773956299,
+          "reranker_score": -2.771023988723755,
+          "metadata": {
+            "source_sha256": "f2365ef9effd23a50067da02cab2b659719e3a769ffa154337625f2e4911e085",
+            "page_verified": true
+          },
+          "provenance": {
+            "document_id": "doi_10.1145_3337772",
+            "locator": "page_1_abstract",
+            "text_hash": "b5fb2ae0b89ac11a9b114cfcb3130ac2434463f3a550d981c394c6df67a0297c"
+          }
+        },
+        {
+          "chunk_id": "engage:EAC0017:long_description",
+          "source_type": "engage",
+          "source_id": "EAC0017",
+          "text": "Hardware Manipulation can include physical adjustments or configuration changes to the hardware in the environment. This manipulation can include physically removing a system’s microphone, camera, on-board Wi-Fi adapter, etc. or using software controls to disable those devices. These types of manipulations can affect the adversary’s ability to achieve their operational objectives by incurring an increased resource cost, forcing them to change tactics, or stopping them altogether.  Hardware Manipulation is often required to maintain operational safety. For example, if the operation includes Malware Detonation using a laptop physically located in a shared space, it is likely that the defender will not have the ability to hide the legitimate conversations and individuals present in the space. Unless the defender can control the background sounds and visuals, it is likely too risky to leave the camera and microphone connected to the machine.",
+          "final_rank": 5,
+          "semantic_score": 0.7344461679458618,
+          "lexical_score": 0.0,
+          "hybrid_score": 0.5875569343566894,
+          "reranker_score": -3.0934853553771973,
+          "metadata": {
+            "name": "Hardware Manipulation",
+            "detail_type": "Engagement",
+            "mechanism_ids": [
+              "EAC0017"
+            ]
+          },
+          "provenance": {
+            "document_id": "EAC0017",
+            "locator": "long_description",
+            "text_hash": "c867d44a38b3bf0d6ec3e10b0b793e8f860f9d6a72ecfe19105a521b13d731d5"
+          }
+        }
+      ]
+    },
+    "interaction": {
+      "query": "Object an attacker could interact with, required attacker action, and exposure of Email Manipulation target artifacts: email, mailbox in the behavior and path of attack technique T1566 (Phishing) tactics: initial-access deception mechanism interaction mechanism: adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis on location type mailbox of asset type workstation",
+      "evidence": [
+        {
+          "chunk_id": "engage:EAC0009:long_description",
+          "source_type": "engage",
+          "source_id": "EAC0009",
+          "text": "Email Manipulation covers the various ways email flows in the environment can be affected. Email Manipulation can affect which mail appliances process mail flows, where mail is forwarded, or what mail is present in an inbox. A common use case for email manipulation is as a vector to introduce malware into the engagement environment.  Suspicious emails may be removed from production mailbox and placed into an inbox in an engagement environment. Then, any suspicious attachments or links could be detonated from within the environment. As another example, emails collected over a long period of time from a legitimate inbox outside the environment may be moved into the environment to reassure the adversary of the environment’s legitimacy by creating a mailbox that more closely resembles a real, lived-in inbox.",
+          "final_rank": 1,
+          "semantic_score": 0.822837233543396,
+          "lexical_score": 0.4117377758802974,
+          "hybrid_score": 0.7406173420107762,
+          "reranker_score": -1.3886686563491821,
+          "metadata": {
+            "name": "Email Manipulation",
+            "detail_type": "Engagement",
+            "mechanism_ids": [
+              "EAC0009"
+            ]
+          },
+          "provenance": {
+            "document_id": "EAC0009",
+            "locator": "long_description",
+            "text_hash": "1969bf58dda1595267ae461d9184dd1e4bfa168b0e42ab359d0849e08d3a771a"
+          }
+        },
+        {
+          "chunk_id": "attack:T1203:1",
+          "source_type": "attack",
+          "source_id": "T1203",
+          "text": "Adversaries may exploit software vulnerabilities in client applications to execute code. Vulnerabilities can exist in software due to unsecure coding practices that can lead to unanticipated behavior. Adversaries can take advantage of certain vulnerabilities through targeted exploitation for the purpose of arbitrary code execution. Oftentimes the most valuable exploits to an offensive toolkit are those that can be used to obtain code execution on a remote system because they can be used to gain access to that system. Users will expect to see files related to the applications they commonly used to do work, so they are a useful target for exploit research and development because of their high utility.\n\nSeveral types exist:\n\n### Browser-based Exploitation\n\nWeb browsers are a common target through [Drive-by Compromise](https://attack.mitre.org/techniques/T1189) and [Spearphishing Link](https://attack.mitre.org/techniques/T1566/002). Endpoint systems may be compromised through normal web browsing or from certain users being targeted by links in spearphishing emails to adversary controlled sites used to exploit the web browser. These often do not require an action by the user for the exploit to be executed.\n\n### Office Applications\n\nCommon office and productivity applications such as Microsoft Office are also targeted through [Phishing](https://attack.mitre.org/techniques/T1566). Malicious files will be transmitted directly as attachments or through links to download them. These require the user to open the document or file for the exploit to run.\n\n### Common Third-party Applications\n\nOther applications that are commonly seen or are part of the software deployed in a target network may also be used for exploitation. Applications such as Adobe Reader and Flash, which are common in enterprise environments, have been routinely targeted by adversaries attempting to gain access to systems. Depending on the software and nature of the vulnerability, some may be exploited in the browser or require the user to open a file. For instance, some Flash exploits have been delivered as objects within Microsoft Office documents.",
+          "final_rank": 2,
+          "semantic_score": 0.7092467546463013,
+          "lexical_score": 0.0,
+          "hybrid_score": 0.5673974037170411,
+          "reranker_score": -1.7769968509674072,
+          "metadata": {
+            "attack_technique_ids": [
+              "T1203"
+            ],
+            "tactics": [
+              "execution"
+            ],
+            "platforms": [
+              "Linux",
+              "macOS",
+              "Windows"
+            ],
+            "version": "1.5",
+            "revoked": false,
+            "deprecated": false,
+            "external_url": "https://attack.mitre.org/techniques/T1203",
+            "source_sha256": "dc1639caa5501d720e280cf1cbd8fbe009884a0c9b3e6e9ed9d0c25166c3d8f4"
+          },
+          "provenance": {
+            "document_id": "T1203",
+            "locator": "description",
+            "text_hash": "75083749429fdede68550a9b3f036041d7b02d9399102559513294fd6b3af2a4"
+          }
+        },
+        {
+          "chunk_id": "attack:T1204:1",
+          "source_type": "attack",
+          "source_id": "T1204",
+          "text": "An adversary may rely upon specific actions by a user in order to gain execution. Users may be subjected to social engineering to get them to execute malicious code by, for example, opening a malicious document file or link. These user actions will typically be observed as follow-on behavior from forms of [Phishing](https://attack.mitre.org/techniques/T1566).\n\nWhile [User Execution](https://attack.mitre.org/techniques/T1204) frequently occurs shortly after Initial Access it may occur at other phases of an intrusion, such as when an adversary places a file in a shared directory or on a user's desktop hoping that a user will click on it. This activity may also be seen shortly after [Internal Spearphishing](https://attack.mitre.org/techniques/T1534).\n\nAdversaries may also deceive users into performing actions such as:\n\n* Enabling [Remote Access Tools](https://attack.mitre.org/techniques/T1219), allowing direct control of the system to the adversary\n* Running malicious JavaScript in their browser, allowing adversaries to [Steal Web Session Cookie](https://attack.mitre.org/techniques/T1539)s(Citation: Talos Roblox Scam 2023)(Citation: Krebs Discord Bookmarks 2023)\n* Downloading and executing malware for [User Execution](https://attack.mitre.org/techniques/T1204)\n* Coerceing users to copy, paste, and execute malicious code manually(Citation: Reliaquest-execution)(Citation: proofpoint-selfpwn)\n\nFor example, tech support scams can be facilitated through [Phishing](https://attack.mitre.org/techniques/T1566), vishing, or various forms of user interaction. Adversaries can use a combination of these methods, such as spoofing and promoting toll-free numbers or call centers that are used to direct victims to malicious websites, to deliver and execute payloads containing malware or [Remote Access Tools](https://attack.mitre.org/techniques/T1219).(Citation: Telephone Attack Delivery)",
+          "final_rank": 3,
+          "semantic_score": 0.7036582231521606,
+          "lexical_score": 0.0,
+          "hybrid_score": 0.5629265785217286,
+          "reranker_score": -2.644224166870117,
+          "metadata": {
+            "attack_technique_ids": [
+              "T1204"
+            ],
+            "tactics": [
+              "execution"
+            ],
+            "platforms": [
+              "Linux",
+              "Windows",
+              "macOS",
+              "IaaS",
+              "Containers"
+            ],
+            "version": "1.8",
+            "revoked": false,
+            "deprecated": false,
+            "external_url": "https://attack.mitre.org/techniques/T1204",
+            "source_sha256": "dc1639caa5501d720e280cf1cbd8fbe009884a0c9b3e6e9ed9d0c25166c3d8f4"
+          },
+          "provenance": {
+            "document_id": "T1204",
+            "locator": "description",
+            "text_hash": "bf55d7ee0036821fe83124b821d5e834804c2ef0d050be59cb27f617808baee0"
+          }
+        },
+        {
+          "chunk_id": "attack:T1098:1",
+          "source_type": "attack",
+          "source_id": "T1098",
+          "text": "Adversaries may manipulate accounts to maintain and/or elevate access to victim systems. Account manipulation may consist of any action that preserves or modifies adversary access to a compromised account, such as modifying credentials or permission groups.(Citation: FireEye SMOKEDHAM June 2021) These actions could also include account activity designed to subvert security policies, such as performing iterative password updates to bypass password duration policies and preserve the life of compromised credentials. \n\nIn order to create or manipulate accounts, the adversary must already have sufficient permissions on systems or the domain. However, account manipulation may also lead to privilege escalation where modifications grant access to additional roles, permissions, or higher-privileged [Valid Accounts](https://attack.mitre.org/techniques/T1078).",
+          "final_rank": 4,
+          "semantic_score": 0.7102764248847961,
+          "lexical_score": 0.0,
+          "hybrid_score": 0.568221139907837,
+          "reranker_score": -3.1015071868896484,
+          "metadata": {
+            "attack_technique_ids": [
+              "T1098"
+            ],
+            "tactics": [
+              "persistence",
+              "privilege-escalation"
+            ],
+            "platforms": [
+              "Containers",
+              "ESXi",
+              "IaaS",
+              "Identity Provider",
+              "Linux",
+              "macOS",
+              "Network Devices",
+              "Office Suite",
+              "SaaS",
+              "Windows"
+            ],
+            "version": "2.8",
+            "revoked": false,
+            "deprecated": false,
+            "external_url": "https://attack.mitre.org/techniques/T1098",
+            "source_sha256": "dc1639caa5501d720e280cf1cbd8fbe009884a0c9b3e6e9ed9d0c25166c3d8f4"
+          },
+          "provenance": {
+            "document_id": "T1098",
+            "locator": "description",
+            "text_hash": "cb879cb8065dbc1288e938db456c8951d6fa0002c947b14b04f9ff1531b219a2"
+          }
+        },
+        {
+          "chunk_id": "attack:T1566.002:1",
+          "source_type": "attack",
+          "source_id": "T1566.002",
+          "text": "Adversaries may send spearphishing emails with a malicious link in an attempt to gain access to victim systems. Spearphishing with a link is a specific variant of spearphishing. It is different from other forms of spearphishing in that it employs the use of links to download malware contained in email, instead of attaching malicious files to the email itself, to avoid defenses that may inspect email attachments. Spearphishing may also involve social engineering techniques, such as posing as a trusted source.\n\nAll forms of spearphishing are electronically delivered social engineering targeted at a specific individual, company, or industry. In this case, the malicious emails contain links. Generally, the links will be accompanied by social engineering text and require the user to actively click or copy and paste a URL into a browser, leveraging [User Execution](https://attack.mitre.org/techniques/T1204). The visited website may compromise the web browser using an exploit, or the user will be prompted to download applications, documents, zip files, or even executables depending on the pretext for the email in the first place.\n\nAdversaries may also include links that are intended to interact directly with an email reader, including embedded images intended to exploit the end system directly. Additionally, adversaries may use seemingly benign links that abuse special characters to mimic legitimate websites (known as an \"IDN homograph attack\").(Citation: CISA IDN ST05-016) URLs may also be obfuscated by taking advantage of quirks in the URL schema, such as the acceptance of integer- or hexadecimal-based hostname formats and the automatic discarding of text before an “@” symbol: for example, `hxxp://google.com@1157586937`.(Citation: Mandiant URL Obfuscation 2023)\n\nAdversaries may also utilize links to perform consent phishing/spearphishing campaigns to [Steal Application Access Token](https://attack.mitre.org/techniques/T1528)s that grant immediate access to the victim environment. For example, a user may be lured into granting adversaries permissions/access via a malicious OAuth 2.0 request URL that when accepted by the user provide permissions/access for malicious applications.(Citation: Trend Micro Pawn Storm OAuth 2017)(Citation: Microsoft OAuth 2.0 Consent Phishing 2021) These stolen access tokens allow the adversary to perform various actions on behalf of the user via API calls.(Citation: Microsoft OAuth 2.0 Consent Phishing 2021)\n\nSimilarly, malicious links may also target device-based authorization, such as OAuth 2.0 device authorization grant flow which is typically used to authenticate devices without UIs/browsers. Known as “device code phishing,” an adversary may send a link that directs the victim to a malicious authorization page where the user is tricked into entering a code/credentials that produces a device token.(Citation: SecureWorks Device Code Phishing 2021)(Citation: Netskope Device Code Phishing 2021)(Citation: Optiv Device Code Phishing 2021)",
+          "final_rank": 5,
+          "semantic_score": 0.7605462074279785,
+          "lexical_score": 0.0,
+          "hybrid_score": 0.6084369659423828,
+          "reranker_score": -3.268876075744629,
+          "metadata": {
+            "attack_technique_ids": [
+              "T1566.002"
+            ],
+            "tactics": [
+              "initial-access"
+            ],
+            "platforms": [
+              "Identity Provider",
+              "Linux",
+              "macOS",
+              "Office Suite",
+              "SaaS",
+              "Windows"
+            ],
+            "version": "2.8",
+            "revoked": false,
+            "deprecated": false,
+            "external_url": "https://attack.mitre.org/techniques/T1566/002",
+            "source_sha256": "dc1639caa5501d720e280cf1cbd8fbe009884a0c9b3e6e9ed9d0c25166c3d8f4"
+          },
+          "provenance": {
+            "document_id": "T1566.002",
+            "locator": "description",
+            "text_hash": "52eeb521e0d1f256be5d544ac890e563a723171a3467203f53ac0651ef8144fd"
+          }
+        }
+      ]
+    },
+    "effect": {
+      "query": "Expected defensive effect (stop, redirect, contain, or delay attacker progression) of deception mechanism Email Manipulation against attack technique T1566 (Phishing) interaction mechanism: adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis downstream attack techniques potentially prevented: T1110",
+      "evidence": [
+        {
+          "chunk_id": "doi_10.1145_3337772__ev001",
+          "source_type": "literature",
+          "source_id": "doi_10.1145_3337772",
+          "text": "we propose a taxonomy that defines six types of deception: perturbation, moving target defense, obfuscation, mixing, honey-x, and attacker engagement.",
+          "final_rank": 1,
+          "semantic_score": 0.7240939736366272,
+          "lexical_score": 0.2853675235698923,
+          "hybrid_score": 0.6363486836232802,
+          "reranker_score": -1.6869533061981201,
+          "metadata": {
+            "source_sha256": "f2365ef9effd23a50067da02cab2b659719e3a769ffa154337625f2e4911e085",
+            "page_verified": true
+          },
+          "provenance": {
+            "document_id": "doi_10.1145_3337772",
+            "locator": "page_1_abstract",
+            "text_hash": "b5fb2ae0b89ac11a9b114cfcb3130ac2434463f3a550d981c394c6df67a0297c"
+          }
+        },
+        {
+          "chunk_id": "doi_10.1145_3214305__ev006",
+          "source_type": "literature",
+          "source_id": "doi_10.1145_3214305",
+          "text": "conducted red teaming experiments on deception, through leveraging structured attack graph representations, in order to drive attackers into following fake attack paths",
+          "final_rank": 2,
+          "semantic_score": 0.75079345703125,
+          "lexical_score": 0.0,
+          "hybrid_score": 0.6006347656250001,
+          "reranker_score": -3.0271027088165283,
+          "metadata": {
+            "source_sha256": "9e482fefbed52fa438aa93f35c3ad0aacfef4fea8894618863b7e29c6f73a03e",
+            "page_verified": true
+          },
+          "provenance": {
+            "document_id": "doi_10.1145_3214305",
+            "locator": "page_10_body_text_deceptive_attack_graph",
+            "text_hash": "54a578c0b25951011c0d62a67f719eafc419aa33dc9d1db2e76118f0009993b0"
+          }
+        },
+        {
+          "chunk_id": "engage:EAC0017:long_description",
+          "source_type": "engage",
+          "source_id": "EAC0017",
+          "text": "Hardware Manipulation can include physical adjustments or configuration changes to the hardware in the environment. This manipulation can include physically removing a system’s microphone, camera, on-board Wi-Fi adapter, etc. or using software controls to disable those devices. These types of manipulations can affect the adversary’s ability to achieve their operational objectives by incurring an increased resource cost, forcing them to change tactics, or stopping them altogether.  Hardware Manipulation is often required to maintain operational safety. For example, if the operation includes Malware Detonation using a laptop physically located in a shared space, it is likely that the defender will not have the ability to hide the legitimate conversations and individuals present in the space. Unless the defender can control the background sounds and visuals, it is likely too risky to leave the camera and microphone connected to the machine.",
+          "final_rank": 3,
+          "semantic_score": 0.714987576007843,
+          "lexical_score": 0.0,
+          "hybrid_score": 0.5719900608062745,
+          "reranker_score": -3.577012777328491,
+          "metadata": {
+            "name": "Hardware Manipulation",
+            "detail_type": "Engagement",
+            "mechanism_ids": [
+              "EAC0017"
+            ]
+          },
+          "provenance": {
+            "document_id": "EAC0017",
+            "locator": "long_description",
+            "text_hash": "c867d44a38b3bf0d6ec3e10b0b793e8f860f9d6a72ecfe19105a521b13d731d5"
+          }
+        },
+        {
+          "chunk_id": "engage:EAC0009:long_description",
+          "source_type": "engage",
+          "source_id": "EAC0009",
+          "text": "Email Manipulation covers the various ways email flows in the environment can be affected. Email Manipulation can affect which mail appliances process mail flows, where mail is forwarded, or what mail is present in an inbox. A common use case for email manipulation is as a vector to introduce malware into the engagement environment.  Suspicious emails may be removed from production mailbox and placed into an inbox in an engagement environment. Then, any suspicious attachments or links could be detonated from within the environment. As another example, emails collected over a long period of time from a legitimate inbox outside the environment may be moved into the environment to reassure the adversary of the environment’s legitimacy by creating a mailbox that more closely resembles a real, lived-in inbox.",
+          "final_rank": 4,
+          "semantic_score": 0.8015319108963013,
+          "lexical_score": 0.3369420446513705,
+          "hybrid_score": 0.7086139376473152,
+          "reranker_score": -3.900473117828369,
+          "metadata": {
+            "name": "Email Manipulation",
+            "detail_type": "Engagement",
+            "mechanism_ids": [
+              "EAC0009"
+            ]
+          },
+          "provenance": {
+            "document_id": "EAC0009",
+            "locator": "long_description",
+            "text_hash": "1969bf58dda1595267ae461d9184dd1e4bfa168b0e42ab359d0849e08d3a771a"
+          }
+        },
+        {
+          "chunk_id": "attack:T1562:1",
+          "source_type": "attack",
+          "source_id": "T1562",
+          "text": "Adversaries may maliciously modify components of a victim environment in order to hinder or disable defensive mechanisms. This not only involves impairing preventative defenses, such as firewalls and anti-virus, but also detection capabilities that defenders can use to audit activity and identify malicious behavior. This may also span both native defenses as well as supplemental capabilities installed by users and administrators.\n\nAdversaries may also impair routine operations that contribute to defensive hygiene, such as blocking users from logging out, preventing a system from shutting down, or disabling or modifying the update process. Adversaries could also target event aggregation and analysis mechanisms, or otherwise disrupt these procedures by altering other system components. These restrictions can further enable malicious operations as well as the continued propagation of incidents.(Citation: Google Cloud Mandiant UNC3886 2024)(Citation: Emotet shutdown)",
+          "final_rank": 5,
+          "semantic_score": 0.7248440980911255,
+          "lexical_score": 0.0,
+          "hybrid_score": 0.5798752784729004,
+          "reranker_score": -3.9027605056762695,
+          "metadata": {
+            "attack_technique_ids": [
+              "T1562"
+            ],
+            "tactics": [
+              "stealth"
+            ],
+            "platforms": [
+              "Windows",
+              "IaaS",
+              "Linux",
+              "macOS",
+              "Containers",
+              "Network Devices",
+              "Identity Provider",
+              "Office Suite",
+              "ESXi"
+            ],
+            "version": "1.7",
+            "revoked": true,
+            "deprecated": false,
+            "external_url": "https://attack.mitre.org/techniques/T1562",
+            "source_sha256": "dc1639caa5501d720e280cf1cbd8fbe009884a0c9b3e6e9ed9d0c25166c3d8f4"
+          },
+          "provenance": {
+            "document_id": "T1562",
+            "locator": "description",
+            "text_hash": "b488e4cfd396bb972c8dce954982ee2925bcf3df8270b577688712d4948f00bd"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "occurrence_id": "T1566@WS01",
+  "technique_id": "T1566",
+  "technique_name": "Phishing",
+  "tactics": [
+    "initial-access"
+  ],
+  "asset_id": "WS01",
+  "asset_type": "workstation",
+  "mechanism_id": "EAC0009",
+  "mechanism_name": "Email Manipulation",
+  "mechanism_description": "Modify the flow of email in the environment.",
+  "target_artifacts": [
+    "email",
+    "mailbox"
+  ],
+  "interaction_mechanism": "adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis",
+  "location_id": "mailbox-ws01",
+  "location_type": "mailbox",
+  "si_context": {
+    "relevant_services": [
+      "email"
+    ],
+    "relevant_artifacts": []
+  },
+  "graph_context": {
+    "direct_parent_technique_ids": [],
+    "direct_child_technique_ids": [
+      "T1110"
+    ],
+    "is_entry": true,
+    "is_terminal": false,
+    "neighboring_tactics": [
+      "credential-access"
+    ]
+  }
+}
