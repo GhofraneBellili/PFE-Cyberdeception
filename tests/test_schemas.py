@@ -16,12 +16,16 @@ from src.schemas import (
     AttackGraphEdge,
     AttackOccurrenceRef,
     DeceptionAdmissibilityProfile,
+    DeceptionEvidence,
     DeceptionMechanism,
     DeceptionRef,
     GraphContext,
     Location,
     NodeAttributes,
+    RagCandidateContext,
+    RagGraphContext,
     SIInventory,
+    SIPlacementContext,
     SITopologyEdge,
     SystemInstance,
     TechniqueOccurrence,
@@ -476,3 +480,94 @@ class TestRejectedCases:
         )
         with pytest.raises(ValidationError):
             SystemInstance(graph=graph, si_inventory=inventory)
+
+
+# ---------------------------------------------------------------------------
+# RagCandidateContext / evidence_by_family — réf. tâche « renforcer le RAG
+# utilisé par SP2 », §5/§14
+# ---------------------------------------------------------------------------
+
+
+def make_rag_candidate_context(**overrides):
+    base = dict(
+        occurrence_id="T1566@WS01",
+        technique_id="T1566",
+        asset_id="WS01",
+        mechanism_id="D1",
+        mechanism_name="Decoy Mailbox",
+        location_id="mailbox-ws01",
+    )
+    base.update(overrides)
+    return base
+
+
+class TestRagCandidateContext:
+    def test_minimal_valid_context(self):
+        context = RagCandidateContext(**make_rag_candidate_context())
+        assert context.occurrence_id == "T1566@WS01"
+        assert context.si_context == SIPlacementContext()
+        assert context.graph_context == RagGraphContext()
+
+    def test_rejects_invalid_technique_id_pattern(self):
+        with pytest.raises(ValidationError):
+            RagCandidateContext(**make_rag_candidate_context(technique_id="not-a-technique-id"))
+
+    def test_rejects_extra_field_including_budget(self):
+        """StrictModel (extra='forbid') garantit structurellement qu'aucun
+        champ non déclaré (y compris 'budget') ne peut être injecté — voir
+        docstring de RagCandidateContext."""
+        with pytest.raises(ValidationError):
+            RagCandidateContext(**make_rag_candidate_context(budget=100000))
+
+    def test_graph_context_and_si_context_populated(self):
+        context = RagCandidateContext(
+            **make_rag_candidate_context(
+                si_context=SIPlacementContext(relevant_services=["email"], relevant_artifacts=[]),
+                graph_context=RagGraphContext(
+                    direct_parent_technique_ids=[],
+                    direct_child_technique_ids=["T1110"],
+                    is_entry=True,
+                    is_terminal=False,
+                    neighboring_tactics=["credential-access"],
+                ),
+            )
+        )
+        assert context.si_context.relevant_services == ["email"]
+        assert context.graph_context.direct_child_technique_ids == ["T1110"]
+        assert context.graph_context.is_entry is True
+
+
+class TestAnnotationContextEvidenceByFamily:
+    def test_valid_evidence_by_family(self):
+        context = AnnotationContext(
+            **make_annotation_context(
+                retrieved_evidence=[
+                    DeceptionEvidence(source="c1", passage="text 1"),
+                    DeceptionEvidence(source="c2", passage="text 2"),
+                ],
+                evidence_by_family={"realism": ["c1"], "interaction": ["c2"], "effect": []},
+            )
+        )
+        assert context.evidence_by_family["realism"] == ["c1"]
+
+    def test_none_by_default_backward_compatible(self):
+        context = AnnotationContext(**make_annotation_context())
+        assert context.evidence_by_family is None
+
+    def test_rejects_unknown_family_key(self):
+        with pytest.raises(ValidationError):
+            AnnotationContext(
+                **make_annotation_context(
+                    retrieved_evidence=[DeceptionEvidence(source="c1", passage="text 1")],
+                    evidence_by_family={"unknown_family": ["c1"]},
+                )
+            )
+
+    def test_rejects_source_absent_from_retrieved_evidence(self):
+        with pytest.raises(ValidationError):
+            AnnotationContext(
+                **make_annotation_context(
+                    retrieved_evidence=[DeceptionEvidence(source="c1", passage="text 1")],
+                    evidence_by_family={"realism": ["c1", "ghost_source"]},
+                )
+            )

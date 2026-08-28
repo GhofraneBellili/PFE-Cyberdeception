@@ -533,6 +533,9 @@ def _contains_budget_key(value: Any) -> bool:
     return False
 
 
+EvidenceFamily = Literal["realism", "interaction", "effect"]
+
+
 class AnnotationContext(StrictModel):
     """Réf. architecture : "27. Schéma minimal conseillé pour le contexte
     d'annotation" (§8.2 PDF).
@@ -546,6 +549,17 @@ class AnnotationContext(StrictModel):
     graph_context: GraphContext = Field(default_factory=GraphContext)
     system_context: dict[str, Any] = Field(default_factory=dict)
     retrieved_evidence: list[DeceptionEvidence] = Field(default_factory=list)
+    evidence_by_family: dict[EvidenceFamily, list[str]] | None = Field(
+        default=None,
+        description="Réf. tâche « renforcer le RAG utilisé par SP2 », §14 : "
+        "regroupement par famille de sous-métriques (realism/interaction/"
+        "effect) des `source` (chunk_id) de `retrieved_evidence` "
+        "appartenant à chaque famille — jamais un contenu dupliqué, "
+        "seulement un regroupement d'identifiants déjà présents dans "
+        "`retrieved_evidence` (`src/rag_evidence.py::to_annotation_evidence`). "
+        "`None` si le contexte a été construit sans RAG contextuel par "
+        "famille (repli rétrocompatible d'un contexte plus ancien).",
+    )
 
     @model_validator(mode="after")
     def _no_budget_leak(self) -> AnnotationContext:
@@ -555,6 +569,23 @@ class AnnotationContext(StrictModel):
                 "Le budget B_total ne doit jamais être inclus, même de "
                 "manière imbriquée, dans le contexte d'annotation (§11.2)."
             )
+        return self
+
+    @model_validator(mode="after")
+    def _evidence_by_family_references_known_evidence(self) -> AnnotationContext:
+        """Réf. tâche §14/§19-L : chaque source citée dans
+        `evidence_by_family` doit exister dans `retrieved_evidence` —
+        jamais une preuve « fantôme » regroupée par famille sans être
+        réellement fournie."""
+        if self.evidence_by_family is not None:
+            known_sources = {item.source for item in self.retrieved_evidence}
+            for family, sources in self.evidence_by_family.items():
+                unknown = [source for source in sources if source not in known_sources]
+                if unknown:
+                    raise ValueError(
+                        f"evidence_by_family['{family}'] référence des source(s) "
+                        f"absentes de retrieved_evidence : {unknown}."
+                    )
         return self
 
 
@@ -718,3 +749,65 @@ class SystemInstance(StrictModel):
                 )
 
         return self
+
+
+# ---------------------------------------------------------------------------
+# f) Contexte de candidat pour le RAG contextuel de SP2
+# Réf. tâche « renforcer l'architecture et l'implémentation du module RAG
+# utilisé par SP2 », §5 « Représentation du contexte candidat pour le RAG »
+# ---------------------------------------------------------------------------
+
+
+class SIPlacementContext(StrictModel):
+    """Réf. tâche §5 : sous-ensemble compact et pertinent de l'inventaire
+    SI pour un placement (d, l) — jamais l'inventaire complet, jamais un
+    budget ou un coût."""
+
+    relevant_services: list[str] = Field(default_factory=list)
+    relevant_artifacts: list[str] = Field(default_factory=list)
+
+
+class RagGraphContext(StrictModel):
+    """Réf. tâche §5 : contexte de graphe compact pour la construction des
+    requêtes RAG — parents/enfants DIRECTS uniquement (jamais le graphe
+    entier ni les chemins complets vers les terminaux, à la différence de
+    `GraphContext.terminal_paths` déjà utilisé par `AnnotationContext`) ;
+    tactiques voisines optionnelles, dérivées des occurrences parentes/
+    enfants déjà présentes dans le graphe (jamais inventées)."""
+
+    direct_parent_technique_ids: list[str] = Field(default_factory=list)
+    direct_child_technique_ids: list[str] = Field(default_factory=list)
+    is_entry: bool = False
+    is_terminal: bool = False
+    neighboring_tactics: list[str] = Field(default_factory=list)
+
+
+class RagCandidateContext(StrictModel):
+    """Réf. tâche « renforcer le RAG utilisé par SP2 », §5 — contexte
+    minimal et suffisant d'un candidat admissible `(T_{i,h}, d, l)` déjà
+    produit par SP1 (`src/admissibility.py::build_admissibility_report`),
+    consommé exclusivement par `src/rag_query_builder.py::build_rag_queries`.
+
+    **Interdiction structurelle du budget** (réf. §5, §11.2) : contrairement
+    à `AnnotationContext.system_context` (dict libre nécessitant une
+    vérification récursive), AUCUN champ de ce modèle n'est un dict libre —
+    `StrictModel` (`extra="forbid"`) garantit donc STRUCTURELLEMENT qu'aucun
+    budget, coût, solution d'optimisation `y*` ni risque final ne peut être
+    inclus, sans validateur supplémentaire nécessaire.
+    """
+
+    occurrence_id: str = Field(..., min_length=1)
+    technique_id: str = Field(..., pattern=ATTACK_TECHNIQUE_ID_PATTERN)
+    technique_name: str | None = None
+    tactics: list[str] = Field(default_factory=list)
+    asset_id: str = Field(..., min_length=1)
+    asset_type: str | None = None
+    mechanism_id: str = Field(..., min_length=1)
+    mechanism_name: str = Field(..., min_length=1)
+    mechanism_description: str | None = None
+    target_artifacts: list[str] = Field(default_factory=list)
+    interaction_mechanism: str | None = None
+    location_id: str = Field(..., min_length=1)
+    location_type: str | None = None
+    si_context: SIPlacementContext = Field(default_factory=SIPlacementContext)
+    graph_context: RagGraphContext = Field(default_factory=RagGraphContext)

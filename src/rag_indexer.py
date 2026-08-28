@@ -45,7 +45,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Literal
 
-SourceType = Literal["d3fend", "engage", "literature"]
+SourceType = Literal["attack", "d3fend", "engage", "literature"]
 
 EMBEDDING_DIMENSION = 256
 
@@ -138,7 +138,13 @@ def _make_chunk(*, chunk_id, source_id, source_type, document_id, locator, text,
 def load_d3fend_chunks(seed: dict) -> list[Chunk]:
     """Réf. §9.1 : un chunk par entrée `source_evidence` d'un concept
     D3FEND déjà tracé (`tools/deception_kb/d3fend_seed_builder.py`,
-    `data/deception/staging/d3fend_deception_seed_*.json`)."""
+    `data/deception/staging/d3fend_deception_seed_*.json`).
+
+    `mechanism_ids`/`artifact_types` (réf. tâche RAG contextuel SP2, §4) :
+    `concept_id` (`d3f:d3fend-id`, ex. "D3-DUC") EST l'identifiant utilisé
+    tel quel comme `mechanism_id` par `tools/deception_kb/catalog_builder.py`
+    pour les mécanismes d'origine D3FEND — association source-native,
+    jamais dérivée par une règle heuristique."""
     chunks: list[Chunk] = []
     for concept in seed.get("concepts", []):
         concept_id = concept["source_technique_id"]
@@ -154,6 +160,8 @@ def load_d3fend_chunks(seed: dict) -> list[Chunk]:
                     "concept_name": concept.get("name"),
                     "source_entity": evidence.get("source_entity"),
                     "source_sha256": evidence.get("source_sha256"),
+                    "mechanism_ids": [concept_id],
+                    "artifact_types": concept.get("artifacts", []),
                 },
             )
             if chunk is not None:
@@ -165,7 +173,12 @@ def load_engage_chunks(seed: dict) -> list[Chunk]:
     """Réf. §9.1 : un chunk par `description`/`long_description` d'une
     activité MITRE Engage déjà tracée
     (`tools/deception_kb/engage_seed_builder.py`,
-    `data/deception/staging/engage_activity_seed_*.json`)."""
+    `data/deception/staging/engage_activity_seed_*.json`).
+
+    `mechanism_ids` (réf. tâche RAG contextuel SP2, §4) : `activity_id`
+    (ex. "EAC0014") EST l'identifiant utilisé tel quel comme `mechanism_id`
+    par `tools/deception_kb/catalog_builder.py` pour les mécanismes
+    d'origine Engage — association source-native."""
     chunks: list[Chunk] = []
     for activity in seed.get("activities", []):
         activity_id = activity["activity_id"]
@@ -180,7 +193,51 @@ def load_engage_chunks(seed: dict) -> list[Chunk]:
                 document_id=activity_id,
                 locator=locator,
                 text=text,
-                metadata={"name": activity.get("name"), "detail_type": activity.get("detail_type")},
+                metadata={
+                    "name": activity.get("name"),
+                    "detail_type": activity.get("detail_type"),
+                    "mechanism_ids": [activity_id],
+                },
+            )
+            if chunk is not None:
+                chunks.append(chunk)
+    return chunks
+
+
+def load_attack_chunks(seed: dict) -> list[Chunk]:
+    """Réf. tâche « renforcer le RAG utilisé par SP2 », §3/§4 : un chunk
+    par entrée `source_evidence` d'une technique ATT&CK déjà tracée
+    (`tools/attack_kb/attack_seed_builder.py`,
+    `data/attack/staging/attack_rag_seed_*.json`) — texte MITRE ATT&CK
+    verbatim (name/description/tactic/platforms), jamais reformulé.
+
+    Le seed est déjà limité aux techniques réellement référencées par
+    M_{i,d} (réf. `tools.attack_kb.attack_seed_builder.relevant_technique_ids`) :
+    ce chargeur ne refiltre rien, il se contente de traduire le staging en
+    `Chunk` indexables. `revoked`/`deprecated` sont conservés explicitement
+    dans les métadonnées — jamais masqués (voir docstring de module de
+    `tools/attack_kb/attack_seed_builder.py`)."""
+    chunks: list[Chunk] = []
+    for technique in seed.get("techniques", []):
+        technique_id = technique["technique_id"]
+        for index, evidence in enumerate(technique.get("source_evidence", [])):
+            chunk = _make_chunk(
+                chunk_id=f"attack:{technique_id}:{index}",
+                source_id=technique_id,
+                source_type="attack",
+                document_id=technique_id,
+                locator=evidence.get("source_property", "unknown"),
+                text=evidence.get("evidence_text", ""),
+                metadata={
+                    "attack_technique_ids": [technique_id],
+                    "tactics": technique.get("tactics", []),
+                    "platforms": technique.get("platforms", []),
+                    "version": technique.get("version"),
+                    "revoked": technique.get("revoked", False),
+                    "deprecated": technique.get("deprecated", False),
+                    "external_url": technique.get("external_url"),
+                    "source_sha256": seed.get("source_sha256"),
+                },
             )
             if chunk is not None:
                 chunks.append(chunk)

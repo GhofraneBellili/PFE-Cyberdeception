@@ -13,6 +13,13 @@ htmlcov/
 # (data/deception/staging/) et le manifest restent, eux, versionnés.
 data/deception/raw/
 
+# Bundle STIX officiel MITRE ATT&CK (enterprise-attack.json, ~51 Mo) :
+# fichier officiel volumineux, jamais généré artificiellement (réf.
+# data/attack/README.md), reproductible en le retéléchargeant depuis
+# https://github.com/mitre-attack/attack-stix-data. Le staging dérivé
+# (data/attack/staging/) reste, lui, versionné.
+data/attack/raw/
+
 # Sorties d'exécution de l'orchestrateur (src/orchestrator.py) : régénérables
 # via examples/orchestrator_example.py, pas des preuves versionnées — voir
 # docs/chapter4/outputs/pipeline_example.txt pour la preuve d'exécution réelle

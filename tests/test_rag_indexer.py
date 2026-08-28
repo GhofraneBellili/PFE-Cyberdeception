@@ -26,6 +26,7 @@ from src.rag_indexer import (
     embed_query,
     embed_query_semantic,
     embed_text,
+    load_attack_chunks,
     load_d3fend_chunks,
     load_engage_chunks,
     load_literature_chunks,
@@ -34,6 +35,7 @@ from src.rag_indexer import (
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 STAGING_DIR = REPO_ROOT / "data" / "deception" / "staging"
+ATTACK_STAGING_DIR = REPO_ROOT / "data" / "attack" / "staging"
 
 
 def load_json(name: str) -> dict:
@@ -240,6 +242,76 @@ class TestLoadLiteratureChunksSynthetic:
         assert chunk.metadata["page_verified"] is True
 
 
+class TestLoadAttackChunksSynthetic:
+    """Réf. tâche « renforcer le RAG utilisé par SP2 », §3/§4."""
+
+    def test_one_chunk_per_source_evidence_entry(self):
+        seed = {
+            "source_file": "enterprise-attack.json",
+            "source_sha256": "abc",
+            "techniques": [
+                {
+                    "technique_id": "T8001",
+                    "name": "Synthetic Technique",
+                    "tactics": ["initial-access"],
+                    "platforms": ["Windows"],
+                    "version": "1.0",
+                    "revoked": False,
+                    "deprecated": False,
+                    "external_url": "https://attack.mitre.org/techniques/T8001",
+                    "source_evidence": [
+                        {"source_property": "name", "evidence_text": "Synthetic Technique"},
+                        {"source_property": "description", "evidence_text": "A synthetic description."},
+                        {"source_property": "tactic", "evidence_text": "initial-access"},
+                    ],
+                }
+            ],
+        }
+        chunks = load_attack_chunks(seed)
+        assert len(chunks) == 3
+        assert chunks[0].chunk_id == "attack:T8001:0"
+        assert chunks[0].source_type == "attack"
+        assert chunks[0].source_id == "T8001"
+        assert chunks[0].document_id == "T8001"
+        assert chunks[0].text == "Synthetic Technique"
+        assert chunks[0].metadata["attack_technique_ids"] == ["T8001"]
+        assert chunks[0].metadata["tactics"] == ["initial-access"]
+        assert chunks[0].metadata["platforms"] == ["Windows"]
+
+    def test_revoked_and_deprecated_status_preserved_in_metadata(self):
+        seed = {
+            "techniques": [
+                {
+                    "technique_id": "T8001",
+                    "tactics": [],
+                    "platforms": [],
+                    "revoked": True,
+                    "deprecated": False,
+                    "source_evidence": [{"source_property": "name", "evidence_text": "X"}],
+                }
+            ]
+        }
+        chunks = load_attack_chunks(seed)
+        assert chunks[0].metadata["revoked"] is True
+        assert chunks[0].metadata["deprecated"] is False
+
+    def test_empty_evidence_text_skipped(self):
+        seed = {
+            "techniques": [
+                {
+                    "technique_id": "T8001",
+                    "tactics": [],
+                    "platforms": [],
+                    "source_evidence": [{"source_property": "description", "evidence_text": "   "}],
+                }
+            ]
+        }
+        assert load_attack_chunks(seed) == []
+
+    def test_no_techniques_produces_no_chunks(self):
+        assert load_attack_chunks({"techniques": []}) == []
+
+
 # ---------------------------------------------------------------------------
 # C. Index — réf. §9.1 étape 7
 # ---------------------------------------------------------------------------
@@ -283,6 +355,19 @@ class TestRealStagingFiles:
         seed = load_json("d3fend_deception_seed_1.5.0.json")
         chunks = load_d3fend_chunks(seed)
         assert len(chunks) > 0
+        index = build_index(chunks)
+        assert len(index) == len(chunks)
+
+    @pytest.mark.skipif(
+        not ATTACK_STAGING_DIR.exists(), reason="Staging ATT&CK réel non généré dans cet environnement."
+    )
+    def test_real_attack_seed_produces_chunks_with_valid_index(self):
+        staging_files = sorted(ATTACK_STAGING_DIR.glob("attack_rag_seed_*.json"))
+        assert staging_files
+        seed = json.loads(staging_files[0].read_text(encoding="utf-8"))
+        chunks = load_attack_chunks(seed)
+        assert len(chunks) > 0
+        assert all(c.source_type == "attack" for c in chunks)
         index = build_index(chunks)
         assert len(index) == len(chunks)
 

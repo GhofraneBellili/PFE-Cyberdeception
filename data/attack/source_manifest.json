@@ -1,0 +1,18 @@
+{
+  "schema": "deception_source_manifest",
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "source_id": "enterprise-attack-19.2",
+      "source_name": "MITRE ATT&CK Enterprise (STIX bundle)",
+      "provider": "MITRE",
+      "release_version": "19.2",
+      "official_url": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json",
+      "local_filename": "data/attack/raw/enterprise-attack.json",
+      "sha256": "dc1639caa5501d720e280cf1cbd8fbe009884a0c9b3e6e9ed9d0c25166c3d8f4",
+      "source_type": "stix-bundle-json",
+      "retrieval_date": "2026-08-27",
+      "role": "offensive_knowledge_base"
+    }
+  ]
+}
