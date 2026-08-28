@@ -25,3 +25,11 @@ data/attack/raw/
 # docs/chapter4/outputs/pipeline_example.txt pour la preuve d'exécution réelle
 # retenue pour le chapitre 4.
 runs/
+
+# Index RAG sémantique persisté (embeddings.npy, faiss.index) : artefact
+# binaire régénérable en une commande (python -m tools.rag.build_index),
+# jamais versionné pour ne pas alourdir le dépôt (réf. tâche « maturation
+# technique finale » §33). manifest.json/chunks.json y restent aussi
+# (régénérables à l'identique depuis le staging déjà versionné) — seule la
+# preuve `docs/chapter4/outputs/rag_index_manifest.json` est versionnée.
+data/rag/index/
