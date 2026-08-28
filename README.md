@@ -94,7 +94,7 @@ jour).
 
 CI GitHub Actions : verte sur `implementation/chapter4` à chaque commit
 documenté ci-dessous (`.github/workflows/tests.yml`, déclenchée sur
-`push`/`pull_request`). 817 tests (+ 4 optionnels : 2 `pytest -m
+`push`/`pull_request`). 820 tests (+ 4 optionnels : 2 `pytest -m
 real_llm`, 2 `pytest -m real_reranker`, exclus par défaut) au moment de
 ce document.
 
@@ -2591,6 +2591,71 @@ Aucune nouvelle fonctionnalité architecturale prévue pour le chapitre 4 —
 implémentation gelée (`CHAPTER 4 IMPLEMENTATION FROZEN`). Les
 développements suivants appartiennent à la validation, à l'expérimentation
 ou au chapitre 5, sauf bug réel découvert.
+
+### Étape 25 — Validation technique du provider LLM réel (Groq, openai/gpt-oss-120b)
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Vérifier, avec un vrai service Groq configuré (`LLM_PROVIDER=openai_compatible`,
+`LLM_MODEL=openai/gpt-oss-120b`), que `RealLlmAnnotator` fonctionne
+réellement de bout en bout — code déjà implémenté et testé par mocks
+depuis l'Étape 18, jamais exercé contre un vrai service jusqu'ici.
+Aucune clé, aucun secret n'a été affiché, journalisé ni versionné à
+aucun moment de cette étape.
+
+#### Traitement réalisé
+
+`pytest -m real_llm -v` a d'abord ÉCHOUÉ (HTTP 403 Forbidden). Diagnostic
+précis avant toute modification de code (comparaison curl vs `urllib`
+avec la même clé/URL/charge utile) : la cause n'était ni
+l'authentification, ni le modèle, ni la charge JSON, mais le WAF
+Cloudflare placé devant l'API Groq, qui bloque le `User-Agent` par
+défaut d'`urllib.request` (corps de réponse `error code: 1010`).
+Correctif minimal et ciblé : `src/llm_provider.py::default_http_transport`
+envoie désormais un `User-Agent` explicite (`DEFAULT_USER_AGENT`),
+remplaçable par un header appelant. 3 tests ajoutés
+(`tests/test_llm_provider.py`, mocks — aucun réseau réel dans la suite
+standard). Après correctif, `pytest -m real_llm -v` : **2 passed**.
+
+Un smoke test UNIQUE (script ad hoc, non versionné) a ensuite fait
+passer un candidat SP2 réellement admissible par la chaîne complète :
+SP1 → `RagCandidateContext` → `Q_realism`/`Q_interaction`/`Q_effect` →
+retrieval → reranking → `CandidateEvidenceBundle` → `RealLlmAnnotator`
+(Groq) → 11 annotations. Résultat conservé sans aucun secret dans
+`docs/chapter4/outputs/groq_real_llm_smoke_test.json`.
+
+#### Résultat réel
+
+11/11 sous-métriques retournées, exactement une fois chacune ; scores et
+confidences dans `[0,1]` ; `evidence_ids` tous traçables aux preuves
+réellement récupérées par le RAG contextuel ; aucune métrique dérivée
+(Realisme/P_interaction/P_engagement/Effet_prog/DE/Gamma/risque/coût/
+budget) produite par le LLM. `pytest -v` complet : **820 tests verts**
+(hors `tests/test_normalization_builder.py`, non lié à cette tâche).
+
+#### Sorties
+
+`docs/chapter4/outputs/groq_real_llm_smoke_test.json` (preuve, sans
+secret).
+
+#### Fichiers concernés
+
+`src/llm_provider.py`, `tests/test_llm_provider.py`,
+`docs/chapter4/FINAL_IMPLEMENTATION_AUDIT.md`,
+`docs/chapter4/FINAL_TECHNICAL_REPORT.md`, `docs/chapter4/TECHNOLOGIES.md`.
+
+#### Limites actuelles
+
+Ceci reste une preuve d'intégration technique sur UN candidat, pas une
+validation expérimentale : aucune campagne comparative multi-candidats
+ni multi-modèles n'a été menée — réservé explicitement au chapitre 5.
+
+#### Lien avec l'étape suivante
+
+Aucune — implémentation toujours gelée pour le chapitre 4. Chapitre 5
+(validation expérimentale) reste hors périmètre.
 
 ## OPEN_DECISION en cours
 

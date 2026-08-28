@@ -15,7 +15,7 @@
 > État au moment de la rédaction (mise à jour post-tâche « renforcer
 > l'architecture et l'implémentation du module RAG utilisé par SP2 »,
 > voir `docs/chapter4/BEFORE_UPGRADE_STATE.md` pour l'état avant la toute
-> première passe RAG/catalogue) : **817 tests verts** (+ 4 tests
+> première passe RAG/catalogue) : **820 tests verts** (+ 4 tests
 > d'intégration optionnels : 2 `pytest -m real_llm`, 2
 > `pytest -m real_reranker`).
 >
@@ -133,7 +133,7 @@ RAG sémantique, et `rag_candidate_context.py`/`rag_query_builder.py`/
 catalogue + mapping réels), `data/attack/` (staging + manifest du corpus
 ATT&CK) + `data/rag/` (jeu de requêtes d'évaluation RAG + index persisté
 généré, non versionné) + `examples/` (17 scripts exécutables), `tests/`
-(817 tests + 4 optionnels :
+(820 tests + 4 optionnels :
 2 `real_llm`, 2 `real_reranker`), `docs/chapter4/` (ce document +
 IMPLEMENTATION_REPORT.md + TECHNOLOGIES.md + SCREENSHOT_MANIFEST.md +
 ADMISSIBILITY_EVIDENCE_AUDIT.md + CATALOG_AUDIT.md +
@@ -946,12 +946,17 @@ aucune formule du chapitre 3 : `Realism`, `InteractionLikelihood`,
 `P_engage`, `Effectiveness_prog`, `DE` restent calculés exactement comme
 définis §12), à présenter comme tel.
 
-**J. Limites réelles.** **Aucune annotation sémantique réelle n'a été
-produite dans cet environnement** — le repli déterministe produit un
-score identique pour les 11 sous-métriques (chevauchement lexical, pas
-une distinction Realism/InteractionLikelihood/Effectiveness) ; le
-provider réel n'a jamais été exercé contre un vrai service (voir note de
-clôture). Les métriques Recall@5/MRR@5/nDCG@5 déjà mesurées
+**J. Limites réelles.** Le repli déterministe (`RuleBasedStubAnnotator`)
+reste utilisé par défaut dans les exemples reproductibles du dépôt
+(`orchestrator_example.py`) — il produit un score identique pour les 11
+sous-métriques (chevauchement lexical, pas une distinction Realism/
+InteractionLikelihood/Effectiveness). **Une exécution technique
+contrôlée du provider Groq (`openai/gpt-oss-120b`) a été réalisée afin de
+vérifier l'intégration du LLM réel dans SP2** (voir note de clôture) —
+cette exécution constitue une preuve de fonctionnement technique et non
+une validation expérimentale du modèle : un seul candidat SP2 contextuel
+annoté, pas de campagne comparative multi-candidats/multi-modèles (réf.
+chapitre 5). Les métriques Recall@5/MRR@5/nDCG@5 déjà mesurées
 (`docs/chapter4/outputs/rag_semantic_evaluation.json`, Recall@5 = 0.396
 sémantique vs 0.331 lexical, hybride alpha=0.8 : 0.470) portent sur le
 corpus D3FEND+Engage+
@@ -1010,7 +1015,11 @@ jeux de preuves distincts (realism/interaction/effect), présentés au LLM
 regroupés par famille. Ne pas écrire « `technique_name` dépend de la
 présence locale du bundle STIX brut » — c'est désormais FAUX : il vient
 exclusivement du staging RAG ATT&CK déjà versionné, disponible sans
-aucune dépendance au fichier officiel brut.
+aucune dépendance au fichier officiel brut. Ne pas écrire « le LLM réel a
+été validé expérimentalement » — le smoke test Groq réalisé
+(`docs/chapter4/outputs/groq_real_llm_smoke_test.json`) est une preuve
+d'intégration technique sur UN candidat, jamais une campagne de
+validation quantitative/comparative (réservée au chapitre 5).
 
 ### 4.4.3 SP3
 
@@ -1293,13 +1302,13 @@ annotation LLM réelle.
 | « Le RAG sémantique (embeddings) récupère des passages D3FEND/Engage/littérature, avec un Recall@5 supérieur au RAG lexical » | `src/semantic_embedder.py`/`src/vector_index.py`/`src/rag_indexer.py`/`src/rag_retriever.py` | staging (149 chunks D3FEND+Engage+littérature, avant ajout ATT&CK), 17 requêtes réelles (`data/rag/rag_eval_queries.json`) | `rag_semantic_evaluation.json` | — | **VALIDÉ SUR L'ANCIEN CORPUS** (Recall@5 sémantique 0.396 > lexical 0.331 ; hybride alpha=0.8 : 0.470) — non re-validé contre le corpus élargi ATT&CK, réf. chapitre 5 |
 | « Pour un candidat admissible réel, le RAG construit trois requêtes distinctes (realism/interaction/effect), récupère depuis ATT&CK+D3FEND+Engage+littérature, reranke avec un cross-encoder réel, et produit un `CandidateEvidenceBundle` tracé » | `src/rag_candidate_context.py`, `src/rag_query_builder.py`, `src/rag_evidence.py`, `src/reranker.py` | corpus réel 1306 chunks (`data/attack/staging/`, `data/deception/staging/`) | `python -m examples.rag_sp2_context_example` → `rag_candidate_context_example.json`, `rag_queries_example.json`, `rag_evidence_bundle_example.json` | C4 | **VALIDÉ** (candidat réel `T1566@WS01`/`EAC0009`/`mailbox-ws01`, reranker `cross-encoder/ms-marco-MiniLM-L-6-v2` réellement exécuté) |
 | « L'index RAG sémantique est réellement persisté OFFLINE et rechargé ONLINE sans jamais ré-encoder les textes, avec détection explicite d'un index périmé » | `src/rag_index_store.py::save_rag_index`/`load_rag_index`, `tools/rag/build_index.py` | `data/rag/index/` (non versionné, régénérable) + `docs/chapter4/outputs/rag_index_manifest.json` (preuve versionnée) | `python -m tools.rag.build_index` puis `load_rag_index` | — | **VALIDÉ** (`tests/test_rag_index_store.py` : round-trip retrieval identique avant/après rechargement, `FakeEmbedder.encode` prouvé jamais rappelé au chargement, hash/modèle/dimension/schema_version/chunk_count incompatibles lèvent tous une erreur explicite) |
-| « Le LLM réel produit les 11 sous-métriques » | `RealLlmAnnotator` | preuves RAG (regroupées par famille, `evidence_by_family`) | `llm_annotation_real.json` | C5 | **NON VALIDÉ** — code prêt et testé (mocks), aucune exécution réelle dans cet environnement |
+| « Le LLM réel produit les 11 sous-métriques » | `RealLlmAnnotator` | preuves RAG (regroupées par famille, `evidence_by_family`) | `docs/chapter4/outputs/groq_real_llm_smoke_test.json` | C5 | **VALIDÉ (smoke test technique)** — provider Groq (`openai/gpt-oss-120b`), un candidat SP2 contextuel réel, 11 métriques valides (scores/confidences dans [0,1], `evidence_ids` traçables), `pytest -m real_llm -v` vert ; preuve d'intégration technique, pas une campagne expérimentale (chapitre 5). `llm_annotation_real.json` (sortie de `examples/annotator_llm_real_example.py`) reste, lui, **NON PRODUIT** dans cette passe |
 | « Le repli déterministe produit les 11 sous-métriques sans LLM réel » | `RuleBasedStubAnnotator` | preuves RAG | `llm_annotation_example.json` | — | **VALIDÉ** (explicitement marqué `rule_based_stub`) |
 | « Les agrégats `Realisme`/`P_interaction`/`P_engagement`/`Effet_prog`/`DE` sont calculés par code, jamais par le LLM » | `src/annotation_validator.py` | 11 `Annotation` (stub ou réel) | `frozen_annotations_example.csv` | C6 (stub) | **VALIDÉ** (formules) ; table figée à partir d'un LLM réel **NON VALIDÉE** |
 | « Le moteur SP3 reproduit exactement l'ancre de validation du chapitre 3 » | `src/risk_engine.py` | scénario analytique CLAUDE.md §20 | `test_reference_example` | — (chapitre 5) | **VALIDÉ** (tolérance `1e-3`) |
 | « L'optimiseur résout `(P)` par énumération exhaustive avec front de Pareto » | `src/optimizer.py` | `C_{i,h}` + coûts | `optimizer_example.txt` | — (chapitre 5) | **VALIDÉ** |
 | « L'orchestrateur exécute le pipeline complet de bout en bout, avec le RAG contextuel comme chemin de référence unique, sur des données réelles » | `src/orchestrator.py::run_pipeline`, `src/rag_index_store.py::load_rag_index` | catalogue 51 mécanismes + mapping 591 relations + catalogue opérationnel réel (42 référencés/30 activés) + index RAG persisté 1306 chunks | `python -m examples.orchestrator_example` → `pipeline_example.txt` | C7 | **VALIDÉ** (3 candidats admissibles, 6 configurations énumérées, avec repli déterministe `rule_based_stub` explicitement marqué technical integration fallback, pas de LLM réel) |
-| « Aucun appel LLM ni aucune dépendance RAG n'a lieu pendant le calcul du risque ou l'optimisation » | tests `ast` dédiés sur `risk_engine.py`/`optimizer.py`/`reporter.py`/`admissibility.py` (incluant `semantic_embedder.py`/`vector_index.py`/`rag_candidate_context.py`/`rag_query_builder.py`/`rag_evidence.py`/`reranker.py`, `tests/test_rag_sp2_separation.py`) | — | `pytest -v` (817 tests + 4 optionnels : 2 `real_llm`, 2 `real_reranker`) | — | **VALIDÉ** |
+| « Aucun appel LLM ni aucune dépendance RAG n'a lieu pendant le calcul du risque ou l'optimisation » | tests `ast` dédiés sur `risk_engine.py`/`optimizer.py`/`reporter.py`/`admissibility.py` (incluant `semantic_embedder.py`/`vector_index.py`/`rag_candidate_context.py`/`rag_query_builder.py`/`rag_evidence.py`/`reranker.py`, `tests/test_rag_sp2_separation.py`) | — | `pytest -v` (820 tests + 4 optionnels : 2 `real_llm`, 2 `real_reranker`) | — | **VALIDÉ** |
 
 ---
 
@@ -1324,11 +1333,28 @@ tests et une future comparaison expérimentale.
 DONNÉES RÉELLES du projet (catalogue 51 mécanismes, mapping 591
 relations, catalogue opérationnel réel, index RAG persisté 1306 chunks),
 sur une instance volontairement petite pour que l'énumération exhaustive
-de l'optimiseur reste exécutable. La seule rupture restante est
-l'absence d'un service LLM réel dans cet environnement d'exécution — le
-code, la validation stricte de sortie (avec preuves regroupées par
-famille), et la commande de reproduction locale sont tous prêts et
-testés.
+de l'optimiseur reste exécutable — avec, par défaut, le repli
+déterministe `rule_based_stub` (aucun coût d'API à chaque exécution de
+l'exemple reproductible).
+
+**Une exécution technique contrôlée du provider Groq
+(`openai/gpt-oss-120b`) a été réalisée afin de vérifier l'intégration du
+LLM réel dans SP2.** Un candidat SP2 contextuel réel a suivi la chaîne
+complète — `RagCandidateContext` → `Q_realism`/`Q_interaction`/
+`Q_effect` → retrieval → reranking → `CandidateEvidenceBundle` →
+`RealLlmAnnotator` (Groq) → 11 annotations — toutes valides (scores/
+confidences dans `[0,1]`, `evidence_ids` traçables, aucune métrique
+dérivée produite par le LLM), `pytest -m real_llm -v` vert
+(`tests/test_annotator_llm_real_integration.py`), preuve conservée dans
+`docs/chapter4/outputs/groq_real_llm_smoke_test.json` (sans secret).
+**Cette exécution constitue une preuve de fonctionnement technique et
+non une validation expérimentale du modèle** : un seul candidat annoté,
+aucune campagne comparative multi-candidats — cela reste réservé au
+chapitre 5. Un correctif technique réel a été nécessaire à cette
+occasion : `src/llm_provider.py::default_http_transport` envoie
+désormais un `User-Agent` explicite, requis face au WAF Cloudflare de
+l'endpoint Groq (qui bloquait le `User-Agent` par défaut d'`urllib`,
+HTTP 403 « error code: 1010 ») — aucune autre incompatibilité découverte.
 
 **Rappel explicite (réf. tâche « dernière passe de finition technique »,
 §21).** Les valeurs numériques produites par `examples/orchestrator_example.py`

@@ -1,0 +1,177 @@
+{
+  "timestamp": "2026-08-28T19:13:42.969603+00:00",
+  "provider": "openai_compatible",
+  "model": "openai/gpt-oss-120b",
+  "candidate_id": "T1566@WS01|EAC0009|mailbox-ws01",
+  "annotation_type": "real_llm",
+  "prompt_version": "real-llm-v1",
+  "queries": {
+    "realism": "Technical plausibility and realism of deploying deception mechanism Email Manipulation (Modify the flow of email in the environment.) on asset type workstation at location type mailbox in the context of attack technique T1566 (Phishing) expected attacker perception and behavior of the deception mechanism, interaction mechanism: adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis relevant services: email relevant artifacts:",
+    "interaction": "Object an attacker could interact with, required attacker action, and exposure of Email Manipulation target artifacts: email, mailbox in the behavior and path of attack technique T1566 (Phishing) tactics: initial-access deception mechanism interaction mechanism: adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis on location type mailbox of asset type workstation",
+    "effect": "Expected defensive effect (stop, redirect, contain, or delay attacker progression) of deception mechanism Email Manipulation against attack technique T1566 (Phishing) interaction mechanism: adversary's suspicious email/attachment is redirected into a monitored engagement-environment mailbox for detonation/analysis downstream attack techniques potentially prevented: T1110.001"
+  },
+  "evidence_by_family": {
+    "realism": [
+      "engage:EAC0009:long_description",
+      "engage:EAC0015:long_description",
+      "engage:EAC0009:description",
+      "doi_10.1145_3337772__ev001",
+      "engage:EAC0017:long_description"
+    ],
+    "interaction": [
+      "engage:EAC0009:long_description",
+      "attack:T1203:1",
+      "attack:T1204:1",
+      "attack:T1098:1",
+      "attack:T1566.002:1"
+    ],
+    "effect": [
+      "doi_10.1145_3337772__ev001",
+      "doi_10.1145_3214305__ev006",
+      "engage:EAC0009:long_description",
+      "engage:EAC0017:long_description",
+      "engage:EAC0021:long_description"
+    ]
+  },
+  "annotations": [
+    {
+      "metric": "R_tech",
+      "score": 0.85,
+      "confidence": 0.9,
+      "justification": "Email Manipulation directly supports the T1566 phishing technique by allowing malicious links or attachments to be introduced via modified email flow, matching the observed attack vector.",
+      "evidence_ids": [
+        "engage:EAC0009:long_description",
+        "attack:T1566.002:1"
+      ],
+      "model_version": "openai/gpt-oss-120b",
+      "prompt_version": "real-llm-v1",
+      "annotation_id": "openai/gpt-oss-120b:real-llm-v1:R_tech:2ddfa290074788c7"
+    },
+    {
+      "metric": "R_context",
+      "score": 0.8,
+      "confidence": 0.9,
+      "justification": "The placement in mailbox‑ws01 aligns with the description of modifying email flow, indicating the deception fits the specific mailbox context.",
+      "evidence_ids": [
+        "engage:EAC0009:description",
+        "engage:EAC0009:long_description"
+      ],
+      "model_version": "openai/gpt-oss-120b",
+      "prompt_version": "real-llm-v1",
+      "annotation_id": "openai/gpt-oss-120b:real-llm-v1:R_context:2ddfa290074788c7"
+    },
+    {
+      "metric": "R_perception",
+      "score": 0.75,
+      "confidence": 0.85,
+      "justification": "Moving legitimate‑looking emails into the engagement inbox increases perceived legitimacy and reduces suspicion, as described in the information manipulation evidence.",
+      "evidence_ids": [
+        "engage:EAC0015:long_description",
+        "engage:EAC0009:long_description"
+      ],
+      "model_version": "openai/gpt-oss-120b",
+      "prompt_version": "real-llm-v1",
+      "annotation_id": "openai/gpt-oss-120b:real-llm-v1:R_perception:2ddfa290074788c7"
+    },
+    {
+      "metric": "R_behavior",
+      "score": 0.78,
+      "confidence": 0.88,
+      "justification": "Adversaries are expected to click links or open attachments (User Execution) after receiving manipulated emails, matching the behavior outlined in T1204 and T1566.002.",
+      "evidence_ids": [
+        "attack:T1204:1",
+        "attack:T1566.002:1"
+      ],
+      "model_version": "openai/gpt-oss-120b",
+      "prompt_version": "real-llm-v1",
+      "annotation_id": "openai/gpt-oss-120b:real-llm-v1:R_behavior:2ddfa290074788c7"
+    },
+    {
+      "metric": "A_object",
+      "score": 0.9,
+      "confidence": 0.95,
+      "justification": "The primary object of the deception is the email itself, as explicitly detailed in the Email Manipulation description.",
+      "evidence_ids": [
+        "engage:EAC0009:long_description"
+      ],
+      "model_version": "openai/gpt-oss-120b",
+      "prompt_version": "real-llm-v1",
+      "annotation_id": "openai/gpt-oss-120b:real-llm-v1:A_object:2ddfa290074788c7"
+    },
+    {
+      "metric": "A_action",
+      "score": 0.88,
+      "confidence": 0.92,
+      "justification": "The action involves modifying email flow and potentially detonating malicious content within the engagement environment.",
+      "evidence_ids": [
+        "engage:EAC0009:long_description",
+        "engage:EAC0009:description"
+      ],
+      "model_version": "openai/gpt-oss-120b",
+      "prompt_version": "real-llm-v1",
+      "annotation_id": "openai/gpt-oss-120b:real-llm-v1:A_action:2ddfa290074788c7"
+    },
+    {
+      "metric": "A_source",
+      "score": 0.7,
+      "confidence": 0.8,
+      "justification": "The defender performs the manipulation, exemplified by the migration of attack vectors to a safe decoy environment.",
+      "evidence_ids": [
+        "engage:EAC0021:long_description"
+      ],
+      "model_version": "openai/gpt-oss-120b",
+      "prompt_version": "real-llm-v1",
+      "annotation_id": "openai/gpt-oss-120b:real-llm-v1:A_source:2ddfa290074788c7"
+    },
+    {
+      "metric": "S_stop",
+      "score": 0.65,
+      "confidence": 0.78,
+      "justification": "By moving suspicious emails to a segregated inbox, the defender can stop the malicious payload from reaching production systems.",
+      "evidence_ids": [
+        "engage:EAC0021:long_description",
+        "doi_10.1145_3337772__ev001"
+      ],
+      "model_version": "openai/gpt-oss-120b",
+      "prompt_version": "real-llm-v1",
+      "annotation_id": "openai/gpt-oss-120b:real-llm-v1:S_stop:2ddfa290074788c7"
+    },
+    {
+      "metric": "S_redirect",
+      "score": 0.7,
+      "confidence": 0.8,
+      "justification": "The deception redirects malicious email traffic to a controlled decoy mailbox, keeping the attacker engaged in a safe environment.",
+      "evidence_ids": [
+        "engage:EAC0021:long_description"
+      ],
+      "model_version": "openai/gpt-oss-120b",
+      "prompt_version": "real-llm-v1",
+      "annotation_id": "openai/gpt-oss-120b:real-llm-v1:S_redirect:2ddfa290074788c7"
+    },
+    {
+      "metric": "S_contain",
+      "score": 0.68,
+      "confidence": 0.82,
+      "justification": "Containment is achieved by keeping the attacker within the decoy network, as demonstrated by structured attack‑graph experiments that drive attackers along fake paths.",
+      "evidence_ids": [
+        "engage:EAC0021:long_description",
+        "doi_10.1145_3214305__ev006"
+      ],
+      "model_version": "openai/gpt-oss-120b",
+      "prompt_version": "real-llm-v1",
+      "annotation_id": "openai/gpt-oss-120b:real-llm-v1:S_contain:2ddfa290074788c7"
+    },
+    {
+      "metric": "S_delay",
+      "score": 0.4,
+      "confidence": 0.7,
+      "justification": "Introducing uncertainty through concealed facts and fictions can delay adversary decision‑making, though the effect is less direct than stop or redirect actions.",
+      "evidence_ids": [
+        "engage:EAC0015:long_description"
+      ],
+      "model_version": "openai/gpt-oss-120b",
+      "prompt_version": "real-llm-v1",
+      "annotation_id": "openai/gpt-oss-120b:real-llm-v1:S_delay:2ddfa290074788c7"
+    }
+  ]
+}

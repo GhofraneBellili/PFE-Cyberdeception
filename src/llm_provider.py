@@ -40,6 +40,17 @@ DEFAULT_TIMEOUT_SECONDS = 30.0
 DEFAULT_MAX_RETRIES = 2
 DEFAULT_PROMPT_VERSION = "real-llm-v1"
 
+# Réf. incompatibilité réelle constatée (endpoint OpenAI-compatible Groq,
+# https://api.groq.com/openai/v1/chat/completions) : le User-Agent par
+# défaut d'urllib ("Python-urllib/x.y") est bloqué par le WAF Cloudflare
+# placé devant l'API (HTTP 403, corps "error code: 1010" — signature de
+# bot). Reproduit et confirmé : un appel curl identique (User-Agent
+# différent) et un appel urllib avec ce User-Agent explicite réussissent
+# tous deux (HTTP 200) avec exactement la même clé/URL/charge utile.
+# Un User-Agent explicite et identifiable est donc nécessaire — jamais
+# une valeur imitant un navigateur pour contourner un blocage légitime.
+DEFAULT_USER_AGENT = "pfe-cyberdeception-sp2-annotator/1.0"
+
 Transport = Callable[[str, dict, dict, float], dict]
 
 
@@ -92,10 +103,19 @@ def config_from_env(env: Mapping[str, str] | None = None) -> LlmProviderConfig |
 def default_http_transport(url: str, payload: dict, headers: dict, timeout: float) -> dict:
     """Réf. § tâche 1 : envoie `payload` en JSON via POST, retourne la
     réponse déjà décodée en JSON. Toute erreur réseau ou de décodage lève
-    `LlmProviderError` — jamais de valeur de repli inventée."""
+    `LlmProviderError` — jamais de valeur de repli inventée.
+
+    `User-Agent` explicite (`DEFAULT_USER_AGENT`) : requis en pratique
+    contre le WAF Cloudflare de l'endpoint Groq réel, qui bloque (HTTP
+    403) le User-Agent par défaut d'urllib — voir la constante ci-dessus.
+    Un `headers` appelant qui fixerait son propre `User-Agent` resterait
+    prioritaire (fusion avec `headers` en second)."""
     data = json.dumps(payload).encode("utf-8")
     request = urllib.request.Request(
-        url, data=data, headers={**headers, "Content-Type": "application/json"}, method="POST"
+        url,
+        data=data,
+        headers={"User-Agent": DEFAULT_USER_AGENT, **headers, "Content-Type": "application/json"},
+        method="POST",
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:

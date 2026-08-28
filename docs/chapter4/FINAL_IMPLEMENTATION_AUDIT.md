@@ -33,7 +33,7 @@ suite standard.
 | 16 | Reporter — transformation `y*` → `Y*` | Reprend les valeurs déjà calculées, ne recalcule rien | Confirmé | PASS | `src/reporter.py` ; `runs/chapter4-example/deployment_report.json` |
 | 17 | Orchestrateur — pipeline contextuel unique | `run_pipeline` n'utilise plus l'ancien chemin à requête unique ; RAG contextuel = seul chemin de référence | Confirmé par analyse statique des imports (aucun `retrieve`/`retrieve_semantic`/`retrieve_hybrid` importé) | PASS | `src/orchestrator.py` ; `tests/test_orchestrator.py::TestRunPipelineContextualRag` |
 | 18 | Traçabilité complète du run | `run_manifest.json` porte RAG/LLM/catalogues ; 13 fichiers par run, tous indexés/audités | Confirmé, liste de fichiers correspond exactement à la documentation | PASS | `runs/chapter4-example/run_manifest.json` ; `tests/test_orchestrator.py::TestRunManifestTraceability` |
-| 19 | Aucune exécution LLM réelle | `detect_provider()` retombe sur `rule_based_stub` (CAS C) dans cet environnement | Confirmé — comportement attendu, pas un échec | LIMITATION | `src/annotator_llm.py::detect_provider` ; `docs/chapter4/TECHNOLOGIES.md` |
+| 19 | Provider LLM réel techniquement exécutable | `detect_provider()` détecte un endpoint OpenAI-compatible réellement configuré et joignable, `RealLlmAnnotator` produit les 11 sous-métriques valides sur un candidat SP2 contextuel réel | Confirmé : `LLM_PROVIDER=openai_compatible`, `LLM_MODEL=openai/gpt-oss-120b` (Groq) — smoke test contrôlé exécuté avec succès (`RagCandidateContext` → 3 requêtes → retrieval → reranking → `CandidateEvidenceBundle` → `RealLlmAnnotator` → 11 annotations), scores/confidences dans [0,1], `evidence_ids` tous traçables au bundle réellement récupéré, aucune métrique dérivée (Realisme/P_interaction/P_engagement/Effet_prog/DE/Gamma/risque/coût/budget) produite par le LLM. Ceci est une preuve d'intégration technique, **pas** une validation expérimentale quantitative (réservée au chapitre 5) | PASS | `src/llm_provider.py` (correctif `User-Agent`, requis face au WAF Cloudflare de l'endpoint Groq) ; `tests/test_annotator_llm_real_integration.py` (`pytest -m real_llm`) ; `docs/chapter4/outputs/groq_real_llm_smoke_test.json` |
 
 ## Limites finales du chapitre 4 (réf. tâche §26)
 
@@ -43,10 +43,10 @@ Après cette passe, les limites principales restantes sont :
 2. Le catalogue organisationnel (`examples/data/organization_deception_catalog.json`) reste une **configuration d'étude de cas**, pas des données fournies par une organisation réelle.
 3. `Pertinent` reste opérationnalisé par une **relation topologique directe** (même actif, ou adjacence SI à un saut) — extension multi-hop hors périmètre (réf. tâche §19).
 4. L'optimiseur reste une **énumération exhaustive**, exacte sur petites instances, non dimensionnée pour un grand espace combinatoire (réf. tâche §20).
-5. **Aucun service LLM réel n'a été exécuté** dans cet environnement — code prêt et testé (mocks), commande de reproduction locale documentée.
+5. Un **smoke test technique contrôlé** du provider LLM réel (Groq, `openai/gpt-oss-120b`) a été exécuté avec succès sur un unique candidat SP2 contextuel (`docs/chapter4/outputs/groq_real_llm_smoke_test.json`) — cela démontre que l'intégration fonctionne réellement, mais **aucune campagne expérimentale** (plusieurs candidats, comparaison de modèles, mesure de qualité d'annotation) n'a été menée : cela reste réservé au chapitre 5.
 6. La **validation quantitative comparative du RAG** (Recall@5/MRR@5/nDCG@5 contre le corpus élargi et le pipeline reranké) est reportée au chapitre 5.
 
-Aucune autre limitation n'est ajoutée : les points déjà résolus par les passes précédentes (RAG à requête unique, dépendance runtime au fichier brut ATT&CK, persistance de l'index sémantique, ambiguïté du statut de l'index lexical) ne sont plus des limites.
+Aucune autre limitation n'est ajoutée : les points déjà résolus par les passes précédentes (RAG à requête unique, dépendance runtime au fichier brut ATT&CK, persistance de l'index sémantique, ambiguïté du statut de l'index lexical, absence de preuve d'exécution du provider LLM réel) ne sont plus des limites.
 
 ## CHAPTER 4 IMPLEMENTATION FROZEN
 

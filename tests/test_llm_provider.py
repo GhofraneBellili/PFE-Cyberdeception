@@ -11,11 +11,13 @@ import pytest
 
 from src.llm_provider import (
     DEFAULT_OLLAMA_BASE_URL,
+    DEFAULT_USER_AGENT,
     LlmProviderConfig,
     LlmProviderError,
     call_ollama,
     call_openai_compatible,
     config_from_env,
+    default_http_transport,
     default_list_ollama_models,
 )
 
@@ -158,3 +160,88 @@ class TestDefaultListOllamaModels:
         monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
         models = default_list_ollama_models("http://localhost:11434", 1.0)
         assert models == ["llama3", "mistral"]
+
+
+class TestDefaultHttpTransportUserAgent:
+    """Réf. incompatibilité réelle constatée face à l'endpoint Groq réel
+    (https://api.groq.com/openai/v1/chat/completions) : le User-Agent par
+    défaut d'urllib est bloqué par le WAF Cloudflare de Groq (HTTP 403,
+    "error code: 1010") — reproduit avec curl (succès) vs urllib sans
+    User-Agent explicite (échec), confirmé résolu par l'ajout de
+    `DEFAULT_USER_AGENT`. Aucun appel réseau réel ici : `urlopen` est
+    mocké pour capturer la requête réellement construite."""
+
+    def test_sends_explicit_non_default_user_agent(self, monkeypatch):
+        import io
+        import urllib.request
+
+        captured = {}
+
+        class FakeResponse(io.BytesIO):
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+        def fake_urlopen(request, timeout):
+            captured["request"] = request
+            return FakeResponse(b'{"ok": true}')
+
+        monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+        default_http_transport("https://api.groq.com/openai/v1/chat/completions", {"model": "x"}, {}, 1.0)
+
+        sent_user_agent = captured["request"].get_header("User-agent")
+        assert sent_user_agent == DEFAULT_USER_AGENT
+        assert "python-urllib" not in sent_user_agent.lower()
+
+    def test_caller_supplied_user_agent_takes_priority(self, monkeypatch):
+        """Un `headers` appelant qui fixe explicitement son propre
+        User-Agent reste prioritaire sur le défaut."""
+        import io
+        import urllib.request
+
+        captured = {}
+
+        class FakeResponse(io.BytesIO):
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+        def fake_urlopen(request, timeout):
+            captured["request"] = request
+            return FakeResponse(b'{"ok": true}')
+
+        monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+        default_http_transport(
+            "https://api.groq.com/openai/v1/chat/completions", {"model": "x"}, {"User-Agent": "custom-caller/1.0"}, 1.0
+        )
+
+        assert captured["request"].get_header("User-agent") == "custom-caller/1.0"
+
+    def test_authorization_header_still_forwarded_alongside_user_agent(self, monkeypatch):
+        import io
+        import urllib.request
+
+        captured = {}
+
+        class FakeResponse(io.BytesIO):
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+        def fake_urlopen(request, timeout):
+            captured["request"] = request
+            return FakeResponse(b'{"ok": true}')
+
+        monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+        default_http_transport(
+            "https://api.groq.com/openai/v1/chat/completions", {"model": "x"}, {"Authorization": "Bearer fake-test-token"}, 1.0
+        )
+
+        assert captured["request"].get_header("Authorization") == "Bearer fake-test-token"
+        assert captured["request"].get_header("User-agent") == DEFAULT_USER_AGENT
