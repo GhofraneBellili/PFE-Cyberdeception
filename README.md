@@ -94,7 +94,7 @@ jour).
 
 CI GitHub Actions : verte sur `implementation/chapter4` à chaque commit
 documenté ci-dessous (`.github/workflows/tests.yml`, déclenchée sur
-`push`/`pull_request`). 796 tests (+ 4 optionnels : 2 `pytest -m
+`push`/`pull_request`). 817 tests (+ 4 optionnels : 2 `pytest -m
 real_llm`, 2 `pytest -m real_reranker`, exclus par défaut) au moment de
 ce document.
 
@@ -2483,6 +2483,114 @@ Exécution réelle du LLM une fois qu'un provider est configuré par
 l'utilisateur. Chapitre 5 (validation expérimentale, scalabilité de
 l'optimiseur, complétion du mapping M_{i,d}) explicitement hors
 périmètre.
+
+### Étape 24 — Final implementation hardening
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Dernière passe de finition technique du chapitre 4 : supprimer les
+dernières incohérences héritées, rendre le chargement RAG totalement
+cohérent, supprimer la dépendance runtime au fichier brut ATT&CK, et
+produire un audit final vérifiant l'absence de contradiction entre code,
+sorties, figures et documentation. Aucune nouvelle fonctionnalité
+scientifique — réf. tâche « dernière passe de finition technique du
+chapitre 4 ».
+
+#### Traitement réalisé
+
+**Suppression de la dernière incohérence sur les prérequis d'admissibilité** :
+`FINAL_TECHNICAL_REPORT.md` affirmait encore qu'un prérequis
+d'admissibilité documenté (`required_*`) n'existait que pour 3
+mécanismes, limitant de fait l'espace de décision — une formulation
+conceptuellement fausse depuis la séparation connaissance/organisation
+(Étape 21) : `required_*` du catalogue de CONNAISSANCES est un champ
+hérité, jamais consulté par `src/admissibility.py`. Reformulé : « le
+catalogue de connaissances contient 51 mécanismes, 18 en ont une relation
+`M_{i,d}` tracée ; l'admissibilité opérationnelle vient ensuite
+exclusivement du catalogue fourni par l'organisation ».
+
+**ATT&CK runtime knowledge depuis le staging** (`src/attack_runtime_knowledge.py`,
+nouveau) : le pipeline runtime ne dépend plus JAMAIS du bundle STIX brut
+`enterprise-attack.json` (~51 Mo, jamais versionné). `load_attack_runtime_knowledge`
+charge une structure LÉGÈRE (technique_id, name, tactics, platforms,
+version, revoked, deprecated — pas la fiche complète) directement depuis
+le staging RAG ATT&CK déjà versionné
+(`data/attack/staging/attack_rag_seed_*.json`). Vérifié EMPIRIQUEMENT :
+le fichier brut renommé/absent, `examples/orchestrator_example.py` ET la
+suite complète `pytest` (817 tests) restent verts, `technique_name` reste
+renseigné (271 techniques). `src/knowledge_attack.py` (parseur STIX)
+reste utilisé UNIQUEMENT par la couche OFFLINE
+(`tools/attack_kb/attack_seed_builder.py`) pour reconstruire ce staging —
+jamais par le runtime. `src/rag_candidate_context.py`/`src/orchestrator.py`
+n'importent plus `src/knowledge_attack.py` (vérifié par analyse statique
+des imports).
+
+**Décision architecturale explicite sur l'index lexical** (OPTION B
+retenue, documentée dans `src/rag_index_store.py`) : seul l'index
+SÉMANTIQUE (embeddings + FAISS, la partie coûteuse) est persisté sur
+disque. La composante lexicale (TF-IDF haché) est reconstruite localement
+depuis les MÊMES chunks déjà persistés
+(`rebuild_lexical_index`, nouveau) — mesuré empiriquement à ~160 ms pour
+1306 chunks, aucune dépendance, aucun réseau. Choix assumé et documenté,
+pas une ambiguïté entre « tout est persisté » et « seule la partie
+sémantique l'est ».
+
+**Audit final** (`docs/chapter4/FINAL_IMPLEMENTATION_AUDIT.md`, nouveau) :
+tableau Item/Expected/Observed/Status/Evidence couvrant 19 items (SP1
+runtime, séparation catalogues, 51 mécanismes, 18 mappés, RAG 4 sources,
+1306 chunks, persistance sémantique, indépendance ATT&CK runtime, 3
+requêtes SP2, reranker réel, `CandidateEvidenceBundle`, preuves par
+famille, `DE` gelé, SP3, optimiseur, reporter, orchestrateur,
+traçabilité, absence d'exécution LLM réelle) — aucun `PASS` sans preuve
+vérifiable dans le dépôt. Conclusion : **CHAPTER 4 IMPLEMENTATION
+FROZEN = YES**.
+
+**Tests** : `tests/test_attack_runtime_knowledge.py` (nouveau),
+extension de `tests/test_rag_candidate_context.py` (technique_name
+renseigné sans fichier brut ; technique inconnue du staging → jamais
+inventée), extension de `tests/test_rag_index_store.py`
+(`rebuild_lexical_index`), extension de `tests/test_rag_sp2_separation.py`
+(indépendance vis-à-vis de `src/knowledge_attack.py`).
+
+#### Résultat réel
+
+`python -m examples.orchestrator_example`, exécuté avec le fichier brut
+ATT&CK ABSENT du disque : résultat strictement identique à l'exécution
+avec le fichier présent (204 candidats évalués, 3 admissibles, 6
+configurations, front de Pareto de taille 1, plan de déploiement non
+vide) — preuve directe de l'indépendance runtime.
+
+#### Sorties
+
+`docs/chapter4/FINAL_IMPLEMENTATION_AUDIT.md` (nouveau), `docs/chapter4/outputs/module_counts.json`
+régénéré, `docs/chapter4/outputs/pipeline_example.txt` régénéré.
+
+#### Fichiers concernés
+
+`src/attack_runtime_knowledge.py` (nouveau), `src/rag_candidate_context.py`,
+`src/orchestrator.py`, `src/rag_index_store.py`
+(`rebuild_lexical_index`), `examples/orchestrator_example.py`,
+`examples/rag_sp2_context_example.py`, `docs/chapter4/FINAL_TECHNICAL_REPORT.md`,
+`docs/chapter4/CATALOG_AUDIT.md`, `docs/chapter4/SCREENSHOT_MANIFEST.md`,
+`docs/chapter4/FINAL_IMPLEMENTATION_AUDIT.md` (nouveau),
+`tests/test_attack_runtime_knowledge.py` (nouveau),
+`tests/test_rag_candidate_context.py`, `tests/test_rag_index_store.py`,
+`tests/test_rag_sp2_separation.py`.
+
+#### Limites finales
+
+Voir `docs/chapter4/FINAL_IMPLEMENTATION_AUDIT.md`, section « Limites
+finales du chapitre 4 » — six limites assumées, aucune fausse limitation
+déjà résolue n'est conservée.
+
+#### Lien avec l'étape suivante
+
+Aucune nouvelle fonctionnalité architecturale prévue pour le chapitre 4 —
+implémentation gelée (`CHAPTER 4 IMPLEMENTATION FROZEN`). Les
+développements suivants appartiennent à la validation, à l'expérimentation
+ou au chapitre 5, sauf bug réel découvert.
 
 ## OPEN_DECISION en cours
 

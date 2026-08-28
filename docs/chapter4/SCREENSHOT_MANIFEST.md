@@ -33,8 +33,8 @@ Status: AVAILABLE
 Module: (aucun module de code — structure du dépôt)
 Fichier de sortie: docs/chapter4/outputs/architecture_tree.txt
 Générateur: tools/chapter4_figures/c1_architecture.py (python -m tools.chapter4_figures.c1_architecture)
-Capture: docs/chapter4/screenshots/01_architecture/architecture_tree.png (1900×3420 px, fond blanc)
-Ce qui est visible: src/ (24 modules), tools/deception_kb/ (couche offline KB déception), tools/attack_kb/ (couche offline corpus RAG ATT&CK), tools/rag/ (builder offline de l'index RAG persisté), data/deception/ (catalogue + mapping réels + staging résumé), examples/ (17 scripts), tests/ (résumé), docs/chapter4/ (rapports + outputs résumé). Compteurs RECALCULÉS automatiquement à chaque génération (réf. tâche « maturation technique finale » §29, docs/chapter4/outputs/module_counts.json) — jamais retapés à la main.
+Capture: docs/chapter4/screenshots/01_architecture/architecture_tree.png (1900×3510 px, fond blanc)
+Ce qui est visible: src/ (25 modules, dont attack_runtime_knowledge.py), tools/deception_kb/ (couche offline KB déception), tools/attack_kb/ (couche offline corpus RAG ATT&CK), tools/rag/ (builder offline de l'index RAG persisté), data/deception/ (catalogue + mapping réels + staging résumé), examples/ (17 scripts), tests/ (résumé), docs/chapter4/ (rapports + outputs résumé). Compteurs RECALCULÉS automatiquement à chaque génération (réf. tâche « maturation technique finale » §29, docs/chapter4/outputs/module_counts.json) — jamais retapés à la main.
 Rôle dans le chapitre 4: Section 4.1.2 — Organisation du projet.
 ```
 
@@ -48,7 +48,7 @@ Générateur: tools/chapter4_figures/c2_mechanism.py (python -m tools.chapter4_f
 Capture: docs/chapter4/screenshots/02_knowledge/deception_mechanism.png (1946×1450 px, fond blanc)
 Ce qui est visible: id, name, description, target_artifacts, possible_placements, required_asset_types (D3-DNR : file_server, web_application_server — renseigné après audit), interaction_mechanism (dérivé des relations ATT&CK réelles), version, un extrait de preuve documentaire (source + passage du kb-article D3FEND).
 Rôle dans le chapitre 4: Section 4.3.3 — Base de connaissances de cyberdéception.
-Note: D3-DNR choisi de préférence (plutôt que D3-DUC/D3-DF) car il possède des propriétés d'admissibilité réellement renseignées après l'audit documentaire (docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md) — required_asset_types traçable à une phrase précise du kb-article D3FEND, jamais inventé.
+Note: D3-DNR choisi de préférence (plutôt que D3-DUC/D3-DF) car il possède des propriétés d'admissibilité réellement renseignées après l'audit documentaire (docs/chapter4/ADMISSIBILITY_EVIDENCE_AUDIT.md) — required_asset_types traçable à une phrase précise du kb-article D3FEND, jamais inventé. Rappel (réf. CATALOG_AUDIT.md §6bis) : ce required_asset_types affiché est un champ hérité du catalogue de CONNAISSANCES (documentaire), plus jamais consulté par src/admissibility.py — l'admissibilité SP1 vient exclusivement du catalogue OPÉRATIONNEL fourni par l'organisation.
 ```
 
 ## Capture C3 — Réduction runtime de SP1 (D_knowledge → D_org → D_i → C_i_h)

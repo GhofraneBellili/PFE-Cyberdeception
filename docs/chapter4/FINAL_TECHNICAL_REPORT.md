@@ -15,7 +15,7 @@
 > État au moment de la rédaction (mise à jour post-tâche « renforcer
 > l'architecture et l'implémentation du module RAG utilisé par SP2 »,
 > voir `docs/chapter4/BEFORE_UPGRADE_STATE.md` pour l'état avant la toute
-> première passe RAG/catalogue) : **796 tests verts** (+ 4 tests
+> première passe RAG/catalogue) : **817 tests verts** (+ 4 tests
 > d'intégration optionnels : 2 `pytest -m real_llm`, 2
 > `pytest -m real_reranker`).
 >
@@ -123,16 +123,17 @@ reproductible, jamais un service tiers (Chroma/Pinecone/Weaviate).
 **B. Réellement implémenté.** Arborescence complète et stable (compteurs
 recalculés automatiquement, réf. §4.2.2 et
 `docs/chapter4/outputs/module_counts.json`) :
-`src/` (24 modules, dont `semantic_embedder.py`/`vector_index.py` pour le
+`src/` (25 modules, dont `semantic_embedder.py`/`vector_index.py` pour le
 RAG sémantique, et `rag_candidate_context.py`/`rag_query_builder.py`/
-`rag_config.py`/`rag_evidence.py`/`reranker.py`/`rag_index_store.py` pour
-le RAG contextuel), `tools/deception_kb/` (couche offline KB déception,
-catalogue étendu à 51 mécanismes), `tools/attack_kb/` (couche offline
-corpus RAG ATT&CK), `tools/rag/` (builder offline de l'index RAG
-persisté), `data/deception/` (staging + catalogue + mapping réels),
-`data/attack/` (staging + manifest du corpus ATT&CK) + `data/rag/` (jeu
-de requêtes d'évaluation RAG + index persisté généré, non versionné) +
-`examples/` (17 scripts exécutables), `tests/` (796 tests + 4 optionnels :
+`rag_config.py`/`rag_evidence.py`/`reranker.py`/`rag_index_store.py`/
+`attack_runtime_knowledge.py` pour le RAG contextuel), `tools/deception_kb/`
+(couche offline KB déception, catalogue étendu à 51 mécanismes),
+`tools/attack_kb/` (couche offline corpus RAG ATT&CK), `tools/rag/`
+(builder offline de l'index RAG persisté), `data/deception/` (staging +
+catalogue + mapping réels), `data/attack/` (staging + manifest du corpus
+ATT&CK) + `data/rag/` (jeu de requêtes d'évaluation RAG + index persisté
+généré, non versionné) + `examples/` (17 scripts exécutables), `tests/`
+(817 tests + 4 optionnels :
 2 `real_llm`, 2 `real_reranker`), `docs/chapter4/` (ce document +
 IMPLEMENTATION_REPORT.md + TECHNOLOGIES.md + SCREENSHOT_MANIFEST.md +
 ADMISSIBILITY_EVIDENCE_AUDIT.md + CATALOG_AUDIT.md +
@@ -204,12 +205,18 @@ par un orchestrateur explicite qui appelle chaque sous-problème (SP1,
 SP2, SP3) dans l'ordre, mais chaque sous-problème reste un module Python
 séparé et testable isolément — pas une fonction monolithique.
 
-**J. Limites réelles.** Le catalogue réel (51 mécanismes, section 4.3.3)
-n'a de relation `M_{i,d}` tracée que pour 18 d'entre eux, et un prérequis
-d'admissibilité documenté (`required_*`) pour seulement 3 (`D3-DNR`,
-`EAC0009`, `EAC0021`, section 4.4.1) — l'espace de décision effectivement
-exploré par un exemple de bout en bout reste donc plus restreint que le
-catalogue complet ne le suggère, limite documentée plutôt que masquée.
+**J. Limites réelles.** Le catalogue de connaissances contient 51
+mécanismes. À ce stade, 18 d'entre eux disposent d'au moins une relation
+`M_{i,d}` tracée (section 4.3.3). L'admissibilité opérationnelle est
+ensuite déterminée au runtime à partir du catalogue fourni par
+l'organisation (`OrganizationDeceptionCapability`, section 4.4.1) —
+`required_*`/`allowed_*` du catalogue de CONNAISSANCES
+(`DeceptionMechanism.admissibility_profile`) est un champ hérité, non lu
+par `src/admissibility.py` : le nombre de mécanismes réellement
+admissibles pour une occurrence donnée dépend donc de la configuration de
+CHAQUE organisation (fixture d'exemple : 42 référencés/30 activés), pas
+d'un compte fixe de mécanismes « documentés » dans le catalogue de
+connaissances.
 
 **K. Artefact/capture.** Aucune capture dédiée (diagramme reproductible
 dans le texte).
@@ -224,7 +231,7 @@ exécutés.
 **A. Objectif.** Cartographier responsabilité ↔ module, en cohérence
 avec la séparation des rôles imposée par le chapitre 3 (§17).
 
-**B. Réellement implémenté.** 24 modules `src/` (compteur RECALCULÉ
+**B. Réellement implémenté.** 25 modules `src/` (compteur RECALCULÉ
 automatiquement depuis le dépôt réel, jamais retapé à la main — réf.
 tâche « maturation technique finale du chapitre 4 » §29,
 `docs/chapter4/outputs/module_counts.json`, généré par
@@ -821,8 +828,13 @@ FAISS/NumPy).
 *Contexte et requêtes candidat (ONLINE, §5-§7).* `src/schemas.py`
 (`RagCandidateContext`, `RagGraphContext`, `SIPlacementContext`),
 `src/rag_candidate_context.py` (`build_rag_candidate_context`),
-`src/rag_query_builder.py` (`build_rag_queries`, `build_realism_query`,
-`build_interaction_query`, `build_effect_query`).
+`src/attack_runtime_knowledge.py` (`load_attack_runtime_knowledge`,
+`AttackRuntimeKnowledge` — métadonnées ATT&CK légères pour le runtime,
+chargées EXCLUSIVEMENT depuis le staging RAG déjà versionné, jamais
+depuis le bundle STIX brut — réf. tâche « dernière passe de finition
+technique du chapitre 4 » §6-§9), `src/rag_query_builder.py`
+(`build_rag_queries`, `build_realism_query`, `build_interaction_query`,
+`build_effect_query`).
 
 *Retrieval, reranking, diversification, bundle (ONLINE, §8-§13).*
 `src/rag_config.py` (`RAG_RETRIEVAL_CANDIDATES`, `RAG_RERANKER_MODEL`,
@@ -951,6 +963,27 @@ reranké dans cette passe — cette validation comparative appartient
 explicitement au chapitre 5 (réf. tâche §18, aucune optimisation
 artificielle de ces métriques n'a été recherchée ici).
 
+**Source de vérité ATT&CK au runtime (réf. tâche « dernière passe de
+finition technique », §6-§9).** `technique_name` (et `tactics`/
+`platforms` si besoin futur) dans `RagCandidateContext` vient
+EXCLUSIVEMENT du staging RAG ATT&CK déjà versionné
+(`src/attack_runtime_knowledge.py::load_attack_runtime_knowledge`,
+`data/attack/staging/attack_rag_seed_*.json`) — plus jamais du bundle
+STIX brut `enterprise-attack.json`. Ce dernier reste nécessaire
+uniquement pour RECONSTRUIRE le staging OFFLINE
+(`tools/attack_kb/attack_seed_builder.py`, qui continue d'utiliser
+`src/knowledge_attack.py::load_attack_knowledge`, seul parseur STIX du
+projet), jamais pour exécuter le pipeline runtime.
+
+**Composante lexicale du retrieval (OPTION B retenue, réf. tâche §4/§5).**
+Seul le moteur SÉMANTIQUE (embeddings + index vectoriel FAISS) est
+persisté sur disque. La composante lexicale (TF-IDF haché) est
+reconstruite localement à partir des MÊMES chunks déjà persistés
+(`src/rag_index_store.py::rebuild_lexical_index`, ~160 ms mesurés pour
+1306 chunks) — jamais recalculée depuis les documents source, jamais un
+second artefact binaire à maintenir en parallèle pour un gain de
+performance jugé négligeable à cette échelle de corpus.
+
 **K. Artefact/capture.** C4 (RAG, `AVAILABLE`) —
 `docs/chapter4/screenshots/04_rag/rag_architecture.png`, généré par
 `tools/chapter4_figures/c4_rag.py` (diagramme d'architecture OFFLINE/
@@ -974,7 +1007,10 @@ d'apporter des éléments de preuve pour l'évaluation contextuelle du
 candidat ». Ne pas écrire « une seule requête/un seul jeu de preuves sert
 aux 11 sous-métriques » — c'est désormais FAUX : trois requêtes et trois
 jeux de preuves distincts (realism/interaction/effect), présentés au LLM
-regroupés par famille.
+regroupés par famille. Ne pas écrire « `technique_name` dépend de la
+présence locale du bundle STIX brut » — c'est désormais FAUX : il vient
+exclusivement du staging RAG ATT&CK déjà versionné, disponible sans
+aucune dépendance au fichier officiel brut.
 
 ### 4.4.3 SP3
 
@@ -1263,7 +1299,7 @@ annotation LLM réelle.
 | « Le moteur SP3 reproduit exactement l'ancre de validation du chapitre 3 » | `src/risk_engine.py` | scénario analytique CLAUDE.md §20 | `test_reference_example` | — (chapitre 5) | **VALIDÉ** (tolérance `1e-3`) |
 | « L'optimiseur résout `(P)` par énumération exhaustive avec front de Pareto » | `src/optimizer.py` | `C_{i,h}` + coûts | `optimizer_example.txt` | — (chapitre 5) | **VALIDÉ** |
 | « L'orchestrateur exécute le pipeline complet de bout en bout, avec le RAG contextuel comme chemin de référence unique, sur des données réelles » | `src/orchestrator.py::run_pipeline`, `src/rag_index_store.py::load_rag_index` | catalogue 51 mécanismes + mapping 591 relations + catalogue opérationnel réel (42 référencés/30 activés) + index RAG persisté 1306 chunks | `python -m examples.orchestrator_example` → `pipeline_example.txt` | C7 | **VALIDÉ** (3 candidats admissibles, 6 configurations énumérées, avec repli déterministe `rule_based_stub` explicitement marqué technical integration fallback, pas de LLM réel) |
-| « Aucun appel LLM ni aucune dépendance RAG n'a lieu pendant le calcul du risque ou l'optimisation » | tests `ast` dédiés sur `risk_engine.py`/`optimizer.py`/`reporter.py`/`admissibility.py` (incluant `semantic_embedder.py`/`vector_index.py`/`rag_candidate_context.py`/`rag_query_builder.py`/`rag_evidence.py`/`reranker.py`, `tests/test_rag_sp2_separation.py`) | — | `pytest -v` (796 tests + 4 optionnels : 2 `real_llm`, 2 `real_reranker`) | — | **VALIDÉ** |
+| « Aucun appel LLM ni aucune dépendance RAG n'a lieu pendant le calcul du risque ou l'optimisation » | tests `ast` dédiés sur `risk_engine.py`/`optimizer.py`/`reporter.py`/`admissibility.py` (incluant `semantic_embedder.py`/`vector_index.py`/`rag_candidate_context.py`/`rag_query_builder.py`/`rag_evidence.py`/`reranker.py`, `tests/test_rag_sp2_separation.py`) | — | `pytest -v` (817 tests + 4 optionnels : 2 `real_llm`, 2 `real_reranker`) | — | **VALIDÉ** |
 
 ---
 
@@ -1293,3 +1329,21 @@ l'absence d'un service LLM réel dans cet environnement d'exécution — le
 code, la validation stricte de sortie (avec preuves regroupées par
 famille), et la commande de reproduction locale sont tous prêts et
 testés.
+
+**Rappel explicite (réf. tâche « dernière passe de finition technique »,
+§21).** Les valeurs numériques produites par `examples/orchestrator_example.py`
+(`DE`, réduction de risque, front de Pareto, `Y*`) proviennent du repli
+déterministe `rule_based_stub` (chevauchement lexical, pas une
+distinction sémantique réelle entre Realism/InteractionLikelihood/
+Effectiveness) : elles servent UNIQUEMENT de preuve d'intégration
+technique de bout en bout, jamais de résultat de validation
+scientifique — cette distinction reste explicite dans la sortie du
+script lui-même (« TECHNICAL INTEGRATION FALLBACK »).
+
+**CHAPTER 4 IMPLEMENTATION FROZEN** (réf. tâche « dernière passe de
+finition technique », §27) : à l'issue de cette passe, l'architecture et
+le code du chapitre 4 sont considérés stables — voir
+`docs/chapter4/FINAL_IMPLEMENTATION_AUDIT.md` pour l'audit final
+item-par-item. Les développements suivants appartiennent à la
+validation, à l'expérimentation ou au chapitre 5, sauf bug réel
+découvert.
