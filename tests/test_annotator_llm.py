@@ -21,6 +21,8 @@ from src.annotator_llm import (
     LlmOutputValidationError,
     RealLlmAnnotator,
     RuleBasedStubAnnotator,
+    _build_evidence_block,
+    _build_prompt,
     annotate_with_cache,
     detect_provider,
     deterministic_annotation_id,
@@ -38,7 +40,11 @@ from src.schemas import (
 FIXED_NOW = datetime(2026, 8, 27, tzinfo=timezone.utc)
 
 
-def make_context(*, evidence_passages=("Decoy User Credential is a credential created to deceive an adversary.",)):
+def make_context(
+    *,
+    evidence_passages=("Decoy User Credential is a credential created to deceive an adversary.",),
+    evidence_by_family=None,
+):
     attributes = NodeAttributes(
         tactics=["credential-access"],
         outcomes=[],
@@ -58,6 +64,7 @@ def make_context(*, evidence_passages=("Decoy User Credential is a credential cr
         retrieved_evidence=[
             DeceptionEvidence(source=f"chunk_{i}", passage=passage) for i, passage in enumerate(evidence_passages)
         ],
+        evidence_by_family=evidence_by_family,
     )
 
 
@@ -257,6 +264,64 @@ def ollama_config(**overrides):
     defaults = dict(provider="ollama", model="llama3", base_url="http://localhost:11434", max_retries=1)
     defaults.update(overrides)
     return LlmProviderConfig(**defaults)
+
+
+class TestBuildPromptFamilyGrouping:
+    """Réf. tâche « renforcer le RAG utilisé par SP2 », §14 : le prompt
+    regroupe les preuves par famille de sous-métriques quand
+    `evidence_by_family` est fourni, avec repli rétrocompatible (bloc plat
+    historique) sinon."""
+
+    def test_flat_block_when_no_evidence_by_family(self):
+        context = make_context(evidence_passages=("Passage A.", "Passage B."))
+        block = _build_evidence_block(context)
+        assert "chunk_0" in block
+        assert "chunk_1" in block
+        assert "REALISM EVIDENCE" not in block
+
+    def test_grouped_block_when_evidence_by_family_provided(self):
+        context = make_context(
+            evidence_passages=("Realism passage.", "Interaction passage.", "Effect passage."),
+            evidence_by_family={"realism": ["chunk_0"], "interaction": ["chunk_1"], "effect": ["chunk_2"]},
+        )
+        block = _build_evidence_block(context)
+        assert "REALISM EVIDENCE" in block
+        assert "INTERACTION EVIDENCE" in block
+        assert "PROGRESSION-EFFECT EVIDENCE" in block
+
+    def test_realism_evidence_appears_only_once_not_duplicated_across_families(self):
+        context = make_context(
+            evidence_passages=("Realism passage.", "Interaction passage."),
+            evidence_by_family={"realism": ["chunk_0"], "interaction": ["chunk_1"], "effect": []},
+        )
+        block = _build_evidence_block(context)
+        assert block.count("Realism passage.") == 1
+        assert block.count("Interaction passage.") == 1
+
+    def test_empty_family_omitted_from_block(self):
+        context = make_context(
+            evidence_passages=("Realism passage.",),
+            evidence_by_family={"realism": ["chunk_0"], "interaction": [], "effect": []},
+        )
+        block = _build_evidence_block(context)
+        assert "INTERACTION EVIDENCE" not in block
+        assert "PROGRESSION-EFFECT EVIDENCE" not in block
+
+    def test_full_prompt_still_lists_all_evidence_ids(self):
+        context = make_context(
+            evidence_passages=("Realism passage.", "Interaction passage."),
+            evidence_by_family={"realism": ["chunk_0"], "interaction": ["chunk_1"], "effect": []},
+        )
+        prompt = _build_prompt(context)
+        assert "chunk_0" in prompt
+        assert "chunk_1" in prompt
+
+    def test_rule_based_stub_still_works_without_evidence_by_family(self):
+        """Réf. rétrocompatibilité : RuleBasedStubAnnotator ne fournit
+        jamais evidence_by_family — doit rester inchangé."""
+        context = make_context(evidence_by_family=None)
+        annotations = RuleBasedStubAnnotator().annotate(context, now=FIXED_NOW)
+        assert len(annotations) == 11
 
 
 class TestRealLlmAnnotator:

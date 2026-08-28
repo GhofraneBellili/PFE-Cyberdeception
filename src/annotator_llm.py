@@ -263,11 +263,40 @@ class LlmOutputValidationError(AnnotatorLlmError):
     (§20, §25.3) : cette exception doit systématiquement remonter."""
 
 
+_FAMILY_LABELS: dict[str, str] = {
+    "realism": "REALISM EVIDENCE (primarily relevant to R_tech, R_context, R_perception, R_behavior)",
+    "interaction": "INTERACTION EVIDENCE (primarily relevant to A_object, A_action, A_source)",
+    "effect": "PROGRESSION-EFFECT EVIDENCE (primarily relevant to S_stop, S_redirect, S_contain, S_delay)",
+}
+
+
+def _build_evidence_block(context: AnnotationContext) -> str:
+    """Réf. tâche « renforcer le RAG utilisé par SP2 », §14 : regroupe les
+    preuves par famille de sous-métriques quand `evidence_by_family` est
+    renseigné (RAG contextuel), au lieu d'un unique bloc plat envoyé à
+    toutes les sous-métriques. Repli rétrocompatible : un contexte plus
+    ancien sans `evidence_by_family` (ex. `RuleBasedStubAnnotator`,
+    contextes de test déjà existants) reçoit le bloc plat historique."""
+    evidence_by_source = {item.source: item.passage for item in context.retrieved_evidence}
+    if context.evidence_by_family is None:
+        return "\n".join(f"- [{item.source}] {item.passage}" for item in context.retrieved_evidence)
+
+    blocks = []
+    for family in ("realism", "interaction", "effect"):
+        sources = context.evidence_by_family.get(family, [])
+        if not sources:
+            continue
+        lines = "\n".join(f"- [{source}] {evidence_by_source[source]}" for source in sources if source in evidence_by_source)
+        blocks.append(f"{_FAMILY_LABELS[family]}:\n{lines}")
+    return "\n\n".join(blocks)
+
+
 def _build_prompt(context: AnnotationContext) -> str:
     """Réf. §11.2 : construit le prompt à partir des seuls champs déjà
     présents dans `AnnotationContext` — occurrence, mécanisme,
-    emplacement, contexte graphe, preuves RAG. `system_context` n'est
-    JAMAIS inclus ici (protection supplémentaire, au-delà de
+    emplacement, contexte graphe, preuves RAG (regroupées par famille de
+    sous-métriques quand disponible, réf. tâche §14). `system_context`
+    n'est JAMAIS inclus ici (protection supplémentaire, au-delà de
     l'interdiction déjà appliquée par le validateur Pydantic
     d'`AnnotationContext`) : le budget B_total ne doit jamais atteindre le
     LLM (§11.2)."""
@@ -287,14 +316,17 @@ def _build_prompt(context: AnnotationContext) -> str:
         },
     }
     evidence_ids = [item.source for item in context.retrieved_evidence]
-    evidence_block = "\n".join(f"- [{item.source}] {item.passage}" for item in context.retrieved_evidence)
+    evidence_block = _build_evidence_block(context)
     instructions = (
         "You are annotating a single cyberdeception placement candidate for a "
         "security research pipeline. Score EXACTLY these 11 sub-metrics, each in "
         "[0,1], each citing at least one evidence_id taken ONLY from the list "
         "below (never invent an evidence_id): "
         "R_tech, R_context, R_perception, R_behavior, A_object, A_action, "
-        "A_source, S_stop, S_redirect, S_contain, S_delay.\n"
+        "A_source, S_stop, S_redirect, S_contain, S_delay. Evidence below may be "
+        "grouped by family (realism/interaction/progression-effect): prioritize "
+        "the matching family for each sub-metric, but you may cite any "
+        "evidence_id actually supplied below if genuinely relevant.\n"
         'Return ONLY a JSON object of the exact form: {"annotations": '
         '[{"metric": "...", "score": 0.0, "confidence": 0.0, "justification": '
         '"...", "evidence_ids": ["..."]}, ...11 items total...]}.\n'

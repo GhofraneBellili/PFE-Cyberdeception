@@ -23,7 +23,8 @@ rag = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-addopts = "-m \"not real_llm\""
+addopts = "-m \"not real_llm and not real_reranker\""
 markers = [
     "real_llm: integration test requiring a real configured LLM provider (excluded by default via addopts, run with -m real_llm)",
+    "real_reranker: integration test requiring a real downloaded cross-encoder reranker model (excluded by default via addopts, run with -m real_reranker)",
 ]
