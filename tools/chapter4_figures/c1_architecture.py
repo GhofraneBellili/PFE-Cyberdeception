@@ -5,8 +5,8 @@ Réf. tâche « finaliser les artefacts visuels du chapitre 4 » — Capture C1
 Source : structure réelle du dépôt (les mêmes répertoires que
 `docs/chapter4/outputs/architecture_tree.txt`), curatée aux répertoires
 importants (`src/`, `tools/deception_kb/`, `tools/attack_kb/`,
-`data/deception/`, `examples/`, `tests/`, `docs/chapter4/`) pour éviter
-une arborescence
+`tools/rag/`, `data/deception/`, `examples/`, `tests/`, `docs/chapter4/`)
+pour éviter une arborescence
 trop longue (réf. tâche §2, C1) — les répertoires volumineux
 (`tests/`, `docs/chapter4/outputs/`, `docs/chapter4/screenshots/`,
 `data/deception/staging/`, `data/deception/raw/`) sont résumés par un
@@ -17,6 +17,7 @@ Sortie : docs/chapter4/screenshots/01_architecture/architecture_tree.png
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from tools.chapter4_figures.common import (
@@ -63,6 +64,10 @@ def build_tree_lines() -> list[str]:
     for name in _py_files(REPO_ROOT / "tools" / "attack_kb"):
         lines.append(f"│     ├── {name}")
 
+    lines.append("├── tools/rag/  (builder offline de l'index RAG persisté)")
+    for name in _py_files(REPO_ROOT / "tools" / "rag"):
+        lines.append(f"│     ├── {name}")
+
     lines.append("├── data/deception/  (catalogue et mapping réels + staging)")
     lines.append("│     ├── deception_catalog.json")
     lines.append("│     ├── attack_deception_mapping.json")
@@ -85,8 +90,30 @@ def build_tree_lines() -> list[str]:
     return lines
 
 
+def compute_module_counts() -> dict:
+    """Réf. tâche « maturation technique finale du chapitre 4 » §29 :
+    compteurs de modules/fichiers RECALCULÉS depuis le dépôt réel — jamais
+    une valeur manuelle recopiée dans la prose du rapport, qui deviendrait
+    obsolète à chaque commit. Écrit en JSON
+    (`docs/chapter4/outputs/module_counts.json`) pour être citable depuis
+    `FINAL_TECHNICAL_REPORT.md` sans jamais être retapé à la main."""
+    return {
+        "src_modules": len(_py_files(REPO_ROOT / "src")),
+        "tools_deception_kb_modules": len(_py_files(REPO_ROOT / "tools" / "deception_kb")),
+        "tools_attack_kb_modules": len(_py_files(REPO_ROOT / "tools" / "attack_kb")),
+        "tools_rag_modules": len(_py_files(REPO_ROOT / "tools" / "rag")),
+        "example_scripts": len(_py_files(REPO_ROOT / "examples")),
+        "test_files": len([p for p in (REPO_ROOT / "tests").glob("test_*.py") if p.name not in _UNTRACKED_UNRELATED]),
+        "chapter4_output_files": _count_files(REPO_ROOT / "docs" / "chapter4" / "outputs"),
+    }
+
+
 def generate(output_path: Path = OUTPUT_PATH) -> Path:
     lines = build_tree_lines()
+
+    counts_path = REPO_ROOT / "docs" / "chapter4" / "outputs" / "module_counts.json"
+    counts_path.parent.mkdir(parents=True, exist_ok=True)
+    counts_path.write_text(json.dumps(compute_module_counts(), indent=2, ensure_ascii=False), encoding="utf-8")
 
     line_height = 0.225
     title_block = 0.55

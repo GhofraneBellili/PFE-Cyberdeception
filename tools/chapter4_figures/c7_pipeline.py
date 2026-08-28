@@ -36,7 +36,10 @@ OUTPUT_PATH = REPO_ROOT / "docs" / "chapter4" / "screenshots" / "09_pipeline" / 
 
 STEPS = [
     "Candidats (SP1)",
-    "Retrieval (RAG)",
+    "Contexte RAG (RagCandidateContext)",
+    "Requêtes Q_realism/Q_interaction/Q_effect",
+    "Retrieval + reranking + diversification",
+    "CandidateEvidenceBundle",
     "Annotations (SP2)",
     "Table figée",
     "Coûts",
@@ -86,7 +89,8 @@ def generate(output_path: Path = OUTPUT_PATH) -> Path:
     )
     ax.text(
         margin, height - 0.95,
-        "src/orchestrator.py — enchaînement réel SP1 → RAG → annotation → gel → coût → (P) → risque → rapport",
+        "src/orchestrator.py — même pipeline RAG contextuel que C4 : SP1 → contexte → 3 requêtes → retrieval+reranking "
+        "→ evidence bundle → annotation → gel → coût → (P) → risque → rapport",
         fontsize=8.5, color=COLOR_TEXT_SECONDARY, family=FONT_SANS, va="top", ha="left", style="italic",
     )
 
@@ -95,14 +99,15 @@ def generate(output_path: Path = OUTPUT_PATH) -> Path:
     ax.text(margin, steps_top, "Étapes exécutées", fontsize=10.5, fontweight="bold", color=COLOR_TEXT_PRIMARY, family=FONT_SANS, va="top", ha="left")
     col_width = (width - 2 * margin) / 2
     row_h = 0.35
+    rows_per_col = (len(STEPS) + 1) // 2
     for i, step in enumerate(STEPS):
-        col = i // 4
-        row = i % 4
+        col = i // rows_per_col
+        row = i % rows_per_col
         x = margin + col * col_width
         y = steps_top - 0.4 - row * row_h
         ax.add_patch(Circle((x + 0.09, y - 0.03), 0.075, facecolor=COLOR_ADMISSIBLE_TEXT, edgecolor="none"))
         ax.text(x + 0.09, y - 0.03, "✓", fontsize=8, color="white", family=FONT_SANS, va="center", ha="center", fontweight="bold")
-        ax.text(x + 0.28, y - 0.03, step, fontsize=10, color=COLOR_TEXT_PRIMARY, family=FONT_SANS, va="center", ha="left")
+        ax.text(x + 0.28, y - 0.03, step, fontsize=9, color=COLOR_TEXT_PRIMARY, family=FONT_SANS, va="center", ha="left")
 
     # Bloc fichiers produits
     files_top = steps_top - steps_block

@@ -15,7 +15,7 @@
 > État au moment de la rédaction (mise à jour post-tâche « renforcer
 > l'architecture et l'implémentation du module RAG utilisé par SP2 »,
 > voir `docs/chapter4/BEFORE_UPGRADE_STATE.md` pour l'état avant la toute
-> première passe RAG/catalogue) : **761 tests verts** (+ 4 tests
+> première passe RAG/catalogue) : **796 tests verts** (+ 4 tests
 > d'intégration optionnels : 2 `pytest -m real_llm`, 2
 > `pytest -m real_reranker`).
 >
@@ -39,9 +39,10 @@
 > chapitre 5).
 >
 > **Catalogue de connaissances réel étendu à 51 mécanismes** (9 D3FEND, 15
-> MITRE Engage, 25 littérature — `docs/chapter4/CATALOG_AUDIT.md`),
+> MITRE Engage, 27 littérature — `docs/chapter4/CATALOG_AUDIT.md`),
 > mapping réel de **591 relations** (464 directes MITRE Engage + 127
-> dérivées D3FEND, 271 techniques ATT&CK couvertes —
+> dérivées D3FEND, 271 techniques ATT&CK couvertes, **18 des 51
+> mécanismes ont une relation `M_{i,d}` tracée** —
 > `docs/chapter4/outputs/catalog_statistics.*`).
 >
 > **Séparation connaissance/capacité organisationnelle** (réf. tâche
@@ -119,16 +120,24 @@ reproductible, jamais un service tiers (Chroma/Pinecone/Weaviate).
 
 **A. Objectif.** Présenter la structure réelle du dépôt.
 
-**B. Réellement implémenté.** Arborescence complète et stable :
-`src/` (18 modules, dont `semantic_embedder.py`/`vector_index.py` ajoutés
-pour le RAG sémantique), `tools/deception_kb/` (couche offline, catalogue
-étendu à 51 mécanismes), `data/deception/` (staging + catalogue + mapping
-réels) + `data/rag/` (jeu de requêtes d'évaluation RAG), `examples/` (17
-scripts exécutables), `tests/` (697 tests + 2 optionnels `real_llm`),
-`docs/chapter4/` (ce document + IMPLEMENTATION_REPORT.md +
-TECHNOLOGIES.md + SCREENSHOT_MANIFEST.md + ADMISSIBILITY_EVIDENCE_AUDIT.md
-+ CATALOG_AUDIT.md + BEFORE_UPGRADE_STATE.md + outputs/ + screenshots/),
-`runs/` (sorties d'exécution, non versionnées).
+**B. Réellement implémenté.** Arborescence complète et stable (compteurs
+recalculés automatiquement, réf. §4.2.2 et
+`docs/chapter4/outputs/module_counts.json`) :
+`src/` (24 modules, dont `semantic_embedder.py`/`vector_index.py` pour le
+RAG sémantique, et `rag_candidate_context.py`/`rag_query_builder.py`/
+`rag_config.py`/`rag_evidence.py`/`reranker.py`/`rag_index_store.py` pour
+le RAG contextuel), `tools/deception_kb/` (couche offline KB déception,
+catalogue étendu à 51 mécanismes), `tools/attack_kb/` (couche offline
+corpus RAG ATT&CK), `tools/rag/` (builder offline de l'index RAG
+persisté), `data/deception/` (staging + catalogue + mapping réels),
+`data/attack/` (staging + manifest du corpus ATT&CK) + `data/rag/` (jeu
+de requêtes d'évaluation RAG + index persisté généré, non versionné) +
+`examples/` (17 scripts exécutables), `tests/` (796 tests + 4 optionnels :
+2 `real_llm`, 2 `real_reranker`), `docs/chapter4/` (ce document +
+IMPLEMENTATION_REPORT.md + TECHNOLOGIES.md + SCREENSHOT_MANIFEST.md +
+ADMISSIBILITY_EVIDENCE_AUDIT.md + CATALOG_AUDIT.md +
+BEFORE_UPGRADE_STATE.md + outputs/ + screenshots/), `runs/` (sorties
+d'exécution, non versionnées).
 
 **C. Fichiers.** N/A (structure elle-même).
 
@@ -215,9 +224,13 @@ exécutés.
 **A. Objectif.** Cartographier responsabilité ↔ module, en cohérence
 avec la séparation des rôles imposée par le chapitre 3 (§17).
 
-**B. Réellement implémenté.** 15 modules `src/`, chacun avec une
-responsabilité unique (voir tableau `IMPLEMENTATION_REPORT.md` section
-4.2.2 pour le détail ligne par ligne — non recopié ici).
+**B. Réellement implémenté.** 24 modules `src/` (compteur RECALCULÉ
+automatiquement depuis le dépôt réel, jamais retapé à la main — réf.
+tâche « maturation technique finale du chapitre 4 » §29,
+`docs/chapter4/outputs/module_counts.json`, généré par
+`tools/chapter4_figures/c1_architecture.py::compute_module_counts`,
+figure C1 pour la liste exhaustive), chacun avec une responsabilité
+unique.
 
 **C. Fichiers.** Tous les fichiers de `src/`.
 
@@ -471,8 +484,9 @@ deviennent des mécanismes — choix technique nécessaire, à assumer
 explicitement dans la rédaction.
 
 **J. Limites réelles.** 33 des 51 mécanismes (les 6 D3FEND étendus, réf.
-§6bis, et les 25 mécanismes littérature de la section 8) n'ont encore
-aucune relation `M_{i,d}` tracée — aucun staging disponible ne l'établit,
+§6bis, et les 27 mécanismes littérature — les 2 initiaux `LIT-HONEYPOT`/
+`LIT-HONEYTOKEN` et les 25 de la section 8) n'ont encore aucune relation
+`M_{i,d}` tracée — aucun staging disponible ne l'établit,
 aucune relation n'a été fabriquée pour combler ce vide (limite
 documentée, `catalog_statistics.json`). Le champ `admissibility_profile`/
 `required_*` du catalogue de connaissances est de toute façon devenu un
@@ -1084,55 +1098,88 @@ du placement.
 
 **A. Objectif.** Point d'entrée unique enchaînant tous les modules.
 
-**B. Réellement implémenté.** `run_pipeline` orchestre SP1 → RAG →
-annotation (une seule fois par candidat) → gel → coût → `(P)` → risque
-avant/après → rapport, avec sérialisation systématique.
+**B. Réellement implémenté.** Réf. tâche « maturation technique finale du
+chapitre 4 » §2/§3 : `run_pipeline` orchestre SP1 → RAG CONTEXTUEL par
+candidat (`RagCandidateContext` → `build_rag_queries` →
+`build_candidate_evidence_bundle` → `evidence_by_family`) → annotation
+(une seule fois par candidat) → gel → coût → `(P)` → risque avant/après →
+rapport, avec sérialisation systématique. C'est désormais l'UNIQUE chemin
+RAG emprunté par le pipeline de référence — l'ancien chemin à requête
+unique (`src/rag_retriever.py::retrieve`/`retrieve_semantic`/
+`retrieve_hybrid`) reste disponible comme **legacy/experimental
+retrieval API** (utilisée par certains tests et par
+`examples/rag_semantic_evaluation.py`), mais n'est plus appelée par
+`run_pipeline`.
 
 **C. Fichiers/classes/fonctions.** `src/orchestrator.py` (`run_pipeline`),
-`examples/orchestrator_example.py`.
+`src/rag_index_store.py` (`load_rag_index`, `save_rag_index`),
+`tools/rag/build_index.py` (builder OFFLINE), `examples/orchestrator_example.py`.
 
-**D. Entrées.** Instance, catalogue, mapping, index RAG, provider
-d'annotation, paramètres de coût/budget/seuils.
+**D. Entrées.** Instance, catalogue, mapping, index RAG (lexical +
+sémantique, typiquement rechargés depuis un index persisté via
+`load_rag_index` — jamais reconstruits par candidat), reranker
+(chargé UNE SEULE FOIS par run, réutilisé pour tous les candidats),
+provider d'annotation, paramètres de coût/budget/seuils.
 
 **E. Traitement algorithmique exact.** Voir sections 4.4.1 à 4.4.4,
 enchaînées dans cet ordre exact ; l'annotateur n'est jamais rappelé après
-le gel (vérifié dynamiquement par comptage d'appels en test).
+le gel (vérifié dynamiquement par comptage d'appels en test). Pour
+chaque candidat admissible : `build_rag_candidate_context` →
+`build_rag_queries` → `build_candidate_evidence_bundle` (retrieval large
++ reranking + diversification, réutilisant les MÊMES `lexical_index`/
+`semantic_index`/`reranker` déjà chargés pour tout le run) →
+`to_annotation_evidence` → `AnnotationContext` (avec `evidence_by_family`)
+→ `annotator.annotate`.
 
-**F. Sorties.** `runs/<run_id>/{input_manifest,candidates,retrieval,
-annotations_raw,annotations_frozen,costs,pareto,deployment_plan,
-deployment_report,risks,run_manifest}.json` (10 fichiers).
+**F. Sorties.** `runs/<run_id>/{input_manifest,candidates,
+candidate_contexts,rag_queries,evidence_bundles,annotations_raw,
+annotations_frozen,costs,pareto,deployment_plan,deployment_report,risks,
+run_manifest}.json` (13 fichiers). `run_manifest.json` porte désormais
+aussi la traçabilité RAG/LLM/catalogues (corpus_version, corpus_hash,
+embedding_model, reranker_model, provider/model LLM,
+deception_catalog_version, organization_catalog_version, mapping_version
+— jamais de secret/clé API, tous ces champs restant optionnels et
+fournis explicitement par l'appelant).
 
 **G. Technologies.** Python pur (`json`, `pathlib`, `dataclasses`).
 
 **H. Décisions techniques importantes.** `runs/` non versionné
 (régénérable) — la preuve d'exécution retenue est
-`docs/chapter4/outputs/pipeline_example.txt`.
+`docs/chapter4/outputs/pipeline_example.txt`. `lexical_index`/
+`semantic_index`/`reranker`/`embedder` sont des paramètres REÇUS par
+`run_pipeline`, jamais construits en interne : c'est l'appelant
+(`examples/orchestrator_example.py`) qui les charge une seule fois avant
+la boucle candidat par candidat (réf. tâche §12/§13, éviter les coûts
+runtime inutiles).
 
 **I. Écart modèle↔implémentation.** N/A — pure orchestration technique,
 aucune formule.
 
-**J. Limites réelles.** Testé explicitement avec le catalogue et le
-mapping réels (`C_{i,h}` restreint à 1 candidat) : le pipeline reste
-robuste (`deployment_plan` non vide dans ce cas précis grâce à l'audit de
-la section 4.3.3), mais l'exemple `orchestrator_example.py` par défaut
-utilise encore un catalogue synthétique de démonstration distinct.
-**`run_pipeline` n'a PAS été rebranché sur le RAG contextuel par candidat**
-(réf. tâche « renforcer le RAG utilisé par SP2 », section 4.4.2) : il
-continue d'utiliser une requête unique par candidat
-(`retrieve`/`retrieve_semantic`/`retrieve_hybrid`), pas encore
-`RagCandidateContext` -> `build_rag_queries` ->
-`build_candidate_evidence_bundle` -> `evidence_by_family`. Les deux
-chaînes RAG restent fonctionnelles et testées séparément ; le rebranchement
-de l'orchestrateur sur le pipeline contextuel est une limite ouverte,
-explicitement hors du périmètre de cette passe.
+**J. Limites réelles.** `examples/orchestrator_example.py` utilise
+désormais les DONNÉES RÉELLES du projet (catalogue 51 mécanismes, mapping
+591 relations, catalogue opérationnel réel 42 référencés/30 activés,
+index RAG persisté 1306 chunks) sur une instance volontairement PETITE (3
+occurrences, 2 emplacements) — choisie pour que l'énumération exhaustive
+de l'optimiseur reste exécutable (6 configurations au maximum), pas pour
+limiter artificiellement les données utilisées (réf. tâche §25/§26,
+jamais de Top-K arbitraire sur `C_{i,h}`). L'ancienne limite (« catalogue
+synthétique de démonstration distinct ») est donc levée.
 
 **K. Artefact/capture.** C7 (`AVAILABLE`) —
-`docs/chapter4/screenshots/09_pipeline/pipeline_result.png` (2067×1654 px,
-généré par `tools/chapter4_figures/c7_pipeline.py`).
+`docs/chapter4/screenshots/09_pipeline/pipeline_result.png` (2410×1858 px,
+généré par `tools/chapter4_figures/c7_pipeline.py`) — étapes affichées
+désormais identiques au pipeline de C4 (réf. tâche §27, C4 et C7 ne
+doivent plus décrire deux architectures différentes).
 
 **L. Formulation à ne pas utiliser.** Ne pas écrire « le pipeline exécute
 les annotations en parallèle » — traitement strictement séquentiel, un
-candidat à la fois.
+candidat à la fois. Ne pas écrire « `run_pipeline` utilise une requête
+RAG unique par candidat » — c'est désormais FAUX (réf. §2/§3 de la tâche
+« maturation technique finale ») : trois requêtes par candidat, via le
+RAG contextuel. Ne pas écrire « l'exemple bout-en-bout utilise un
+catalogue synthétique » — il utilise désormais le catalogue, le mapping
+et le catalogue opérationnel réels, sur une instance volontairement
+petite.
 
 ### 4.5.2 Conservation des annotations et preuves
 
@@ -1209,27 +1256,40 @@ annotation LLM réelle.
 | « SP1 dépend réellement du graphe/SI courants (module runtime, pas pré-calculé) » | `src/admissibility.py::build_admissibility_report` | — | `tests/test_admissibility.py::TestAdmissibilityReport::test_criterion_j_same_organization_different_graph_different_c_i_h` | — | **VALIDÉ** (même D_org + M, graphes différents ⇒ C_i_h différents) |
 | « Le RAG sémantique (embeddings) récupère des passages D3FEND/Engage/littérature, avec un Recall@5 supérieur au RAG lexical » | `src/semantic_embedder.py`/`src/vector_index.py`/`src/rag_indexer.py`/`src/rag_retriever.py` | staging (149 chunks D3FEND+Engage+littérature, avant ajout ATT&CK), 17 requêtes réelles (`data/rag/rag_eval_queries.json`) | `rag_semantic_evaluation.json` | — | **VALIDÉ SUR L'ANCIEN CORPUS** (Recall@5 sémantique 0.396 > lexical 0.331 ; hybride alpha=0.8 : 0.470) — non re-validé contre le corpus élargi ATT&CK, réf. chapitre 5 |
 | « Pour un candidat admissible réel, le RAG construit trois requêtes distinctes (realism/interaction/effect), récupère depuis ATT&CK+D3FEND+Engage+littérature, reranke avec un cross-encoder réel, et produit un `CandidateEvidenceBundle` tracé » | `src/rag_candidate_context.py`, `src/rag_query_builder.py`, `src/rag_evidence.py`, `src/reranker.py` | corpus réel 1306 chunks (`data/attack/staging/`, `data/deception/staging/`) | `python -m examples.rag_sp2_context_example` → `rag_candidate_context_example.json`, `rag_queries_example.json`, `rag_evidence_bundle_example.json` | C4 | **VALIDÉ** (candidat réel `T1566@WS01`/`EAC0009`/`mailbox-ws01`, reranker `cross-encoder/ms-marco-MiniLM-L-6-v2` réellement exécuté) |
+| « L'index RAG sémantique est réellement persisté OFFLINE et rechargé ONLINE sans jamais ré-encoder les textes, avec détection explicite d'un index périmé » | `src/rag_index_store.py::save_rag_index`/`load_rag_index`, `tools/rag/build_index.py` | `data/rag/index/` (non versionné, régénérable) + `docs/chapter4/outputs/rag_index_manifest.json` (preuve versionnée) | `python -m tools.rag.build_index` puis `load_rag_index` | — | **VALIDÉ** (`tests/test_rag_index_store.py` : round-trip retrieval identique avant/après rechargement, `FakeEmbedder.encode` prouvé jamais rappelé au chargement, hash/modèle/dimension/schema_version/chunk_count incompatibles lèvent tous une erreur explicite) |
 | « Le LLM réel produit les 11 sous-métriques » | `RealLlmAnnotator` | preuves RAG (regroupées par famille, `evidence_by_family`) | `llm_annotation_real.json` | C5 | **NON VALIDÉ** — code prêt et testé (mocks), aucune exécution réelle dans cet environnement |
 | « Le repli déterministe produit les 11 sous-métriques sans LLM réel » | `RuleBasedStubAnnotator` | preuves RAG | `llm_annotation_example.json` | — | **VALIDÉ** (explicitement marqué `rule_based_stub`) |
 | « Les agrégats `Realisme`/`P_interaction`/`P_engagement`/`Effet_prog`/`DE` sont calculés par code, jamais par le LLM » | `src/annotation_validator.py` | 11 `Annotation` (stub ou réel) | `frozen_annotations_example.csv` | C6 (stub) | **VALIDÉ** (formules) ; table figée à partir d'un LLM réel **NON VALIDÉE** |
 | « Le moteur SP3 reproduit exactement l'ancre de validation du chapitre 3 » | `src/risk_engine.py` | scénario analytique CLAUDE.md §20 | `test_reference_example` | — (chapitre 5) | **VALIDÉ** (tolérance `1e-3`) |
 | « L'optimiseur résout `(P)` par énumération exhaustive avec front de Pareto » | `src/optimizer.py` | `C_{i,h}` + coûts | `optimizer_example.txt` | — (chapitre 5) | **VALIDÉ** |
-| « L'orchestrateur exécute le pipeline complet de bout en bout » | `src/orchestrator.py` | catalogue/mapping réels + RAG réel | `pipeline_example.txt` | C7 | **VALIDÉ** (avec repli déterministe, pas de LLM réel) |
-| « Aucun appel LLM ni aucune dépendance RAG n'a lieu pendant le calcul du risque ou l'optimisation » | tests `ast` dédiés sur `risk_engine.py`/`optimizer.py`/`reporter.py`/`admissibility.py` (incluant `semantic_embedder.py`/`vector_index.py`/`rag_candidate_context.py`/`rag_query_builder.py`/`rag_evidence.py`/`reranker.py`, `tests/test_rag_sp2_separation.py`) | — | `pytest -v` (761 tests + 4 optionnels : 2 `real_llm`, 2 `real_reranker`) | — | **VALIDÉ** |
+| « L'orchestrateur exécute le pipeline complet de bout en bout, avec le RAG contextuel comme chemin de référence unique, sur des données réelles » | `src/orchestrator.py::run_pipeline`, `src/rag_index_store.py::load_rag_index` | catalogue 51 mécanismes + mapping 591 relations + catalogue opérationnel réel (42 référencés/30 activés) + index RAG persisté 1306 chunks | `python -m examples.orchestrator_example` → `pipeline_example.txt` | C7 | **VALIDÉ** (3 candidats admissibles, 6 configurations énumérées, avec repli déterministe `rule_based_stub` explicitement marqué technical integration fallback, pas de LLM réel) |
+| « Aucun appel LLM ni aucune dépendance RAG n'a lieu pendant le calcul du risque ou l'optimisation » | tests `ast` dédiés sur `risk_engine.py`/`optimizer.py`/`reporter.py`/`admissibility.py` (incluant `semantic_embedder.py`/`vector_index.py`/`rag_candidate_context.py`/`rag_query_builder.py`/`rag_evidence.py`/`reranker.py`, `tests/test_rag_sp2_separation.py`) | — | `pytest -v` (796 tests + 4 optionnels : 2 `real_llm`, 2 `real_reranker`) | — | **VALIDÉ** |
 
 ---
 
 ## Note de clôture
 
-La chaîne catalogue→mapping→SP1→candidat admissible→RAG contextuel→LLM
-est désormais entièrement matérialisée jusqu'au RAG inclus : pour tout
-candidat réellement admissible produit par SP1, le RAG construit trois
-requêtes distinctes par famille de sous-métriques, récupère et reranke
-des preuves issues d'ATT&CK, D3FEND, Engage et de la littérature, et
-produit un `CandidateEvidenceBundle` entièrement tracé (voir
-`examples/rag_sp2_context_example.py` et section 4.4.2). La seule rupture
-restante est l'absence d'un service LLM réel dans cet environnement
-d'exécution — le code, la validation stricte de sortie (désormais avec
-preuves regroupées par famille), et la commande de reproduction locale
-sont tous prêts et testés (761 tests verts + 4 tests d'intégration
-optionnels : 2 `pytest -m real_llm`, 2 `pytest -m real_reranker`).
+La chaîne OFFLINE→ONLINE est désormais entièrement intégrée de bout en
+bout dans le chemin d'exécution de référence : ATT&CK+D3FEND+Engage+
+littérature → chunking+métadonnées → embeddings → index FAISS →
+**persistance sur disque** (`tools/rag/build_index.py`) ; puis, au
+runtime, `src/orchestrator.py::run_pipeline` **recharge cet index
+persisté** (jamais de ré-encodage), exécute SP1 sur le graphe/SI
+courants, et pour CHAQUE candidat admissible construit
+`RagCandidateContext` → trois requêtes par famille → retrieval large +
+reranking (cross-encoder réel, chargé UNE SEULE FOIS par run) +
+diversification → `CandidateEvidenceBundle` → `AnnotationContext`
+(preuves regroupées par famille) → annotation → gel déterministe de `DE`
+→ SP3 → optimiseur → rapport `Y*`. Il n'existe plus de second chemin RAG
+dans le pipeline de référence — l'ancien chemin à requête unique reste
+disponible uniquement comme legacy/experimental retrieval API pour les
+tests et une future comparaison expérimentale.
+`examples/orchestrator_example.py` démontre cette chaîne complète sur des
+DONNÉES RÉELLES du projet (catalogue 51 mécanismes, mapping 591
+relations, catalogue opérationnel réel, index RAG persisté 1306 chunks),
+sur une instance volontairement petite pour que l'énumération exhaustive
+de l'optimiseur reste exécutable. La seule rupture restante est
+l'absence d'un service LLM réel dans cet environnement d'exécution — le
+code, la validation stricte de sortie (avec preuves regroupées par
+famille), et la commande de reproduction locale sont tous prêts et
+testés.

@@ -1,0 +1,9 @@
+{
+  "src_modules": 24,
+  "tools_deception_kb_modules": 5,
+  "tools_attack_kb_modules": 1,
+  "tools_rag_modules": 1,
+  "example_scripts": 17,
+  "test_files": 34,
+  "chapter4_output_files": 27
+}

@@ -33,8 +33,8 @@ Status: AVAILABLE
 Module: (aucun module de code — structure du dépôt)
 Fichier de sortie: docs/chapter4/outputs/architecture_tree.txt
 Générateur: tools/chapter4_figures/c1_architecture.py (python -m tools.chapter4_figures.c1_architecture)
-Capture: docs/chapter4/screenshots/01_architecture/architecture_tree.png (1900×2475 px, fond blanc)
-Ce qui est visible: src/ (15 modules), tools/deception_kb/ (couche offline, catalog_builder.py/mapping_builder.py), data/deception/ (catalogue + mapping réels + staging résumé), examples/ (16 scripts), tests/ (21 fichiers, résumé), docs/chapter4/ (rapports + outputs résumé).
+Capture: docs/chapter4/screenshots/01_architecture/architecture_tree.png (1900×3420 px, fond blanc)
+Ce qui est visible: src/ (24 modules), tools/deception_kb/ (couche offline KB déception), tools/attack_kb/ (couche offline corpus RAG ATT&CK), tools/rag/ (builder offline de l'index RAG persisté), data/deception/ (catalogue + mapping réels + staging résumé), examples/ (17 scripts), tests/ (résumé), docs/chapter4/ (rapports + outputs résumé). Compteurs RECALCULÉS automatiquement à chaque génération (réf. tâche « maturation technique finale » §29, docs/chapter4/outputs/module_counts.json) — jamais retapés à la main.
 Rôle dans le chapitre 4: Section 4.1.2 — Organisation du projet.
 ```
 
@@ -117,13 +117,13 @@ Repli documenté (PAS cette capture) : docs/chapter4/outputs/frozen_annotations_
 
 ```
 Status: AVAILABLE
-Module: src/orchestrator.py
+Module: src/orchestrator.py (RAG contextuel désormais chemin de référence unique, réf. tâche « maturation technique finale du chapitre 4 »)
 Fichier de sortie: docs/chapter4/outputs/pipeline_example.txt + runs/chapter4-example/*.json (régénérable, non versionné)
 Générateur: tools/chapter4_figures/c7_pipeline.py (python -m tools.chapter4_figures.c7_pipeline)
-Capture: docs/chapter4/screenshots/09_pipeline/pipeline_result.png (2067×1654 px, fond blanc)
-Ce qui est visible: run_id, candidats évalués/admissibles, la liste des 8 étapes exécutées (Candidats, Retrieval, Annotations, Table figée, Coûts, Plan, Risques, Manifest) sous forme de coches, et la liste des 11 fichiers réellement produits (input_manifest.json, candidates.json, retrieval.json, annotations_raw.json, annotations_frozen.json, costs.json, pareto.json, deployment_plan.json, deployment_report.json, risks.json, run_manifest.json).
+Capture: docs/chapter4/screenshots/09_pipeline/pipeline_result.png (2410×1858 px, fond blanc)
+Ce qui est visible: run_id, candidats évalués/admissibles, la liste des 11 étapes exécutées (Candidats [SP1], Contexte RAG [RagCandidateContext], Requêtes Q_realism/Q_interaction/Q_effect, Retrieval+reranking+diversification, CandidateEvidenceBundle, Annotations [SP2], Table figée, Coûts, Plan, Risques, Manifest) sous forme de coches — MÊME pipeline que C4, jamais une architecture différente — et la liste des fichiers réellement produits (input_manifest.json, candidates.json, candidate_contexts.json, rag_queries.json, evidence_bundles.json, annotations_raw.json, annotations_frozen.json, costs.json, pareto.json, deployment_plan.json, deployment_report.json, risks.json, run_manifest.json).
 Rôle dans le chapitre 4: Section 4.5.1 — Enchaînement des traitements.
-Note: cette exécution utilise le repli déterministe rule_based_stub (aucun provider LLM réel disponible) — sert à démontrer l'intégration technique bout-en-bout. Les valeurs numériques de risque et le front de Pareto (réservés au chapitre 5) ne sont volontairement PAS mis en avant dans cette figure — seule l'étape "Risques" est cochée comme complétée.
+Note: exécuté sur les DONNÉES RÉELLES du projet (catalogue 51 mécanismes, mapping 591 relations, catalogue opérationnel réel, index RAG persisté 1306 chunks, reranker cross-encoder réel) et une instance volontairement petite (réf. tâche §25/§26). Le repli déterministe rule_based_stub (aucun provider LLM réel disponible, explicitement labellisé technical integration fallback) sert à démontrer l'intégration technique bout-en-bout. Les valeurs numériques de risque et le front de Pareto (réservés au chapitre 5) ne sont volontairement PAS mis en avant dans cette figure — seule l'étape "Risques" est cochée comme complétée.
 ```
 
 ## Notes de suivi

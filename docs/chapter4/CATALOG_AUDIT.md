@@ -178,16 +178,16 @@ séparation) — conservé pour traçabilité du raisonnement, pas comme descrip
 
 ## 7. Résumé chiffré (réf. `docs/chapter4/outputs/catalog_statistics.json`)
 
-- 51 mécanismes catalogués (9 D3FEND, 15 MITRE Engage, 25 littérature — dont 2 génériques déjà
-  présents avant cette passe et 23 nouveaux, section 8) ;
+- 51 mécanismes catalogués (9 D3FEND, 15 MITRE Engage, 27 littérature — dont 2 génériques déjà
+  présents avant cette passe (`LIT-HONEYPOT`, `LIT-HONEYTOKEN`) et 25 nouveaux, section 8) ;
 - 18 mécanismes disposent d'au moins une relation M_{i,d} (591 relations au total : 464 directes
   MITRE Engage + 127 dérivées D3FEND) — inchangé par l'extension littérature : aucune relation
   ATT&CK n'a été fabriquée pour les 25 nouveaux mécanismes, faute de staging le permettant ;
 - 271 techniques ATT&CK Enterprise distinctes couvertes (vs. ~125 techniques → 3 mécanismes avant
   la première extension) ;
-- 33 mécanismes n'ont encore aucune relation ATT&CK tracée (les 6 D3FEND étendus, les 25 mécanismes
-  littérature de la section 8, D3-DPR et D3-DP en étant déjà 2) — limite documentée, pas comblée
-  artificiellement (§9 de la tâche).
+- 33 mécanismes n'ont encore aucune relation ATT&CK tracée (les 6 D3FEND étendus — dont D3-DPR et
+  D3-DP — et les 27 mécanismes littérature, les 2 génériques initiaux inclus) — limite documentée,
+  pas comblée artificiellement (§9 de la tâche).
 
 ## 8. Extension vers ≥ 50 mécanismes — 25 mécanismes littérature supplémentaires
 

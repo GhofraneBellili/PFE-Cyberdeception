@@ -94,7 +94,7 @@ jour).
 
 CI GitHub Actions : verte sur `implementation/chapter4` à chaque commit
 documenté ci-dessous (`.github/workflows/tests.yml`, déclenchée sur
-`push`/`pull_request`). 761 tests (+ 4 optionnels : 2 `pytest -m
+`push`/`pull_request`). 796 tests (+ 4 optionnels : 2 `pytest -m
 real_llm`, 2 `pytest -m real_reranker`, exclus par défaut) au moment de
 ce document.
 
@@ -2328,6 +2328,161 @@ Rebrancher `run_pipeline` sur le pipeline RAG contextuel (`RagCandidateContext`
 `evidence_by_family`) ; exécution réelle du LLM une fois qu'un provider
 est configuré. Chapitre 5 (validation expérimentale comparative
 TF-IDF/sémantique/hybride/reranking) explicitement hors périmètre.
+
+### Étape 23 — Maturation technique finale : orchestration contextuelle intégrée, persistance OFFLINE/ONLINE, traçabilité de bout en bout
+
+*(branche `implementation/chapter4`)*
+
+#### Objectif
+
+Fermer la rupture laissée par l'Étape 22 : le RAG contextuel par candidat
+fonctionnait dans `examples/rag_sp2_context_example.py`, mais
+`src/orchestrator.py::run_pipeline` — le chemin d'EXÉCUTION DE RÉFÉRENCE
+— continuait d'utiliser l'ancienne requête unique par candidat. Réf.
+tâche « maturation technique finale du chapitre 4 » : intégrer
+l'architecture existante de bout en bout, sans ajouter de nouvelle
+fonctionnalité conceptuelle et sans toucher au modèle mathématique du
+chapitre 3.
+
+#### Traitement réalisé
+
+**Persistance réelle de l'index RAG OFFLINE/ONLINE**
+(`src/rag_index_store.py`, nouveau) : `save_rag_index`/`load_rag_index`
+sérialisent un `SemanticRagIndex` sur disque
+(`chunks.json`+`embeddings.npy`+`faiss.index` si backend faiss+
+`manifest.json`) et le rechargent SANS jamais ré-encoder aucun texte
+(vérifié par test : `FakeEmbedder.encode` monkeypatché pour lever une
+erreur s'il est appelé pendant `load_rag_index` — jamais rappelé).
+`compute_corpus_hash` (SHA-256, ordre normalisé par `chunk_id`,
+dépendant de `text_hash`+`metadata`) détecte un index périmé par rapport
+au corpus actuellement reconstruit depuis le staging.
+`load_rag_index` vérifie `schema_version`/`chunk_count`/dimension/modèle
+d'embedding/hash de corpus à l'ouverture — toute incompatibilité lève
+`RagIndexStoreError` explicite, jamais un repli silencieux vers un index
+périmé. Builder OFFLINE dédié : `tools/rag/build_index.py`
+(`python -m tools.rag.build_index`), qui assemble les QUATRE sources
+(ATT&CK+D3FEND+Engage+littérature) avant persistance — a révélé et
+corrigé un bug réel (le glob `attack_rag_seed_*.json` captait aussi le
+rapport d'extraction `attack_rag_seed_report_*.json`, produisant
+silencieusement 0 chunk ATT&CK ; corrigé par exclusion explicite du nom
+de fichier, dans le builder ET dans `examples/rag_sp2_context_example.py`
+qui partageait le même motif). Index réel persisté :
+**1306 chunks** (1157 ATT&CK, 44 D3FEND, 62 Engage, 43 littérature),
+`data/rag/index/` (gitignoré, artefact binaire régénérable en une
+commande) — preuve versionnée :
+`docs/chapter4/outputs/rag_index_manifest.json`.
+
+**`run_pipeline` rebranché sur le RAG contextuel**
+(`src/orchestrator.py`) : nouvelle signature —
+`lexical_index`/`semantic_index`/`reranker` reçus DÉJÀ CHARGÉS par
+l'appelant (jamais reconstruits par candidat, réutilisés pour tout le
+run) remplacent `rag_index`/`rag_hybrid_lexical_index`/`rag_hybrid_alpha`.
+Pour chaque candidat admissible : `build_rag_candidate_context` →
+`build_rag_queries` → `build_candidate_evidence_bundle` →
+`to_annotation_evidence` → `AnnotationContext` (`evidence_by_family`) →
+annotation. L'ancien chemin à requête unique
+(`retrieve`/`retrieve_semantic`/`retrieve_hybrid`) reste disponible
+comme **legacy/experimental retrieval API** (tests, baseline, future
+comparaison chapitre 5) mais n'est plus appelé par `run_pipeline`.
+Nouveaux fichiers de traçabilité par run :
+`candidate_contexts.json`/`rag_queries.json`/`evidence_bundles.json`
+(indexés par `candidate_id`) ; `run_manifest.json` étendu avec les
+métadonnées RAG (corpus_version, corpus_hash, embedding_model,
+reranker_model, retrieval_candidates, final_top_k,
+diversity_max_per_document, hybrid_alpha), LLM (provider, model,
+annotation_set_version, prompt_version) et catalogues
+(deception_catalog_version, organization_catalog_version,
+mapping_version) — tous optionnels, jamais de secret/clé API, jamais une
+valeur devinée en leur absence.
+
+**Exemple bout-en-bout sur données réelles**
+(`examples/orchestrator_example.py`, réécrit) : catalogue de
+connaissances réel (51 mécanismes), mapping réel (591 relations),
+catalogue opérationnel réel (`organization_deception_catalog.json`, 42
+référencés/30 activés), index RAG persisté rechargé, reranker
+cross-encoder réel chargé UNE SEULE FOIS pour tout le run — sur une
+instance volontairement PETITE (3 occurrences, 2 emplacements),
+dimensionnée empiriquement pour que `C_i_h` reste réduit (3 candidats
+admissibles, 6 configurations au maximum pour l'énumération exhaustive)
+SANS Top-K arbitraire ni catalogue synthétique. `RuleBasedStubAnnotator`
+est explicitement labellisé **technical integration fallback** dans le
+code et la sortie — jamais présenté comme une annotation LLM réelle.
+
+**Tests d'intégration** : `tests/test_rag_index_store.py` (27 tests —
+round-trip retrieval identique avant/après sauvegarde, non-ré-encodage
+prouvé, 7 scénarios d'index périmé/corrompu levant tous une erreur
+explicite), `tests/test_build_rag_index.py` (non-régression sur le bug
+du fichier de rapport), `tests/test_orchestrator.py` (réécrit — pipeline
+contextuel, 3 requêtes par candidat, preuves des 3 familles
+DISTINCTES effectivement transmises à `AnnotationContext.evidence_by_family`,
+traçabilité du run_manifest étendu), extension de
+`tests/test_rag_sp2_separation.py`.
+
+**Figures** : C4 inchangée dans son architecture (déjà correcte depuis
+l'Étape 22) ; C7 réécrite pour afficher EXACTEMENT les mêmes étapes que
+C4 (contexte RAG, 3 requêtes, retrieval+reranking+diversification,
+evidence bundle) — C4 et C7 ne décrivent plus deux architectures
+différentes ; C1 étendue (`tools/attack_kb/`, `tools/rag/`) et compteurs
+de modules désormais RECALCULÉS automatiquement
+(`tools/chapter4_figures/c1_architecture.py::compute_module_counts` →
+`docs/chapter4/outputs/module_counts.json`) plutôt que retapés à la main
+dans la prose.
+
+**Nettoyage documentaire** : correction d'une erreur réelle découverte
+lors de cette passe — le catalogue compte **27** mécanismes littérature
+(2 génériques initiaux + 25 ajoutés à l'Étape 21), pas 25 comme
+documenté par erreur à plusieurs endroits (la confusion venait du
+nombre de mécanismes NOUVELLEMENT ajoutés, jamais corrigé en total).
+Correction du compte `src/` (24 modules, pas 15/18) et d'un alpha hybride
+resté à 0.5 dans un tableau alors que le code utilise 0.8.
+
+#### Résultat réel
+
+`python -m examples.orchestrator_example` : 204 candidats évalués, 3
+admissibles, 6 configurations énumérées (4 faisables), front de Pareto
+de taille 1, plan de déploiement non vide (`EAC0009`/`mailbox-ws01` sur
+`T1566@WS01`). Risque terminal (`T1003@DC01`) : 0.1190 sans déception →
+0.0440 avec déception (repli déterministe, pas un résultat chapitre 5).
+
+#### Sorties
+
+`data/rag/index/` (gitignoré), `docs/chapter4/outputs/rag_index_manifest.json`,
+`docs/chapter4/outputs/module_counts.json`, `docs/chapter4/outputs/pipeline_example.txt`
+régénéré, figures C1/C7 régénérées.
+
+#### Fichiers concernés
+
+`src/rag_index_store.py` (nouveau), `tools/rag/build_index.py` (nouveau),
+`src/orchestrator.py` (rewiring complet), `src/rag_evidence.py`
+(`candidate_evidence_bundle_to_dict`), `examples/orchestrator_example.py`
+(réécrit), `examples/rag_sp2_context_example.py` (correction du bug de
+sélection du fichier de staging ATT&CK), `tools/chapter4_figures/c1_architecture.py`,
+`tools/chapter4_figures/c7_pipeline.py`, `.gitignore` (`data/rag/index/`),
+`tests/test_rag_index_store.py` (nouveau), `tests/test_build_rag_index.py`
+(nouveau), `tests/test_orchestrator.py` (réécrit).
+
+#### Tests et validation
+
+Voir le décompte exact dans la sortie finale de cette tâche (§39) — tous
+les tests existants restent verts, suite standard toujours hors ligne
+(aucun téléchargement, aucun appel réseau réel pendant `pytest`).
+
+#### Limites actuelles
+
+Le catalogue opérationnel reste une fixture d'étude de cas (aucune
+organisation réelle consultée). 33 des 51 mécanismes de connaissance
+(18 en ont une) n'ont encore aucune relation `M_{i,d}` tracée. `Pertinent`
+reste une règle topologique à un saut (extension multi-hop : perspective
+future). L'optimiseur reste une énumération exhaustive, exacte sur
+petites instances mais non scalable. Aucun service LLM réel exécuté
+durant cette passe.
+
+#### Lien avec l'étape suivante
+
+Exécution réelle du LLM une fois qu'un provider est configuré par
+l'utilisateur. Chapitre 5 (validation expérimentale, scalabilité de
+l'optimiseur, complétion du mapping M_{i,d}) explicitement hors
+périmètre.
 
 ## OPEN_DECISION en cours
 
