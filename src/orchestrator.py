@@ -1,13 +1,21 @@
 """
 Réf. architecture : "19. Workflow complet d'exécution" (CLAUDE.md §19) et
 section « Orchestrateur » de la tâche d'implémentation du chapitre 4.
+Réf. tâche « maturation technique finale du chapitre 4 » §2/§3 : SP2 est
+désormais le pipeline RAG CONTEXTUEL par candidat (production/reference
+pipeline), plus l'ancien chemin à requête unique.
 
 Point d'entrée unique enchaînant, sur une instance déjà validée :
 
-    SP1 (admissibility) -> RAG (rag_indexer/rag_retriever) ->
-    annotation des 11 sous-métriques (annotator_llm) ->
-    validation + agrégation + gel (annotation_validator) ->
-    coût (cost_engine) -> résolution de (P) (optimizer) -> propagation
+    SP1 (admissibility)
+    -> pour chaque candidat admissible (T_i,h,d,l) :
+       RagCandidateContext -> Q_realism/Q_interaction/Q_effect
+       -> CandidateEvidenceBundle (retrieval large + reranking +
+          diversification, src/rag_evidence.py)
+       -> AnnotationContext (evidence_by_family) -> annotation des 11
+          sous-métriques (annotator_llm)
+    -> validation + agrégation + gel (annotation_validator)
+    -> coût (cost_engine) -> résolution de (P) (optimizer) -> propagation
     du risque de la configuration sélectionnée (risk_engine, avant/après)
     -> transformation de y* en Y* (reporter, §17.6)
 
@@ -15,6 +23,25 @@ Chaque étape est déjà testée indépendamment dans son propre module ; ce
 module ne fait qu'assembler les appels et sérialiser les résultats
 intermédiaires dans `runs/<run_id>/`, un fichier par étape (§16 de la
 tâche : « Only create files actually produced »).
+
+**production/reference SP2 contextual pipeline (ce module)** : `run_pipeline`
+utilise EXCLUSIVEMENT `build_rag_candidate_context` ->
+`build_rag_queries` -> `build_candidate_evidence_bundle` ->
+`to_annotation_evidence` (réf. tâche §3). L'ancien chemin à requête
+unique (`src/rag_retriever.py::retrieve`/`retrieve_semantic`/
+`retrieve_hybrid`, un seul jeu de preuves envoyé identiquement aux 11
+sous-métriques) reste disponible et testé comme **legacy/experimental
+retrieval API** — utile en test, en baseline de comparaison, ou pour une
+future évaluation expérimentale (chapitre 5) — mais N'EST PLUS appelé par
+`run_pipeline` (réf. tâche §4).
+
+**Objets chargés UNE SEULE FOIS par run, jamais par candidat** (réf.
+tâche §12/§13) : `reranker`, `semantic_index`/`lexical_index`, `embedder`,
+la configuration RAG (`retrieval_candidates`/`final_top_k`/
+`diversity_max_per_document`/`hybrid_alpha`) — tous reçus déjà construits/
+chargés par l'appelant (typiquement depuis un index RAG persisté,
+`src/rag_index_store.py::load_rag_index`), jamais reconstruits dans la
+boucle candidat par candidat.
 
 **Invariant central du projet (LLM hors du chemin d'exécution)** :
 l'annotation LLM (`annotator_llm`) n'est appelée qu'UNE SEULE fois par
@@ -38,10 +65,20 @@ from src.admissibility import build_admissibility_report
 from src.annotation_validator import freeze_table
 from src.annotator_llm import AnnotationProvider
 from src.cost_engine import compute_cost_by_mechanism
+from src.knowledge_attack import AttackKnowledgeBase
 from src.optimizer import OptimizerError, solve
+from src.rag_candidate_context import build_rag_candidate_context
+from src.rag_config import (
+    DEFAULT_DIVERSITY_MAX_PER_DOCUMENT,
+    DEFAULT_FINAL_TOP_K,
+    DEFAULT_RETRIEVAL_CANDIDATES,
+)
+from src.rag_evidence import build_candidate_evidence_bundle, candidate_evidence_bundle_to_dict, to_annotation_evidence
 from src.rag_indexer import RagIndex, SemanticRagIndex
-from src.rag_retriever import DEFAULT_HYBRID_ALPHA, retrieve, retrieve_hybrid, retrieve_semantic, to_deception_evidence
+from src.rag_query_builder import build_rag_queries
+from src.rag_retriever import DEFAULT_HYBRID_ALPHA
 from src.reporter import build_deployment_report
+from src.reranker import Reranker
 from src.risk_engine import propagate_risk
 from src.schemas import (
     AnnotationContext,
@@ -79,10 +116,9 @@ def run_pipeline(
     catalog: dict[str, DeceptionMechanism],
     organization_catalog: dict[str, OrganizationDeceptionCapability],
     mapping: dict[str, list[str]],
-    rag_index: RagIndex | SemanticRagIndex,
-    rag_hybrid_lexical_index: RagIndex | None = None,
-    rag_hybrid_alpha: float = DEFAULT_HYBRID_ALPHA,
-    rag_embedder: object | None = None,
+    lexical_index: RagIndex,
+    semantic_index: SemanticRagIndex,
+    reranker: Reranker,
     annotator: AnnotationProvider,
     cost_inputs_by_mechanism: dict[str, dict],
     horizon: float,
@@ -93,12 +129,25 @@ def run_pipeline(
     q_by_occurrence: dict[str, float],
     impact_by_occurrence: dict[str, float],
     annotation_set_version: str,
-    top_k_evidence: int = 3,
+    attack_kb: AttackKnowledgeBase | None = None,
+    rag_embedder: object | None = None,
+    retrieval_candidates: int | None = None,
+    final_top_k: int | None = None,
+    diversity_max_per_document: int | None = None,
+    hybrid_alpha: float = DEFAULT_HYBRID_ALPHA,
+    rag_index_manifest: dict | None = None,
+    deception_catalog_version: str | None = None,
+    organization_catalog_version: str | None = None,
+    mapping_version: str | None = None,
+    llm_provider: str | None = None,
+    llm_model: str | None = None,
+    prompt_version: str | None = None,
     output_root: Path | str = Path("runs"),
 ) -> dict[str, Any]:
-    """Réf. §19 (workflow complet) : enchaîne SP1 -> RAG -> annotation ->
-    gel -> coût -> `(P)` -> reporting avant/après, et sauvegarde chaque
-    étape dans `runs/<run_id>/`.
+    """Réf. §19 (workflow complet) + réf. tâche « maturation technique
+    finale du chapitre 4 » §2/§3 : enchaîne SP1 -> RAG CONTEXTUEL par
+    candidat -> annotation -> gel -> coût -> `(P)` -> reporting
+    avant/après, et sauvegarde chaque étape dans `runs/<run_id>/`.
 
     `catalog` : catalogue de CONNAISSANCES (réf. tâche « separate
     knowledge and organization capabilities ») — décrit ce que sont les
@@ -109,22 +158,39 @@ def run_pipeline(
     SP1 est exécuté ICI, au runtime, à partir du graphe/SI COURANTS —
     jamais pré-calculé hors ligne.
 
-    Trois moteurs RAG possibles pour `rag_index`, réf. tâche « RAG
-    sémantique » / §3 « fusion hybride » :
-    - `RagIndex` (lexical TF-IDF, baseline) ;
-    - `SemanticRagIndex` seul (moteur principal) ;
-    - `SemanticRagIndex` + `rag_hybrid_lexical_index` (fusion hybride,
-      `DEFAULT_HYBRID_ALPHA` déterminé par
-      `docs/chapter4/outputs/rag_semantic_evaluation.json`) — mode retenu
-      pour la relecture finale car il obtient le meilleur Recall@5 mesuré.
+    **RAG contextuel (production/reference pipeline, réf. tâche §3)** :
+    pour CHAQUE candidat admissible `(T_{i,h}, d, l)`,
+    `build_rag_candidate_context` -> `build_rag_queries` ->
+    `build_candidate_evidence_bundle` (`src/rag_evidence.py`, retrieval
+    large + reranking + diversification sur `lexical_index`/
+    `semantic_index`/`reranker`) -> `to_annotation_evidence`
+    (`evidence_by_family`). L'ancien chemin à requête unique
+    (`src/rag_retriever.py::retrieve`/`retrieve_semantic`/
+    `retrieve_hybrid`) N'EST PLUS appelé ici — il reste une
+    **legacy/experimental retrieval API**, disponible pour les tests et
+    une future comparaison expérimentale (chapitre 5), mais plus le
+    chemin de référence de `run_pipeline`.
 
-    `rag_embedder` : embedder déjà chargé (`src.semantic_embedder.load_embedder`),
-    réutilisé pour CHAQUE requête sémantique/hybride de la boucle
-    d'annotation — évite de recharger un modèle `sentence-transformers`
-    candidat par candidat. Ignoré si `rag_index` est un `RagIndex` lexical
-    pur. `None` par défaut : `retrieve_semantic`/`retrieve_hybrid`
-    rechargent alors le modèle déclaré par l'index à chaque appel (utile
-    en test avec un embedder factice injecté directement dans l'index).
+    `lexical_index`/`semantic_index`/`reranker`/`attack_kb`/`rag_embedder`
+    sont reçus DÉJÀ CONSTRUITS/CHARGÉS par l'appelant (typiquement depuis
+    un index RAG persisté, `src/rag_index_store.py::load_rag_index`, et un
+    reranker chargé une seule fois, `src/reranker.py::CrossEncoderReranker.load`)
+    — jamais reconstruits ici, et jamais recréés par candidat (réf. tâche
+    §12/§13) : un seul appel de `run_pipeline` les réutilise pour tous les
+    candidats du run.
+
+    `rag_index_manifest`/`deception_catalog_version`/
+    `organization_catalog_version`/`mapping_version`/`llm_provider`/
+    `llm_model`/`prompt_version` : métadonnées de traçabilité PUREMENT
+    déclaratives (réf. tâche §14, jamais recalculées ni devinées ici) —
+    fournies par l'appelant depuis les objets déjà chargés
+    (`src/rag_index_store.py::load_rag_index` retourne exactement le
+    manifest attendu par `rag_index_manifest` ;
+    `src/annotator_llm.py::detect_provider` fournit `llm_provider`/
+    `llm_model`). Toutes optionnelles (`None` par défaut, omises du
+    `run_manifest` si non fournies) — jamais de valeur inventée en leur
+    absence (§25.3). Ne jamais y inclure de clé API, secret ou jeton
+    (réf. tâche §14).
 
     Retourne un résumé en mémoire (mêmes données que les fichiers écrits)
     pour usage programmatique immédiat, en plus de la persistance sur
@@ -132,17 +198,6 @@ def run_pipeline(
     """
     run_dir = Path(output_root) / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
-
-    if rag_hybrid_lexical_index is not None and not isinstance(rag_index, SemanticRagIndex):
-        raise OrchestratorError(
-            "rag_hybrid_lexical_index n'est utilisable qu'avec rag_index de type SemanticRagIndex (fusion hybride)."
-        )
-    if rag_hybrid_lexical_index is not None:
-        rag_engine_label = f"hybrid_alpha_{rag_hybrid_alpha}"
-    elif isinstance(rag_index, SemanticRagIndex):
-        rag_engine_label = "semantic"
-    else:
-        rag_engine_label = "lexical_tfidf"
 
     input_manifest = {
         "run_id": run_id,
@@ -158,8 +213,17 @@ def run_pipeline(
         "theta_i": theta_i,
         "theta_a": theta_a,
         "annotation_set_version": annotation_set_version,
-        "rag_index_size": len(rag_index),
-        "rag_engine": rag_engine_label,
+        "rag": {
+            "pipeline": "contextual_sp2",
+            "corpus_chunk_count": len(semantic_index),
+            "embedding_model": semantic_index.embedding_model,
+            "vector_backend": semantic_index.backend,
+            "reranker_model": reranker.model_name,
+            "retrieval_candidates": retrieval_candidates if retrieval_candidates is not None else DEFAULT_RETRIEVAL_CANDIDATES,
+            "final_top_k": final_top_k if final_top_k is not None else DEFAULT_FINAL_TOP_K,
+            "diversity_max_per_document": diversity_max_per_document if diversity_max_per_document is not None else DEFAULT_DIVERSITY_MAX_PER_DOCUMENT,
+            "hybrid_alpha": hybrid_alpha,
+        },
     }
     _write_json(run_dir / "input_manifest.json", input_manifest)
 
@@ -170,9 +234,14 @@ def run_pipeline(
     _write_json(run_dir / "candidates.json", admissibility_report)
 
     occurrence_by_id = {occ.occurrence_id: occ for occ in instance.graph.nodes}
+    location_by_id = {loc.location_id: loc for loc in instance.si_inventory.locations}
 
-    # --- RAG + annotation (une seule fois par candidat, avant le gel) -------
-    retrieval_log: list[dict] = []
+    # --- RAG contextuel + annotation (une seule fois par candidat, avant
+    # le gel) — réf. tâche §3 : RagCandidateContext -> 3 requêtes par
+    # famille -> CandidateEvidenceBundle -> AnnotationContext ------------
+    candidate_contexts_log: dict[str, dict] = {}
+    rag_queries_log: dict[str, dict] = {}
+    evidence_bundles_log: dict[str, dict] = {}
     annotations_raw: list[dict] = []
     candidates_for_freeze: list[tuple[str, str, str, list]] = []
 
@@ -181,25 +250,37 @@ def run_pipeline(
         for entry in occ_report["C_i_h"]:
             mechanism = catalog[entry["mechanism_id"]]
             location_id = entry["location_id"]
-            query = f"{mechanism.name} {mechanism.description}"
-            if rag_hybrid_lexical_index is not None:
-                results = retrieve_hybrid(
-                    rag_hybrid_lexical_index, rag_index, query, top_k=top_k_evidence, alpha=rag_hybrid_alpha, embedder=rag_embedder
-                )
-            elif isinstance(rag_index, SemanticRagIndex):
-                results = retrieve_semantic(rag_index, query, top_k=top_k_evidence, embedder=rag_embedder)
-            else:
-                results = retrieve(rag_index, query, top_k=top_k_evidence)
-            retrieval_log.append(
-                {
-                    "occurrence_id": occurrence_id,
-                    "mechanism_id": mechanism.id,
-                    "location_id": location_id,
-                    "query": query,
-                    "results": [{"chunk_id": r.chunk.chunk_id, "score": r.score} for r in results],
-                }
+            location = location_by_id[location_id]
+
+            candidate_context = build_rag_candidate_context(
+                occurrence=occurrence,
+                mechanism=mechanism,
+                location=location,
+                instance=instance,
+                theta_c=theta_c,
+                theta_i=theta_i,
+                theta_a=theta_a,
+                attack_kb=attack_kb,
             )
-            if not results:
+            queries = build_rag_queries(candidate_context)
+            bundle = build_candidate_evidence_bundle(
+                candidate_context,
+                lexical_index=lexical_index,
+                semantic_index=semantic_index,
+                reranker=reranker,
+                retrieval_candidates=retrieval_candidates,
+                final_top_k=final_top_k,
+                diversity_max_per_document=diversity_max_per_document,
+                alpha=hybrid_alpha,
+                embedder=rag_embedder,
+            )
+            retrieved_evidence, evidence_by_family = to_annotation_evidence(bundle)
+
+            candidate_contexts_log[bundle.candidate_id] = candidate_context.model_dump(mode="json")
+            rag_queries_log[bundle.candidate_id] = queries
+            evidence_bundles_log[bundle.candidate_id] = candidate_evidence_bundle_to_dict(bundle)
+
+            if not retrieved_evidence:
                 raise OrchestratorError(
                     f"Aucune preuve RAG recuperee pour ({occurrence_id}, {mechanism.id}, {location_id}) : "
                     "annotation impossible sans preuve (§20, §25.3)."
@@ -212,13 +293,16 @@ def run_pipeline(
                 placement=location_id,
                 graph_context=GraphContext(),
                 system_context={},
-                retrieved_evidence=[to_deception_evidence(r) for r in results],
+                retrieved_evidence=retrieved_evidence,
+                evidence_by_family=evidence_by_family,
             )
             annotations = annotator.annotate(context)
             annotations_raw.extend(a.model_dump(mode="json") for a in annotations)
             candidates_for_freeze.append((occurrence_id, mechanism.id, location_id, annotations))
 
-    _write_json(run_dir / "retrieval.json", retrieval_log)
+    _write_json(run_dir / "candidate_contexts.json", candidate_contexts_log)
+    _write_json(run_dir / "rag_queries.json", rag_queries_log)
+    _write_json(run_dir / "evidence_bundles.json", evidence_bundles_log)
     _write_json(run_dir / "annotations_raw.json", annotations_raw)
 
     # --- Validation + agrégation + gel (§12-§13) -----------------------------
@@ -325,6 +409,33 @@ def run_pipeline(
         ],
     )
 
+    # Réf. tâche §14 : traçabilité étendue du run — RAG/LLM/catalogues,
+    # jamais de secret/clé API/jeton. Chaque bloc ne contient que des
+    # champs réellement fournis (aucune valeur devinée, §25.3).
+    rag_manifest_extra = {}
+    if rag_index_manifest is not None:
+        rag_manifest_extra = {
+            "corpus_version": rag_index_manifest.get("corpus_version"),
+            "corpus_hash": rag_index_manifest.get("corpus_hash"),
+        }
+    llm_traceability = {}
+    if llm_provider is not None:
+        llm_traceability["provider"] = llm_provider
+    if llm_model is not None:
+        llm_traceability["model"] = llm_model
+    if prompt_version is not None:
+        llm_traceability["prompt_version"] = prompt_version
+    if annotation_set_version is not None:
+        llm_traceability["annotation_set_version"] = annotation_set_version
+
+    catalog_traceability = {}
+    if deception_catalog_version is not None:
+        catalog_traceability["deception_catalog_version"] = deception_catalog_version
+    if organization_catalog_version is not None:
+        catalog_traceability["organization_catalog_version"] = organization_catalog_version
+    if mapping_version is not None:
+        catalog_traceability["mapping_version"] = mapping_version
+
     run_manifest = {
         "run_id": run_id,
         "completed_at": datetime.now(timezone.utc).isoformat(),
@@ -334,6 +445,9 @@ def run_pipeline(
         "configurations_enumerated": optimization_result["configurations_enumerated"],
         "configurations_feasible": optimization_result["configurations_feasible"],
         "pareto_front_size": len(optimization_result["pareto_front"]),
+        "rag": {**input_manifest["rag"], **rag_manifest_extra},
+        "llm": llm_traceability,
+        "catalog": catalog_traceability,
         "files": sorted(p.name for p in run_dir.glob("*.json")),
     }
     _write_json(run_dir / "run_manifest.json", run_manifest)

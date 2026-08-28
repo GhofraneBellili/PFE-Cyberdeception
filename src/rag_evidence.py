@@ -318,3 +318,42 @@ def to_annotation_evidence(bundle: CandidateEvidenceBundle) -> tuple[list[Decept
         evidence_by_family[family_name] = sources
 
     return list(retrieved_evidence.values()), evidence_by_family
+
+
+# ---------------------------------------------------------------------------
+# Sérialisation JSON — réf. tâche « maturation technique finale du
+# chapitre 4 », §15/§16 (traçabilité par candidat, artefacts de run)
+# ---------------------------------------------------------------------------
+
+
+def candidate_evidence_bundle_to_dict(bundle: CandidateEvidenceBundle) -> dict:
+    """Réf. §15/§16 : représentation JSON complète d'un
+    `CandidateEvidenceBundle` (traçabilité par candidat dans
+    `runs/<run_id>/evidence_bundles.json`, réutilisée aussi par
+    `examples/rag_sp2_context_example.py`) — dataclasses -> dict, jamais
+    une perte de champ."""
+    return {
+        "candidate_id": bundle.candidate_id,
+        "families": {
+            family_name: {
+                "query": family.query,
+                "evidence": [
+                    {
+                        "chunk_id": item.chunk_id,
+                        "source_type": item.source_type,
+                        "source_id": item.source_id,
+                        "text": item.text,
+                        "final_rank": item.final_rank,
+                        "semantic_score": item.semantic_score,
+                        "lexical_score": item.lexical_score,
+                        "hybrid_score": item.hybrid_score,
+                        "reranker_score": item.reranker_score,
+                        "metadata": item.metadata,
+                        "provenance": item.provenance,
+                    }
+                    for item in family.evidence
+                ],
+            }
+            for family_name, family in bundle.families().items()
+        },
+    }

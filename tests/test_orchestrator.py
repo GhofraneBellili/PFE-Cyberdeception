@@ -1,8 +1,15 @@
 """
 Réf. architecture : CLAUDE.md §19 (Workflow complet d'exécution) et
 section « Orchestrateur » de la tâche d'implémentation du chapitre 4.
+Réf. tâche « maturation technique finale du chapitre 4 » §2/§3/§18/§19 :
+`run_pipeline` utilise désormais EXCLUSIVEMENT le RAG contextuel par
+candidat (`RagCandidateContext` -> 3 requêtes par famille ->
+`CandidateEvidenceBundle` -> `evidence_by_family`) — plus l'ancien chemin
+à requête unique.
 
 Tests unitaires de src/orchestrator.py (§25.4 : pytest obligatoire).
+`DeterministicFakeReranker` est utilisé partout ici — aucun modèle réel
+n'est téléchargé pendant `pytest` (réf. tâche §36).
 """
 
 import json
@@ -13,6 +20,7 @@ import pytest
 from src.annotator_llm import RuleBasedStubAnnotator
 from src.orchestrator import OrchestratorError, run_pipeline
 from src.rag_indexer import Chunk, build_index, build_semantic_index
+from src.reranker import DeterministicFakeReranker
 from src.schemas import (
     Asset,
     AttackGraph,
@@ -86,7 +94,8 @@ def make_catalog() -> dict[str, DeceptionMechanism]:
         id="D3-DUC",
         name="Decoy User Credential",
         description="A Credential created for the purpose of deceiving an adversary.",
-        interaction_mechanism="use credential",
+        target_artifacts=["credential"],
+        interaction_mechanism="attacker uses the decoy credential to authenticate",
         version="1.5.0",
         admissibility_profile=DeceptionAdmissibilityProfile(
             allowed_location_types=["credential_store"],
@@ -114,16 +123,38 @@ def make_organization_catalog() -> dict[str, OrganizationDeceptionCapability]:
 
 
 def make_rag_chunks() -> list[Chunk]:
+    """Réf. tâche §19 : contenu volontairement différencié par thème
+    (réalisme du leurre / interaction attaquant / effet défensif) pour
+    que le test « trois familles réellement utilisées » ait un signal à
+    vérifier, pas seulement une structure vide."""
     return [
         Chunk(
-            chunk_id="c1",
+            chunk_id="c-realism",
             source_id="s1",
             source_type="literature",
             document_id="d1",
             locator="l",
-            text="Decoy User Credential is a credential created to deceive an adversary on a domain controller.",
+            text="A decoy user credential is technically plausible when placed in a domain controller credential store.",
             text_hash="hash1",
-        )
+        ),
+        Chunk(
+            chunk_id="c-interaction",
+            source_id="s2",
+            source_type="d3fend",
+            document_id="d2",
+            locator="l",
+            text="The attacker uses the decoy credential to authenticate, interacting with a fake account object.",
+            text_hash="hash2",
+        ),
+        Chunk(
+            chunk_id="c-effect",
+            source_id="s3",
+            source_type="engage",
+            document_id="d3",
+            locator="l",
+            text="Using the decoy credential redirects and contains the adversary progression toward the domain controller.",
+            text_hash="hash3",
+        ),
     ]
 
 
@@ -133,7 +164,7 @@ def make_rag_index() -> object:
 
 class FakeEmbedder:
     """Embedder déterministe factice — aucune dépendance réseau pendant
-    `pytest` (réf. tâche §18)."""
+    `pytest` (réf. tâche §36)."""
 
     model_name = "fake-embedder-test-v1"
     dimension = 4
@@ -155,6 +186,10 @@ def make_semantic_rag_index() -> object:
     return build_semantic_index(make_rag_chunks(), embedder=FakeEmbedder())
 
 
+def make_reranker() -> DeterministicFakeReranker:
+    return DeterministicFakeReranker()
+
+
 def make_cost_inputs() -> dict[str, dict]:
     return {
         "D3-DUC": {
@@ -172,7 +207,10 @@ def run_kwargs(run_id: str, tmp_path, *, budget_total: float = 5000.0) -> dict:
         catalog=make_catalog(),
         organization_catalog=make_organization_catalog(),
         mapping={"T1078": ["D3-DUC"]},
-        rag_index=make_rag_index(),
+        lexical_index=make_rag_index(),
+        semantic_index=make_semantic_rag_index(),
+        reranker=make_reranker(),
+        rag_embedder=FakeEmbedder(),
         annotator=RuleBasedStubAnnotator(),
         cost_inputs_by_mechanism=make_cost_inputs(),
         horizon=720.0,
@@ -194,7 +232,9 @@ class TestRunPipeline:
         expected_files = {
             "input_manifest.json",
             "candidates.json",
-            "retrieval.json",
+            "candidate_contexts.json",
+            "rag_queries.json",
+            "evidence_bundles.json",
             "annotations_raw.json",
             "annotations_frozen.json",
             "costs.json",
@@ -280,38 +320,89 @@ class TestRunPipeline:
             run_pipeline(**run_kwargs("run-007", tmp_path, budget_total=-1.0))
 
 
-class TestRunPipelineRagEngineDispatch:
-    """Réf. tâche « RAG sémantique » / §3 « fusion hybride » : run_pipeline
-    doit fonctionner avec les trois moteurs RAG, sans jamais télécharger de
-    modèle pendant pytest (embedder factice injecté)."""
+class TestRunPipelineContextualRag:
+    """Réf. tâche « maturation technique finale du chapitre 4 » §2/§3/§18/
+    §19 : `run_pipeline` utilise EXCLUSIVEMENT le pipeline RAG contextuel
+    (RagCandidateContext -> 3 requêtes -> CandidateEvidenceBundle ->
+    evidence_by_family) — plus aucun autre chemin RAG."""
 
-    def test_lexical_engine_reported_in_manifest(self, tmp_path):
-        result = run_pipeline(**run_kwargs("run-rag-lexical", tmp_path))
-        assert result["input_manifest"]["rag_engine"] == "lexical_tfidf"
+    def test_input_manifest_reports_contextual_pipeline(self, tmp_path):
+        result = run_pipeline(**run_kwargs("run-rag-001", tmp_path))
+        rag_info = result["input_manifest"]["rag"]
+        assert rag_info["pipeline"] == "contextual_sp2"
+        assert rag_info["corpus_chunk_count"] == 3
+        assert rag_info["embedding_model"] == "fake-embedder-test-v1"
+        assert rag_info["reranker_model"] == "deterministic-fake-reranker-test-double"
 
-    def test_semantic_engine_completes_and_is_reported(self, tmp_path):
-        kwargs = run_kwargs("run-rag-semantic", tmp_path)
-        kwargs["rag_index"] = make_semantic_rag_index()
-        kwargs["rag_embedder"] = FakeEmbedder()
-        result = run_pipeline(**kwargs)
-        assert result["input_manifest"]["rag_engine"] == "semantic"
-        assert result["run_manifest"]["status"] == "completed"
+    def test_candidate_contexts_file_indexed_by_candidate_id(self, tmp_path):
+        result = run_pipeline(**run_kwargs("run-rag-002", tmp_path))
+        payload = json.loads((result["run_dir"] / "candidate_contexts.json").read_text(encoding="utf-8"))
+        assert payload  # au moins un candidat admissible
+        for candidate_id, context in payload.items():
+            assert "|" in candidate_id
+            assert context["mechanism_id"] == "D3-DUC"
+            assert "occurrence_id" in context
 
-    def test_hybrid_engine_completes_and_is_reported(self, tmp_path):
-        kwargs = run_kwargs("run-rag-hybrid", tmp_path)
-        kwargs["rag_index"] = make_semantic_rag_index()
-        kwargs["rag_hybrid_lexical_index"] = make_rag_index()
-        kwargs["rag_hybrid_alpha"] = 0.8
-        kwargs["rag_embedder"] = FakeEmbedder()
-        result = run_pipeline(**kwargs)
-        assert result["input_manifest"]["rag_engine"] == "hybrid_alpha_0.8"
-        assert result["run_manifest"]["status"] == "completed"
+    def test_rag_queries_file_has_three_distinct_queries_per_candidate(self, tmp_path):
+        result = run_pipeline(**run_kwargs("run-rag-003", tmp_path))
+        payload = json.loads((result["run_dir"] / "rag_queries.json").read_text(encoding="utf-8"))
+        assert payload
+        for candidate_id, queries in payload.items():
+            assert set(queries.keys()) == {"realism", "interaction", "effect"}
+            assert len({queries["realism"], queries["interaction"], queries["effect"]}) == 3
 
-    def test_hybrid_lexical_index_with_lexical_only_rag_index_rejected(self, tmp_path):
-        kwargs = run_kwargs("run-rag-invalid", tmp_path)
-        kwargs["rag_hybrid_lexical_index"] = make_rag_index()  # rag_index reste lexical (make_rag_index())
-        with pytest.raises(OrchestratorError):
-            run_pipeline(**kwargs)
+    def test_evidence_bundles_file_has_three_families_with_evidence(self, tmp_path):
+        result = run_pipeline(**run_kwargs("run-rag-004", tmp_path))
+        payload = json.loads((result["run_dir"] / "evidence_bundles.json").read_text(encoding="utf-8"))
+        assert payload
+        for candidate_id, bundle in payload.items():
+            assert set(bundle["families"].keys()) == {"realism", "interaction", "effect"}
+            for family in bundle["families"].values():
+                assert family["evidence"]  # au moins une preuve par famille
+                for item in family["evidence"]:
+                    assert {
+                        "chunk_id", "source_type", "source_id", "text", "final_rank",
+                        "semantic_score", "lexical_score", "hybrid_score", "reranker_score",
+                        "metadata", "provenance",
+                    } <= set(item.keys())
+
+
+class TestThreeFamiliesGenuinelyUsed:
+    """Réf. tâche §19 : le pipeline principal NE reconvertit PAS les
+    preuves en un unique bloc générique — realism evidence va aux
+    métriques realism, interaction evidence aux métriques interaction,
+    effect evidence aux métriques effect (vérifié via
+    AnnotationContext.evidence_by_family, effectivement transmis à
+    l'annotateur)."""
+
+    def test_annotation_context_receives_evidence_by_family(self, tmp_path):
+        captured_contexts = []
+
+        class CapturingAnnotator(RuleBasedStubAnnotator):
+            def annotate(self, context, *, now=None):
+                captured_contexts.append(context)
+                return super().annotate(context, now=now)
+
+        kwargs = run_kwargs("run-families-001", tmp_path)
+        kwargs["annotator"] = CapturingAnnotator()
+        # Réf. §19 : corpus de test volontairement minuscule (3 chunks) —
+        # sans restreindre le top-k final, les 3 chunks seraient retenus
+        # identiquement par les trois familles (aucune marge de tri).
+        # final_top_k=1 force chaque famille à retenir son chunk le plus
+        # pertinent au sens du reranker déterministe (chevauchement
+        # lexical avec sa propre requête), donc à réellement diverger.
+        kwargs["final_top_k"] = 1
+        run_pipeline(**kwargs)
+
+        assert captured_contexts
+        for context in captured_contexts:
+            assert context.evidence_by_family is not None
+            assert set(context.evidence_by_family.keys()) == {"realism", "interaction", "effect"}
+            # Réf. §19 : les trois familles ne référencent pas exactement le
+            # même ensemble de sources — sinon ce serait un bloc générique
+            # unique déguisé en trois familles.
+            families_evidence_sets = [frozenset(sources) for sources in context.evidence_by_family.values()]
+            assert len(set(families_evidence_sets)) > 1
 
 
 class TestLlmOutOfExecutionPath:
@@ -337,6 +428,46 @@ class TestLlmOutOfExecutionPath:
         assert annotator.calls == admissible_count
 
 
+class TestRunManifestTraceability:
+    """Réf. tâche §14 : run_manifest.json porte les métadonnées RAG/LLM/
+    catalogue fournies par l'appelant — jamais de secret/clé API."""
+
+    def test_optional_traceability_fields_included_when_provided(self, tmp_path):
+        kwargs = run_kwargs("run-trace-001", tmp_path)
+        kwargs["rag_index_manifest"] = {"corpus_version": "test-corpus-1.0", "corpus_hash": "deadbeef"}
+        kwargs["deception_catalog_version"] = "catalog-2.0"
+        kwargs["organization_catalog_version"] = "org-1.0"
+        kwargs["mapping_version"] = "mapping-2.0"
+        kwargs["llm_provider"] = "rule_based_stub"
+        kwargs["llm_model"] = "rule_based_stub"
+        kwargs["prompt_version"] = "rule_based_stub-v1"
+        result = run_pipeline(**kwargs)
+        manifest = result["run_manifest"]
+        assert manifest["rag"]["corpus_version"] == "test-corpus-1.0"
+        assert manifest["rag"]["corpus_hash"] == "deadbeef"
+        assert manifest["catalog"]["deception_catalog_version"] == "catalog-2.0"
+        assert manifest["catalog"]["organization_catalog_version"] == "org-1.0"
+        assert manifest["catalog"]["mapping_version"] == "mapping-2.0"
+        assert manifest["llm"]["provider"] == "rule_based_stub"
+        assert manifest["llm"]["model"] == "rule_based_stub"
+
+    def test_no_api_key_or_secret_ever_included(self, tmp_path):
+        import inspect
+
+        signature = inspect.signature(run_pipeline)
+        forbidden = {"api_key", "secret", "token"}
+        assert forbidden.isdisjoint(signature.parameters.keys())
+
+    def test_optional_traceability_fields_absent_when_not_provided(self, tmp_path):
+        result = run_pipeline(**run_kwargs("run-trace-002", tmp_path))
+        manifest = result["run_manifest"]
+        # annotation_set_version est un paramètre OBLIGATOIRE de
+        # run_pipeline (toujours connu) : il reste dans le bloc "llm" même
+        # sans provider/model/prompt_version explicites.
+        assert manifest["llm"] == {"annotation_set_version": "test-v1"}
+        assert manifest["catalog"] == {}
+
+
 # ---------------------------------------------------------------------------
 # Pipeline avec le catalogue et le mapping REELS — réf. § tâche 12
 # ---------------------------------------------------------------------------
@@ -344,21 +475,22 @@ class TestLlmOutOfExecutionPath:
 
 class TestPipelineWithRealCatalogAndMapping:
     """Réf. tâche 12 (session précédente) + réf. tâche « separate
-    knowledge and organization capabilities » (cette session) : "pipeline
-    utilisant catalogue + mapping réels".
+    knowledge and organization capabilities » (session suivante) + réf.
+    tâche « maturation technique finale du chapitre 4 » (RAG contextuel).
 
     Charge data/deception/deception_catalog.json et
     data/deception/attack_deception_mapping.json (construits par
     tools/deception_kb/catalog_builder.py / mapping_builder.py) et fait
     tourner l'orchestrateur complet dessus, sur une instance qui n'exerce
     QUE D3-DUC (T1110.001@DC01 -> T1003@DC01). Le catalogue de
-    CONNAISSANCES réel (26 mécanismes) ne fournit plus aucune donnée
+    CONNAISSANCES réel (51 mécanismes) ne fournit plus aucune donnée
     d'admissibilité (champ hérité `admissibility_profile` non consulté) :
     l'admissibilité vient exclusivement d'un catalogue OPÉRATIONNEL de
     test (`_organization_catalog`, ci-dessous), qui active D3-DUC avec des
     prérequis satisfaits par l'instance -> `C_i_h` non vide, plan de
     déploiement produit. Vérifie que le pipeline complet fonctionne de
-    bout en bout avec le catalogue de connaissances réel.
+    bout en bout avec le catalogue de connaissances réel et le RAG
+    contextuel.
     """
 
     def _real_instance(self):
@@ -407,7 +539,7 @@ class TestPipelineWithRealCatalogAndMapping:
         """Réf. tâche « separate knowledge and organization capabilities » :
         seule D3-DUC est activée par cette organisation de test, avec des
         prérequis opérationnels satisfaits par `_real_instance` — le
-        catalogue de connaissances réel (26 mécanismes) n'influence pas
+        catalogue de connaissances réel (51 mécanismes) n'influence pas
         cette décision."""
         return {
             "D3-DUC": OrganizationDeceptionCapability(
@@ -431,17 +563,7 @@ class TestPipelineWithRealCatalogAndMapping:
         attack_mapping = load_attack_deception_mapping(mapping_path)
         sp1_mapping = to_sp1_mapping(attack_mapping, kb)
 
-        chunks = [
-            Chunk(
-                chunk_id="c1",
-                source_id="s1",
-                source_type="literature",
-                document_id="d1",
-                locator="l",
-                text="Decoy User Credential is a credential created to deceive an adversary.",
-                text_hash="hash1",
-            )
-        ]
+        chunks = make_rag_chunks()
 
         result = run_pipeline(
             run_id="run-real-catalog",
@@ -449,7 +571,10 @@ class TestPipelineWithRealCatalogAndMapping:
             catalog=dict(kb.mechanisms_by_id),
             organization_catalog=self._organization_catalog(),
             mapping=sp1_mapping,
-            rag_index=build_index(chunks),
+            lexical_index=build_index(chunks),
+            semantic_index=build_semantic_index(chunks, embedder=FakeEmbedder()),
+            reranker=make_reranker(),
+            rag_embedder=FakeEmbedder(),
             annotator=RuleBasedStubAnnotator(),
             cost_inputs_by_mechanism={
                 mechanism_id: {

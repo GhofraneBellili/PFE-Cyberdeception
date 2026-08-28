@@ -1,20 +1,24 @@
-Pipeline complet - resultat reel (src/orchestrator.py)
+Pipeline complet - resultat reel (src/orchestrator.py, RAG contextuel)
 ----------------------------------------------------------------------
 run_id : chapter4-example
-Fichiers ecrits (runs/chapter4-example/) : annotations_frozen.json, annotations_raw.json, candidates.json, costs.json, deployment_plan.json, deployment_report.json, input_manifest.json, pareto.json, retrieval.json, risks.json, run_manifest.json
-Candidats evalues / admissibles : 2 / 1
-Configurations enumerees / faisables : 2 / 2
+Fichiers ecrits (runs/chapter4-example/) : annotations_frozen.json, annotations_raw.json, candidate_contexts.json, candidates.json, costs.json, deployment_plan.json, deployment_report.json, evidence_bundles.json, input_manifest.json, pareto.json, rag_queries.json, risks.json
+Catalogue de connaissances : pfe-deception-catalog-2.0 (51 mecanismes)
+Catalogue operationnel : example-org-catalog-1.0 (42 references)
+Mapping M_i,d : pfe-attack-deception-mapping-2.0
+Index RAG : 1306 chunks, modele=BAAI/bge-small-en-v1.5, backend=faiss, reranker=cross-encoder/ms-marco-MiniLM-L-6-v2
+Candidats evalues / admissibles : 204 / 3
+Configurations enumerees / faisables : 6 / 4
 Taille du front de Pareto : 1
 
 Rapport de deploiement Y* (src/reporter.py, illustratif, DE issu du repli rule_based_stub) :
 Occurrence    Mecanisme Emplacement   Cout      DE      R avant   R apres   Variation
 -------------------------------------------------------------------------------------
-T1078@DC01    D3-DUC    auth-store    4039.20   0.037   0.3225    0.3225    +0.0000 (+0.0%)
+T1566@WS01    EAC0009   mailbox-ws01  4039.20   0.630   0.0700    0.0700    +0.0000 (+0.0%)
 
 Risque terminal (T1003@DC01) :
-  avec deception : 0.2864
-  sans deception : 0.2974
+  avec deception : 0.0440
+  sans deception : 0.1190
 ----------------------------------------------------------------------
-Note : DE issu du repli deterministe rule_based_stub (aucune API LLM
-reelle disponible) -- preuve d'execution bout-en-bout, pas un resultat
-experimental du chapitre 5.
+Note : DE issu du repli deterministe rule_based_stub (TECHNICAL INTEGRATION
+FALLBACK -- aucune API LLM reelle disponible) -- preuve d'execution
+bout-en-bout du RAG contextuel, pas un resultat experimental du chapitre 5.

@@ -88,7 +88,12 @@ def build_real_rag_indices():
     """Réf. §15/§16 : construit les index OFFLINE à partir des QUATRE
     sources déjà versionnées (ATT&CK + D3FEND + Engage + littérature) --
     jamais recalculé par candidat (§16)."""
-    attack_seed_files = sorted(ATTACK_STAGING_DIR.glob("attack_rag_seed_*.json"))
+    # Réf. durcissement : exclut explicitement le rapport d'extraction
+    # (même préfixe "attack_rag_seed_", schéma sans clé "techniques" --
+    # chargé par erreur il produirait silencieusement 0 chunk ATT&CK).
+    attack_seed_files = sorted(
+        f for f in ATTACK_STAGING_DIR.glob("attack_rag_seed_*.json") if "_report_" not in f.name
+    )
     if not attack_seed_files:
         raise FileNotFoundError(
             "Aucun staging ATT&CK trouve dans data/attack/staging/ -- "
