@@ -6,8 +6,16 @@ SP2 », §5 « Représentation du contexte candidat pour le RAG ».
 Construit un `RagCandidateContext` (`src/schemas.py`) à partir d'un
 candidat admissible `(T_{i,h}, d, l)` déjà produit par SP1
 (`src/admissibility.py`), de l'instance système courante et,
-optionnellement, de la base de connaissances ATT&CK (pour le nom lisible
-de la technique — jamais inventé si absent).
+optionnellement, de la base de connaissances ATT&CK RUNTIME (pour le nom
+lisible de la technique — jamais inventé si absent).
+
+**Réf. tâche « dernière passe de finition technique du chapitre 4 »,
+§6-§9** : `attack_kb` est un `AttackRuntimeKnowledge`
+(`src/attack_runtime_knowledge.py`), chargé depuis le STAGING RAG ATT&CK
+déjà versionné — JAMAIS depuis le bundle STIX brut
+`enterprise-attack.json` (non versionné, réservé à la reconstruction
+OFFLINE de la base de connaissances). Ce module ne dépend donc plus
+d'aucun fichier brut au runtime.
 
 Ce module ne fait aucun RAG, aucun appel LLM, aucun calcul de risque ou de
 coût : il assemble uniquement les champs déjà disponibles AVANT toute
@@ -19,8 +27,8 @@ en français (§25.1).
 
 from __future__ import annotations
 
+from src.attack_runtime_knowledge import AttackRuntimeKnowledge, has_technique
 from src.graph_builder import get_child_ids, get_parent_ids, is_entry_node, is_terminal_node
-from src.knowledge_attack import AttackKnowledgeBase, has_technique
 from src.schemas import (
     Asset,
     DeceptionMechanism,
@@ -58,7 +66,7 @@ def build_rag_candidate_context(
     theta_c: float,
     theta_i: float,
     theta_a: float,
-    attack_kb: AttackKnowledgeBase | None = None,
+    attack_kb: AttackRuntimeKnowledge | None = None,
 ) -> RagCandidateContext:
     """Réf. tâche §5 : assemble le contexte compact d'un candidat
     admissible, prêt pour `src/rag_query_builder.py::build_rag_queries`.
@@ -66,9 +74,11 @@ def build_rag_candidate_context(
     `theta_c`/`theta_i`/`theta_a` : mêmes seuils que
     `src/admissibility.py::build_admissibility_report` (Terminal, §6) —
     fournis explicitement, jamais une valeur par défaut inventée.
-    `attack_kb` est optionnel : si fourni, `technique_name` est renseigné
-    depuis la base de connaissances réelle ; sinon il reste `None` (jamais
-    un nom de technique inventé, §25.3).
+    `attack_kb` est optionnel (`AttackRuntimeKnowledge`, chargé depuis le
+    staging RAG ATT&CK déjà versionné — réf. tâche « dernière passe de
+    finition technique » §6-§9) : si fourni, `technique_name` est
+    renseigné depuis ce staging ; sinon, ou si la technique n'y figure
+    pas, il reste `None` (jamais un nom de technique inventé, §25.3/§10).
     """
     assets_by_id = _asset_by_id(instance)
     asset = assets_by_id.get(occurrence.asset_id)

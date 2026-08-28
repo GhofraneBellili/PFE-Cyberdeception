@@ -23,13 +23,15 @@ Chaîne réellement exécutée :
     -> diversification (§12)
     -> CandidateEvidenceBundle (§13)
 
-`technique_name` (RagCandidateContext) reste `None` si
-`data/attack/raw/enterprise-attack.json` n'est pas présent localement
-(fichier officiel volumineux, jamais versionné -- voir
-`data/attack/README.md`) : ce script ne fabrique jamais ce champ, il le
-laisse simplement absent (§25.3). Le CORPUS RAG lui-même (chunks ATT&CK)
-ne dépend PAS de ce fichier brut : il vient du staging déjà versionné
-(`data/attack/staging/attack_rag_seed_*.json`), toujours disponible.
+`technique_name` (RagCandidateContext) est renseigné depuis le staging
+RAG ATT&CK déjà versionné (`data/attack/staging/attack_rag_seed_*.json`,
+`src/attack_runtime_knowledge.py`) -- réf. tâche « dernière passe de
+finition technique du chapitre 4 » §6-§9 : ce script ne dépend PLUS du
+tout de `data/attack/raw/enterprise-attack.json` (fichier officiel
+volumineux, jamais versionné, réservé à la RECONSTRUCTION offline du
+staging, voir `data/attack/README.md`). Si une technique du graphe
+n'existe pas dans le staging, `technique_name` reste `None` -- jamais
+inventé (§25.3/§10).
 
 Exécution (télécharge réellement un modèle d'embeddings sémantiques et un
 modèle de reranking si absents du cache local -- nécessite un accès
@@ -49,7 +51,7 @@ import json
 from pathlib import Path
 
 from src.admissibility import build_admissibility_report
-from src.knowledge_attack import load_attack_knowledge
+from src.attack_runtime_knowledge import find_latest_attack_staging_file, load_attack_runtime_knowledge
 from src.knowledge_deception import load_attack_deception_mapping, load_deception_catalog, to_sp1_mapping
 from src.organization_catalog import capabilities_by_id, load_organization_catalog, validate_against_knowledge_catalog
 from src.rag_candidate_context import build_rag_candidate_context
@@ -62,7 +64,6 @@ from examples.sp1_extended_real_example import build_example_instance
 CATALOG_PATH = Path("data/deception/deception_catalog.json")
 MAPPING_PATH = Path("data/deception/attack_deception_mapping.json")
 ORGANIZATION_CATALOG_PATH = Path("examples/data/organization_deception_catalog.json")
-ATTACK_RAW_PATH = Path("data/attack/raw/enterprise-attack.json")
 ATTACK_STAGING_DIR = Path("data/attack/staging")
 DECEPTION_STAGING_DIR = Path("data/deception/staging")
 OUT_DIR = Path("docs/chapter4/outputs")
@@ -88,19 +89,9 @@ def build_real_rag_indices():
     """Réf. §15/§16 : construit les index OFFLINE à partir des QUATRE
     sources déjà versionnées (ATT&CK + D3FEND + Engage + littérature) --
     jamais recalculé par candidat (§16)."""
-    # Réf. durcissement : exclut explicitement le rapport d'extraction
-    # (même préfixe "attack_rag_seed_", schéma sans clé "techniques" --
-    # chargé par erreur il produirait silencieusement 0 chunk ATT&CK).
-    attack_seed_files = sorted(
-        f for f in ATTACK_STAGING_DIR.glob("attack_rag_seed_*.json") if "_report_" not in f.name
-    )
-    if not attack_seed_files:
-        raise FileNotFoundError(
-            "Aucun staging ATT&CK trouve dans data/attack/staging/ -- "
-            "generer d'abord via tools.attack_kb.attack_seed_builder."
-        )
+    attack_seed_path = find_latest_attack_staging_file(ATTACK_STAGING_DIR)
     chunks = (
-        load_attack_chunks(load_json(attack_seed_files[0]))
+        load_attack_chunks(load_json(attack_seed_path))
         + load_d3fend_chunks(load_json(DECEPTION_STAGING_DIR / "d3fend_deception_seed_1.5.0.json"))
         + load_engage_chunks(load_json(DECEPTION_STAGING_DIR / "engage_activity_seed_1.0.json"))
         + load_literature_chunks(load_json(DECEPTION_STAGING_DIR / "literature_evidence_seed_1.2.json"))
@@ -138,15 +129,11 @@ def main() -> None:
     location = next(loc for loc in instance.si_inventory.locations if loc.location_id == candidate["location_id"])
     print(f"Candidat REEL admissible recupere depuis SP1 : {candidate}")
 
-    attack_kb = None
-    if ATTACK_RAW_PATH.exists():
-        attack_kb = load_attack_knowledge(ATTACK_RAW_PATH, include_revoked=True, include_deprecated=True)
-        print(f"Base ATT&CK reelle chargee ({len(attack_kb.techniques_by_id)} techniques) : technique_name renseigne.")
-    else:
-        print(
-            f"{ATTACK_RAW_PATH} absent (fichier officiel non versionne, voir data/attack/README.md) : "
-            "technique_name restera None (jamais invente)."
-        )
+    # Réf. tâche « dernière passe de finition technique » §6-§9 : source
+    # de vérité ATT&CK du runtime = le staging déjà versionné, jamais le
+    # bundle STIX brut (réservé à la reconstruction OFFLINE du staging).
+    attack_kb = load_attack_runtime_knowledge(find_latest_attack_staging_file(ATTACK_STAGING_DIR))
+    print(f"Connaissance ATT&CK runtime chargee depuis le staging ({len(attack_kb)} techniques).")
 
     candidate_context = build_rag_candidate_context(
         occurrence=occurrence,

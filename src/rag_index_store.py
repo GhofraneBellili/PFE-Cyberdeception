@@ -28,6 +28,25 @@ rechargé depuis le staging), le hash du corpus (`compute_corpus_hash`,
 §7). Toute incompatibilité lève `RagIndexStoreError` — **jamais** un
 repli silencieux vers un index périmé (§9, §23).
 
+**Décision architecturale — composante lexicale (réf. tâche « dernière
+passe de finition technique », §4/§5, OPTION B retenue)** : seul le
+moteur SÉMANTIQUE (`SemanticRagIndex` : embeddings + index vectoriel,
+la partie coûteuse — modèle `sentence-transformers` réel) est persisté
+sur disque par ce module. La composante LEXICALE (`RagIndex`, TF-IDF
+haché) est reconstruite localement via `rebuild_lexical_index`, à partir
+des MÊMES chunks déjà persistés (`chunks.json`) — jamais recalculée
+depuis les documents source, jamais un nouvel embedding sémantique.
+Choix assumé, pas une ambiguïté : mesuré empiriquement à ~160 ms pour les
+1306 chunks du corpus réel (tokenisation + hachage blake2b, aucune
+dépendance, aucun réseau) — persister aussi `document_frequencies`/
+`num_documents` ajouterait un second artefact binaire à faire évoluer en
+parallèle du premier pour un gain de performance négligeable
+(sur-conception explicitement écartée par la tâche). Si le corpus
+devait un jour devenir assez grand pour que ce re-calcul cesse d'être
+négligeable, migrer vers une persistance complète de `RagIndex`
+redeviendrait une décision à reconsidérer explicitement — pas
+silencieusement.
+
 Convention : identifiants de code en anglais, commentaires et docstrings
 en français (§25.1).
 """
@@ -250,3 +269,22 @@ def load_rag_index(
         dimension=manifest.get("embedding_dimension"),
     )
     return semantic_index, manifest
+
+
+# ---------------------------------------------------------------------------
+# Composante lexicale — OPTION B (réf. docstring de module, §4/§5)
+# ---------------------------------------------------------------------------
+
+
+def rebuild_lexical_index(semantic_index: SemanticRagIndex):
+    """Réf. tâche « dernière passe de finition technique », §4/§5 :
+    reconstruit la baseline lexicale TF-IDF (`src.rag_indexer.RagIndex`)
+    à partir des MÊMES chunks que l'index sémantique déjà rechargé
+    (`semantic_index.chunks`) — jamais depuis les documents source,
+    jamais un nouvel appel réseau/modèle. C'est l'unique fonction à
+    utiliser pour obtenir la composante lexicale au runtime : elle
+    documente explicitement le choix OPTION B (rebuild léger plutôt
+    qu'une seconde persistance sur disque)."""
+    from src.rag_indexer import build_index
+
+    return build_index(list(semantic_index.chunks))

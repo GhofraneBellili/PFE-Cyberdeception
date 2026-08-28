@@ -40,11 +40,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from src.annotator_llm import RULE_BASED_STUB_MODEL_VERSION, RuleBasedStubAnnotator
-from src.knowledge_attack import load_attack_knowledge
+from src.attack_runtime_knowledge import find_latest_attack_staging_file, load_attack_runtime_knowledge
 from src.knowledge_deception import load_attack_deception_mapping, load_deception_catalog, to_sp1_mapping
 from src.orchestrator import OrchestratorError, run_pipeline
 from src.organization_catalog import capabilities_by_id, load_organization_catalog, validate_against_knowledge_catalog
-from src.rag_index_store import RagIndexStoreError, load_rag_index
+from src.rag_index_store import RagIndexStoreError, load_rag_index, rebuild_lexical_index
 from src.reporter import render_text_report
 from src.reranker import CrossEncoderReranker
 from src.schemas import (
@@ -63,7 +63,7 @@ CATALOG_PATH = Path("data/deception/deception_catalog.json")
 MAPPING_PATH = Path("data/deception/attack_deception_mapping.json")
 ORGANIZATION_CATALOG_PATH = Path("examples/data/organization_deception_catalog.json")
 RAG_INDEX_DIR = Path("data/rag/index")
-ATTACK_RAW_PATH = Path("data/attack/raw/enterprise-attack.json")
+ATTACK_STAGING_DIR = Path("data/attack/staging")
 OUT_DIR = Path("docs/chapter4/outputs")
 THETA = 0.85
 
@@ -159,12 +159,12 @@ def main() -> None:
     except RagIndexStoreError as exc:
         raise OrchestratorError(f"Index RAG persisté incompatible ou corrompu : {exc}") from exc
 
-    # Réf. §5/§16 : l'index lexical baseline reste construit à partir des
-    # MÊMES chunks que l'index sémantique persisté -- même corpus, jamais
-    # une recombinaison silencieusement différente.
-    from src.rag_indexer import build_index
-
-    lexical_index = build_index(list(semantic_index.chunks))
+    # Réf. tâche « dernière passe de finition technique » §4/§5 : OPTION B
+    # -- la composante lexicale (légère) est reconstruite localement à
+    # partir des MÊMES chunks que l'index sémantique persisté, jamais
+    # recalculée depuis les documents source (voir src/rag_index_store.py
+    # pour la justification de ce choix architectural).
+    lexical_index = rebuild_lexical_index(semantic_index)
 
     print(f"Index RAG persisté rechargé : {RAG_INDEX_DIR} ({len(semantic_index)} chunks, sans ré-encodage).")
 
@@ -172,9 +172,12 @@ def main() -> None:
     reranker = CrossEncoderReranker.load()
     print(f"Reranker charge : {reranker.model_name}")
 
-    attack_kb = None
-    if ATTACK_RAW_PATH.exists():
-        attack_kb = load_attack_knowledge(ATTACK_RAW_PATH, include_revoked=True, include_deprecated=True)
+    # Réf. tâche « dernière passe de finition technique » §6-§9 : le
+    # runtime ne dépend plus JAMAIS du bundle STIX brut
+    # enterprise-attack.json -- uniquement du staging RAG ATT&CK déjà
+    # versionné (source de vérité ATT&CK pour le runtime, réf. §8).
+    attack_kb = load_attack_runtime_knowledge(find_latest_attack_staging_file(ATTACK_STAGING_DIR))
+    print(f"Connaissance ATT&CK runtime chargee depuis le staging : {len(attack_kb)} techniques.")
 
     try:
         result = run_pipeline(

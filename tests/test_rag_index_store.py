@@ -10,13 +10,14 @@ est toujours appelé avec un `FakeEmbedder` déterministe.
 import numpy as np
 import pytest
 
-from src.rag_indexer import Chunk, build_semantic_index
+from src.rag_indexer import Chunk, RagIndex, build_semantic_index
 from src.rag_index_store import (
     INDEX_SCHEMA_VERSION,
     RagIndexStoreError,
     compute_corpus_hash,
     load_rag_index,
     read_rag_index_manifest,
+    rebuild_lexical_index,
     save_rag_index,
 )
 from src.rag_retriever import retrieve_semantic
@@ -305,3 +306,48 @@ class TestStaleIndexDetection:
         (tmp_path / "index" / "chunks.json").unlink()
         with pytest.raises(RagIndexStoreError):
             load_rag_index(tmp_path / "index")
+
+
+# ---------------------------------------------------------------------------
+# F. Composante lexicale — OPTION B (réf. tâche « dernière passe de
+# finition technique », §4/§5/§22-E)
+# ---------------------------------------------------------------------------
+
+
+class TestRebuildLexicalIndex:
+    def test_returns_a_rag_index(self, tmp_path):
+        index = make_index()
+        save_rag_index(index, tmp_path / "index", corpus_version="test-1.0")
+        reloaded, _ = load_rag_index(tmp_path / "index")
+        lexical_index = rebuild_lexical_index(reloaded)
+        assert isinstance(lexical_index, RagIndex)
+
+    def test_same_chunk_ids_as_semantic_index(self, tmp_path):
+        index = make_index()
+        save_rag_index(index, tmp_path / "index", corpus_version="test-1.0")
+        reloaded, _ = load_rag_index(tmp_path / "index")
+        lexical_index = rebuild_lexical_index(reloaded)
+        semantic_ids = {c.chunk_id for c in reloaded.chunks}
+        lexical_ids = {c.chunk_id for c in lexical_index.chunks}
+        assert semantic_ids == lexical_ids
+
+    def test_never_touches_the_semantic_embedder(self, tmp_path, monkeypatch):
+        """Réf. §5 : la reconstruction lexicale ne doit jamais invoquer un
+        embedder sémantique (aucun modèle sentence-transformers)."""
+        index = make_index()
+        save_rag_index(index, tmp_path / "index", corpus_version="test-1.0")
+        reloaded, _ = load_rag_index(tmp_path / "index")
+
+        def _forbidden(*args, **kwargs):
+            raise AssertionError("rebuild_lexical_index ne doit jamais charger un embedder sémantique.")
+
+        monkeypatch.setattr("src.semantic_embedder.load_embedder", _forbidden)
+        rebuild_lexical_index(reloaded)  # ne doit pas lever
+
+    def test_deterministic_across_calls(self, tmp_path):
+        index = make_index()
+        save_rag_index(index, tmp_path / "index", corpus_version="test-1.0")
+        reloaded, _ = load_rag_index(tmp_path / "index")
+        lexical_a = rebuild_lexical_index(reloaded)
+        lexical_b = rebuild_lexical_index(reloaded)
+        assert lexical_a.embeddings == lexical_b.embeddings

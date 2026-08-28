@@ -77,3 +77,33 @@ class TestOptimizerNeverCallsRagOrLlm:
     def test_optimizer_module_never_imports_rag_or_llm(self):
         modules = _imported_modules("optimizer.py")
         assert not any(marker in module for module in modules for marker in RAG_LLM_MARKERS)
+
+
+class TestAttackRuntimeKnowledgeIndependentOfRawStixParsing:
+    """Réf. tâche « dernière passe de finition technique du chapitre 4 »,
+    §6-§9/§22-G : le chemin RUNTIME (RagCandidateContext) ne doit plus
+    dépendre, même indirectement, du parseur STIX brut
+    (`src/knowledge_attack.py`) — seul `tools/attack_kb/attack_seed_builder.py`
+    (couche OFFLINE) continue de l'utiliser pour reconstruire le staging."""
+
+    def test_rag_candidate_context_never_imports_the_raw_stix_parser(self):
+        modules = _imported_modules("rag_candidate_context.py")
+        assert not any("knowledge_attack" in module for module in modules)
+
+    def test_attack_runtime_knowledge_never_imports_the_raw_stix_parser(self):
+        modules = _imported_modules("attack_runtime_knowledge.py")
+        assert not any("knowledge_attack" in module for module in modules)
+
+    def test_orchestrator_never_imports_the_raw_stix_parser(self):
+        modules = _imported_modules("orchestrator.py")
+        assert not any("knowledge_attack" in module for module in modules)
+
+    def test_attack_runtime_knowledge_never_imports_rag_llm_cost_or_optimizer(self):
+        """Réf. §22-G : module de métadonnées pur, jamais couplé au RAG,
+        au LLM, au coût ni à l'optimiseur."""
+        modules = _imported_modules("attack_runtime_knowledge.py")
+        assert not any(
+            marker in module
+            for module in modules
+            for marker in RAG_LLM_MARKERS + BUDGET_COST_OPTIMIZATION_MARKERS
+        )

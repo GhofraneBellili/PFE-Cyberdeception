@@ -64,8 +64,8 @@ from typing import Any
 from src.admissibility import build_admissibility_report
 from src.annotation_validator import freeze_table
 from src.annotator_llm import AnnotationProvider
+from src.attack_runtime_knowledge import AttackRuntimeKnowledge
 from src.cost_engine import compute_cost_by_mechanism
-from src.knowledge_attack import AttackKnowledgeBase
 from src.optimizer import OptimizerError, solve
 from src.rag_candidate_context import build_rag_candidate_context
 from src.rag_config import (
@@ -129,7 +129,7 @@ def run_pipeline(
     q_by_occurrence: dict[str, float],
     impact_by_occurrence: dict[str, float],
     annotation_set_version: str,
-    attack_kb: AttackKnowledgeBase | None = None,
+    attack_kb: AttackRuntimeKnowledge | None = None,
     rag_embedder: object | None = None,
     retrieval_candidates: int | None = None,
     final_top_k: int | None = None,

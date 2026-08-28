@@ -11,7 +11,7 @@ import json
 
 import pytest
 
-from src.knowledge_attack import load_attack_knowledge
+from src.attack_runtime_knowledge import load_attack_runtime_knowledge
 from src.rag_candidate_context import RagCandidateContextError, build_rag_candidate_context
 from src.schemas import (
     Asset,
@@ -124,31 +124,67 @@ class TestBasicFields:
         )
         assert context.technique_name is None
 
-    def test_technique_name_populated_from_real_attack_kb(self, tmp_path):
-        bundle = {
-            "type": "bundle",
-            "id": "bundle--test",
-            "spec_version": "2.1",
-            "objects": [
+    def test_technique_name_populated_from_attack_staging_without_raw_file(self, tmp_path):
+        """Réf. tâche « dernière passe de finition technique », §6-§9 :
+        technique_name doit se renseigner depuis le STAGING RAG ATT&CK
+        déjà versionné, SANS jamais dépendre du bundle STIX brut
+        enterprise-attack.json (absent ici, jamais référencé)."""
+        staging = {
+            "schema": "attack_rag_seed",
+            "techniques": [
                 {
-                    "type": "attack-pattern",
-                    "id": "attack-pattern--x",
+                    "technique_id": "T1003",
                     "name": "OS Credential Dumping",
-                    "external_references": [{"source_name": "mitre-attack", "external_id": "T1003"}],
+                    "tactics": ["credential-access"],
+                    "platforms": ["Windows"],
+                    "version": "2.0",
+                    "revoked": False,
+                    "deprecated": False,
                 }
             ],
         }
-        bundle_path = tmp_path / "bundle.json"
-        bundle_path.write_text(json.dumps(bundle), encoding="utf-8")
-        kb = load_attack_knowledge(bundle_path)
+        staging_path = tmp_path / "attack_rag_seed_test.json"
+        staging_path.write_text(json.dumps(staging), encoding="utf-8")
+        attack_kb = load_attack_runtime_knowledge(staging_path)
 
         instance, occ1, occ2 = make_instance()
         mechanism = make_mechanism("D1")
         location = instance.si_inventory.locations[0]
         context = build_rag_candidate_context(
-            occurrence=occ2, mechanism=mechanism, location=location, instance=instance, attack_kb=kb, **THETA
+            occurrence=occ2, mechanism=mechanism, location=location, instance=instance, attack_kb=attack_kb, **THETA
         )
         assert context.technique_name == "OS Credential Dumping"
+
+    def test_technique_unknown_to_staging_never_invents_a_name(self, tmp_path):
+        """Réf. tâche §10 : une technique du graphe absente du staging
+        runtime ne doit jamais produire un nom inventé -- technique_id
+        reste, technique_name reste None."""
+        staging = {
+            "schema": "attack_rag_seed",
+            "techniques": [
+                {
+                    "technique_id": "T9999",
+                    "name": "Unrelated Technique",
+                    "tactics": [],
+                    "platforms": [],
+                    "version": None,
+                    "revoked": False,
+                    "deprecated": False,
+                }
+            ],
+        }
+        staging_path = tmp_path / "attack_rag_seed_test.json"
+        staging_path.write_text(json.dumps(staging), encoding="utf-8")
+        attack_kb = load_attack_runtime_knowledge(staging_path)
+
+        instance, occ1, occ2 = make_instance()
+        mechanism = make_mechanism("D1")
+        location = instance.si_inventory.locations[0]
+        context = build_rag_candidate_context(
+            occurrence=occ2, mechanism=mechanism, location=location, instance=instance, attack_kb=attack_kb, **THETA
+        )
+        assert context.technique_id == "T1003"
+        assert context.technique_name is None
 
     def test_missing_asset_raises_explicit_error(self):
         instance, occ1, occ2 = make_instance()
