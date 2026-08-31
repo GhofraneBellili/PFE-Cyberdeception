@@ -1,0 +1,460 @@
+{
+  "version": "1.0",
+  "description": "Benchmark equilibre (ATT&CK/D3FEND/Engage/litterature) pour la campagne d'amelioration du moteur RAG -- distinct du benchmark historique (data/rag/rag_eval_queries.json), qui reste inchange et sert de reference historique.",
+  "corpus_reference": {
+    "full_corpus_chunk_count": 1306,
+    "sources": [
+      "attack",
+      "d3fend",
+      "engage",
+      "literature"
+    ]
+  },
+  "historical_benchmark_path": "data\\rag\\rag_eval_queries.json",
+  "query_count": 28,
+  "split_counts": {
+    "dev": 20,
+    "test": 8
+  },
+  "split_counts_by_source_group": {
+    "d3fend": {
+      "dev": 4,
+      "test": 2
+    },
+    "literature_touching": {
+      "dev": 3,
+      "test": 0
+    },
+    "d3fend_engage_mixed": {
+      "dev": 3,
+      "test": 1
+    },
+    "engage": {
+      "dev": 3,
+      "test": 2
+    },
+    "literature": {
+      "dev": 2,
+      "test": 1
+    },
+    "attack": {
+      "dev": 5,
+      "test": 2
+    }
+  },
+  "split_policy": "Affectation manuelle fixe decidee AVANT toute evaluation, stratifiee par groupe de source (chaque groupe represente en dev et en test) -- jamais ajustee apres consultation des scores.",
+  "queries": [
+    {
+      "query_id": "q01_credentials",
+      "topic": "credentials",
+      "source_group": "d3fend",
+      "query": "decoy credential created to deceive an attacker who steals passwords",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:1",
+        "d3fend:D3-DUC:2",
+        "d3fend:D3-DUC:3"
+      ],
+      "justification": "D3-DUC (Decoy User Credential) est le concept D3FEND qui correspond exactement à une fausse information d'identification déployée pour tromper un attaquant.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q02_network_deception",
+      "topic": "network deception",
+      "source_group": "d3fend",
+      "query": "decoy network resource deployed on the network to mislead an adversary",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "d3fend:D3-DNR:0",
+        "d3fend:D3-DNR:1",
+        "d3fend:D3-DNR:2",
+        "d3fend:D3-DNR:3"
+      ],
+      "justification": "D3-DNR (Decoy Network Resource) décrit explicitement le déploiement d'une ressource réseau leurre.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q03_honeypot",
+      "topic": "honeypot",
+      "source_group": "literature_touching",
+      "query": "what is a honeypot used to distract and monitor an attacker on the network",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+        "d3fend:D3-DE:3",
+        "d3fend:D3-CHN:1",
+        "d3fend:D3-CHN:2",
+        "doi_10.1109_csac.2003.1254322__ev001"
+      ],
+      "justification": "Définition explicite du honeypot (littérature Provos), le terme apparaît comme synonyme direct de D3-DE (Decoy Environment), et D3-CHN (Connected Honeynet) décrit un honeypot connecté au réseau d'entreprise.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q04_decoy_file",
+      "topic": "decoy file",
+      "source_group": "literature_touching",
+      "query": "decoy file placed on a system or file server to entice an adversary to open it",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "d3fend:D3-DF:0",
+        "d3fend:D3-DF:1",
+        "d3fend:D3-DF:2",
+        "d3fend:D3-DF:3",
+        "doi_10.1109_iaw.2004.1437806__ev001",
+        "doi_10.1007_978-3-642-05284-2_4__ev001"
+      ],
+      "justification": "D3-DF (Decoy File) est le concept D3FEND direct ; les deux passages littérature décrivent des variantes concrètes (honeyfile, decoy documents générés automatiquement).",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q05_lateral_movement",
+      "topic": "lateral movement",
+      "source_group": "d3fend",
+      "query": "lure an attacker moving across the network toward other connected systems",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "d3fend:D3-CHN:1",
+        "d3fend:D3-CHN:2",
+        "d3fend:D3-DNR:0",
+        "d3fend:D3-DNR:1",
+        "d3fend:D3-DST:1"
+      ],
+      "justification": "Aucun mécanisme n'est étiqueté 'lateral movement' explicitement dans le corpus : le meilleur rapprochement réel est le honeynet connecté au réseau d'entreprise (D3-CHN, rencontré lors d'un déplacement latéral) et la ressource réseau leurre (D3-DNR), complétés par le jeton de session leurre (D3-DST) qui trace un attaquant se déplaçant avec des identifiants volés.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q06_credential_dumping",
+      "topic": "credential dumping",
+      "source_group": "d3fend",
+      "query": "counter an adversary dumping credentials from memory or a credential store",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DUC:1",
+        "d3fend:D3-DUC:2",
+        "d3fend:D3-DST:0",
+        "d3fend:D3-DST:1"
+      ],
+      "justification": "Les identifiants et jetons de session leurres (D3-DUC, D3-DST) sont les artefacts que l'attaquant récupérerait lors d'un dumping de credentials ; leur usage déclenche une détection.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q07_network_share",
+      "topic": "network share",
+      "source_group": "d3fend",
+      "query": "decoy resource placed on a network file share",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "d3fend:D3-DNR:2",
+        "d3fend:D3-DNR:0",
+        "d3fend:D3-DNR:1"
+      ],
+      "justification": "D3-DNR:2 mentionne explicitement 'network file shares' comme lieu de déploiement des ressources réseau leurres.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "test"
+    },
+    {
+      "query_id": "q08_web_application",
+      "topic": "web application",
+      "source_group": "d3fend",
+      "query": "decoy deployed on a web application server",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "d3fend:D3-DNR:2",
+        "d3fend:D3-DNR:0",
+        "d3fend:D3-DNR:1"
+      ],
+      "justification": "D3-DNR:2 mentionne explicitement 'web application servers' comme lieu de déploiement.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "test"
+    },
+    {
+      "query_id": "q09_fake_service",
+      "topic": "fake service",
+      "source_group": "d3fend_engage_mixed",
+      "query": "fake or decoy service presented to the adversary among real installed services",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "d3fend:D3-CHN:1",
+        "engage:EAC0006:description",
+        "engage:EAC0006:long_description"
+      ],
+      "justification": "D3-CHN:1 parle explicitement d'un 'decoy service' ; EAC0006 (Application Diversity) présente délibérément plusieurs services/logiciels à l'adversaire.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q10_decoy_account",
+      "topic": "decoy account",
+      "source_group": "d3fend_engage_mixed",
+      "query": "fake user account or identity created to interact with an adversary",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "d3fend:D3-DP:0",
+        "d3fend:D3-DP:1",
+        "d3fend:D3-DP:2",
+        "engage:EAC0022:long_description"
+      ],
+      "justification": "D3-DP (Decoy Persona) est directement une fausse identité utilisateur ; EAC0022 (Artifact Diversity) cite explicitement les comptes ('accounts') parmi les artefacts présentés.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q11_persistence",
+      "topic": "persistence",
+      "source_group": "d3fend_engage_mixed",
+      "query": "deception technique that keeps an adversary engaged with a believable long-lived environment",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "engage:EAC0008:description",
+        "engage:EAC0008:long_description",
+        "d3fend:D3-IHN:1",
+        "d3fend:D3-IHN:2"
+      ],
+      "justification": "Aucun mécanisme du corpus ne cible directement la tactique ATT&CK Persistence. Meilleur rapprochement documenté : Burn-In (EAC0008, génération d'artefacts système crédibles sur la durée) et le honeynet intégré en environnement de production (D3-IHN). Requête volontairement difficile — rappel attendu plus faible, à documenter tel quel.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q12_discovery",
+      "topic": "discovery",
+      "source_group": "d3fend_engage_mixed",
+      "query": "decoy artifacts encountered by an adversary scanning and enumerating the environment",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "d3fend:D3-DO:0",
+        "d3fend:D3-DO:1",
+        "engage:EAC0007:description",
+        "engage:EAC0007:long_description"
+      ],
+      "justification": "D3-DO (Decoy Object, concept générique) est ce qu'un attaquant rencontre lors d'une découverte/énumération ; EAC0007 (Network Diversity) vise explicitement à convaincre l'adversaire de la légitimité du réseau observé lors de cette phase.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "test"
+    },
+    {
+      "query_id": "q13_data_collection",
+      "topic": "data collection",
+      "source_group": "engage",
+      "query": "decoy data planted on a system for an adversary to collect",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "engage:EAC0011:description",
+        "engage:EAC0011:long_description",
+        "engage:EAC0022:long_description"
+      ],
+      "justification": "EAC0011 (Pocket Litter) est explicitement de la donnée placée sur un système pour être découverte/collectée par l'adversaire ; EAC0022 cite fichiers/logs/historique de navigation comme artefacts collectables.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q14_exfiltration",
+      "topic": "exfiltration",
+      "source_group": "engage",
+      "query": "detect or bait data exfiltration traffic leaving the network",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "engage:EAC0004:description",
+        "engage:EAC0004:long_description"
+      ],
+      "justification": "EAC0004 (Network Analysis) mentionne explicitement 'data exfiltration traffic' comme trafic analysé.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q15_attack_redirection",
+      "topic": "attack redirection",
+      "source_group": "engage",
+      "query": "redirect an adversary's malicious action toward a decoy system for continued engagement",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "engage:EAC0021:description",
+        "engage:EAC0021:long_description"
+      ],
+      "justification": "EAC0021 (Migrate Attack Vector) décrit explicitement le déplacement d'un élément malveillant vers un système leurre — correspond directement à l'effet de progression 'redirect' (§12.6 CLAUDE.md).",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q16_honeytoken",
+      "topic": "honeytoken",
+      "source_group": "literature_touching",
+      "query": "honeytoken embedded in a system as a trap to detect an intruder",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "doi_10.1145_3678890.3678897__ev001",
+        "d3fend:D3-DUC:0",
+        "d3fend:D3-DST:0"
+      ],
+      "justification": "Passage littérature mentionnant explicitement les honeytokens ; les concepts D3FEND les plus proches sont les identifiants et jetons leurres.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "q17_psychological_effect",
+      "topic": "psychological effect on attacker",
+      "source_group": "literature",
+      "query": "psychological effect of deception on an attacker's behavior and decision making",
+      "query_minimal": null,
+      "expected_chunk_ids": [
+        "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy__ev001",
+        "usenixsec2021_fergusonwalter_decoy_psychological_deception_efficacy__ev002"
+      ],
+      "justification": "Étude empirique dédiée (red teamers) sur l'effet psychologique des leurres sur le comportement de l'attaquant.",
+      "provenance": "reused_verbatim_from_rag_eval_queries_v1.0",
+      "split": "dev"
+    },
+    {
+      "query_id": "attack_T1566_phishing",
+      "topic": "phishing initial access",
+      "source_group": "attack",
+      "query": "phishing messages used by adversaries to gain initial access to victim systems",
+      "query_minimal": "Phishing",
+      "expected_chunk_ids": [
+        "attack:T1566:1"
+      ],
+      "justification": "T1566 (Phishing), chunk description reel : \"Adversaries may send phishing messages to gain access to victim systems...\" -- technique d'entree du graphe de reference (CLAUDE.md §20).",
+      "provenance": "new_for_balanced_benchmark_real_chunk_text",
+      "split": "dev"
+    },
+    {
+      "query_id": "attack_T1003_credential_dumping",
+      "topic": "OS credential dumping",
+      "source_group": "attack",
+      "query": "dumping operating system credentials to obtain account login and password material",
+      "query_minimal": "OS Credential Dumping",
+      "expected_chunk_ids": [
+        "attack:T1003:1"
+      ],
+      "justification": "T1003 (OS Credential Dumping), chunk description reel : \"Adversaries may attempt to dump credentials to obtain account login and credential material...\".",
+      "provenance": "new_for_balanced_benchmark_real_chunk_text",
+      "split": "dev"
+    },
+    {
+      "query_id": "attack_T1059_command_scripting",
+      "topic": "command and scripting interpreter",
+      "source_group": "attack",
+      "query": "abuse of command and script interpreters to execute commands or scripts on a system",
+      "query_minimal": "Command and Scripting Interpreter",
+      "expected_chunk_ids": [
+        "attack:T1059:1"
+      ],
+      "justification": "T1059 (Command and Scripting Interpreter), chunk description reel : \"Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries...\".",
+      "provenance": "new_for_balanced_benchmark_real_chunk_text",
+      "split": "dev"
+    },
+    {
+      "query_id": "attack_T1078_valid_accounts",
+      "topic": "valid accounts abuse",
+      "source_group": "attack",
+      "query": "abuse of valid compromised account credentials to bypass access controls",
+      "query_minimal": "Valid Accounts",
+      "expected_chunk_ids": [
+        "attack:T1078:1"
+      ],
+      "justification": "T1078 (Valid Accounts), chunk description reel : \"Adversaries may obtain and abuse credentials of existing accounts...to bypass access controls...\".",
+      "provenance": "new_for_balanced_benchmark_real_chunk_text",
+      "split": "dev"
+    },
+    {
+      "query_id": "attack_T1190_exploit_public_app",
+      "topic": "exploit public-facing application",
+      "source_group": "attack",
+      "query": "exploiting a weakness in an internet-facing application or server to gain initial access",
+      "query_minimal": "Exploit Public-Facing Application",
+      "expected_chunk_ids": [
+        "attack:T1190:1"
+      ],
+      "justification": "T1190 (Exploit Public-Facing Application), chunk description reel : \"Adversaries may attempt to exploit a weakness in an Internet-facing host or system...\".",
+      "provenance": "new_for_balanced_benchmark_real_chunk_text",
+      "split": "dev"
+    },
+    {
+      "query_id": "attack_T1041_exfiltration_c2",
+      "topic": "exfiltration over C2 channel",
+      "source_group": "attack",
+      "query": "exfiltrating stolen data over an existing command and control communication channel",
+      "query_minimal": "Exfiltration Over C2 Channel",
+      "expected_chunk_ids": [
+        "attack:T1041:1"
+      ],
+      "justification": "T1041 (Exfiltration Over C2 Channel), chunk description reel : \"Adversaries may steal data by exfiltrating it over an existing command and control channel...\".",
+      "provenance": "new_for_balanced_benchmark_real_chunk_text",
+      "split": "test"
+    },
+    {
+      "query_id": "attack_T1110_brute_force",
+      "topic": "brute force password guessing",
+      "source_group": "attack",
+      "query": "brute force guessing of account passwords when credentials or password hashes are unknown",
+      "query_minimal": "Brute Force",
+      "expected_chunk_ids": [
+        "attack:T1110:1"
+      ],
+      "justification": "T1110 (Brute Force), chunk description reel : \"Adversaries may use brute force techniques to gain access to accounts when passwords are unknown...\".",
+      "provenance": "new_for_balanced_benchmark_real_chunk_text",
+      "split": "test"
+    },
+    {
+      "query_id": "engage_new_api_monitoring",
+      "topic": "API monitoring",
+      "source_group": "engage",
+      "query": "monitor operating system API calls invoked by adversary tooling",
+      "query_minimal": "API Monitoring",
+      "expected_chunk_ids": [
+        "engage:EAC0001:description",
+        "engage:EAC0001:long_description"
+      ],
+      "justification": "EAC0001 (API Monitoring) : \"Monitor local APIs that might be used by adversary tools and activity.\".",
+      "provenance": "new_for_balanced_benchmark_real_chunk_text",
+      "split": "test"
+    },
+    {
+      "query_id": "engage_new_network_monitoring",
+      "topic": "network traffic monitoring",
+      "source_group": "engage",
+      "query": "capture network traffic in order to detect adversary communications",
+      "query_minimal": "Network Monitoring",
+      "expected_chunk_ids": [
+        "engage:EAC0002:description",
+        "engage:EAC0002:long_description"
+      ],
+      "justification": "EAC0002 (Network Monitoring) : \"Monitor network traffic in order to detect adversary activity.\".",
+      "provenance": "new_for_balanced_benchmark_real_chunk_text",
+      "split": "test"
+    },
+    {
+      "query_id": "literature_new_stackelberg_attack_graph",
+      "topic": "deception in attack-graph security games",
+      "source_group": "literature",
+      "query": "use of deception strategies modeled within attack-graph-based security games",
+      "query_minimal": "deception attack graph Stackelberg game",
+      "expected_chunk_ids": [
+        "doi_10.1007_978-3-030-64793-3_8__ev001",
+        "doi_10.1007_978-3-030-64793-3_8__ev002"
+      ],
+      "justification": "Etude reelle : \"We study the use of deception in attack graph-based Stackelberg security games\" / \"the defender can strategically manipulate the attack graph through three main types of deceptive actions.\" -- directement pertinent au modele du projet (graphe d'attaque).",
+      "provenance": "new_for_balanced_benchmark_real_chunk_text",
+      "split": "test"
+    },
+    {
+      "query_id": "literature_new_honeytoken_risk_reduction",
+      "topic": "quantified effect of honeytokens",
+      "source_group": "literature",
+      "query": "quantified reduction in attacker success rate attributable to honeytokens",
+      "query_minimal": "honeytoken risk reduction quantified",
+      "expected_chunk_ids": [
+        "doi_10.1145_3678890.3678897__ev002"
+      ],
+      "justification": "Etude reelle : \"the presence of cyber deception can significantly reduce the risk that adversaries will find a true security risk by about 22% on average.\" (chunk distinct de celui deja utilise par q16_honeytoken).",
+      "provenance": "new_for_balanced_benchmark_real_chunk_text",
+      "split": "dev"
+    }
+  ]
+}

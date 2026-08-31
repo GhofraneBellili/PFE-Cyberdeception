@@ -1,0 +1,123 @@
+{
+  "lengths": {
+    "query_char_length": {
+      "min": 42,
+      "p50": 74,
+      "p75": 83,
+      "p90": 88,
+      "p95": 89,
+      "p99": 92,
+      "max": 92,
+      "mean": 73.07142857142857
+    },
+    "query_token_length": {
+      "min": 8,
+      "p50": 14,
+      "p75": 15,
+      "p90": 16,
+      "p95": 17,
+      "p99": 19,
+      "max": 19,
+      "mean": 13.214285714285714
+    },
+    "passage_char_length": {
+      "min": 3,
+      "p50": 22,
+      "p75": 173,
+      "p90": 1264,
+      "p95": 1826,
+      "p99": 2692,
+      "max": 4185,
+      "mean": 334.29938744257277
+    },
+    "passage_token_length": {
+      "min": 1,
+      "p50": 5,
+      "p75": 35,
+      "p90": 293,
+      "p95": 425,
+      "p99": 667,
+      "max": 1082,
+      "mean": 75.43874425727412
+    },
+    "tokenizer_model_max_length": 512,
+    "chosen_condensed_max_chars": 800
+  },
+  "batching": {
+    "already_batched_by_default": true,
+    "default_batch_size": 32,
+    "note": "CrossEncoder.predict() batche deja en interne (batch_size=32 par defaut) -- src/reranker.py::CrossEncoderReranker.rerank() appelle predict() UNE FOIS avec TOUTES les paires d'un pool, donc l'inference par lots est deja effective sans modification. Aucun changement necessaire ni revendique ici."
+  },
+  "cache": {
+    "query_count": 20,
+    "first_pass_seconds": 39.17200000000594,
+    "first_pass_cache_hits": 0,
+    "first_pass_cache_misses": 400,
+    "second_pass_seconds": 0.0,
+    "second_pass_cache_hits": 400,
+    "second_pass_cache_misses": 0,
+    "speedup_relative": 1.0,
+    "note": "2e passage = memes requetes/pools EXACTEMENT rejoues (aucun appel LLM implique) -- mesure le gain du cache sur une charge repetee reelle (ex. reglage iteratif), pas un scenario de production ou chaque candidat a des requetes distinctes."
+  },
+  "onnx_int8": {
+    "onnxruntime_installed": false,
+    "onnxruntime_version": null,
+    "optimum_installed": false,
+    "comparison_performed": false,
+    "note": "onnxruntime/optimum non installes dans cet environnement (pas une dependance du groupe 'rag' de pyproject.toml) -- comparaison ONNX/INT8 non realisee, honnetement rapportee comme absente plutot que fabriquee."
+  },
+  "condensed_input": {
+    "dev": {
+      "query_count": 20,
+      "baseline": {
+        "query_count": 20,
+        "mean_recall_at_5": 0.465,
+        "mean_recall_at_10": 0.465,
+        "mean_mrr_at_5": 0.6375,
+        "mean_ndcg_at_5": 0.48957569335223666,
+        "mean_hit_rate_at_5": 0.7
+      },
+      "condensed": {
+        "query_count": 20,
+        "mean_recall_at_5": 0.465,
+        "mean_recall_at_10": 0.465,
+        "mean_mrr_at_5": 0.6125,
+        "mean_ndcg_at_5": 0.48406015994180046,
+        "mean_hit_rate_at_5": 0.7
+      },
+      "recall_at_5_delta": 0.0,
+      "mean_rerank_latency_seconds": {
+        "baseline": 1.19375,
+        "condensed": 0.6335999999995693
+      },
+      "latency_improvement_relative": 0.4692356020946017,
+      "kept": true,
+      "decision_reason": "latence reduite de 46.9% (seuil 20%), qualite non degradee au-dela de la tolerance (+0.0000)."
+    },
+    "test": {
+      "query_count": 8,
+      "condensed_kept": true,
+      "baseline": {
+        "query_count": 8,
+        "mean_recall_at_5": 0.8125,
+        "mean_recall_at_10": 0.8125,
+        "mean_mrr_at_5": 0.90625,
+        "mean_ndcg_at_5": 0.7961949106117329,
+        "mean_hit_rate_at_5": 1.0
+      },
+      "final": {
+        "query_count": 8,
+        "mean_recall_at_5": 0.8125,
+        "mean_recall_at_10": 0.8125,
+        "mean_mrr_at_5": 0.90625,
+        "mean_ndcg_at_5": 0.7961949106117329,
+        "mean_hit_rate_at_5": 1.0
+      },
+      "mean_rerank_latency_seconds": {
+        "baseline": 1.136625000001004,
+        "final": 0.7089999999989232
+      },
+      "latency_improvement_relative": 0.3762234686037199
+    }
+  }
+}
