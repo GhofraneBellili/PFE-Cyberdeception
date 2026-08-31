@@ -1,0 +1,1 @@
+BLOQUE (reference tache section 5) : aucun provider LLM reel exploitable (raison : LLM_PROVIDER/LLM_MODEL/LLM_BASE_URL non configurés (ou LLM_PROVIDER inconnu).). La table DE gelee doit etre reelle -- aucun fichier decision_robustness.json n'est produit.

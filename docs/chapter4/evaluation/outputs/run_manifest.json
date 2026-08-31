@@ -1,0 +1,39 @@
+{
+  "commit_sha": "d9f29de28349494cd74eb5ecf3d9d5dcf6fda303",
+  "generated_at": "2026-08-31T20:25:59.856045+00:00",
+  "corpus": {
+    "full_corpus_chunk_count": 1306,
+    "full_corpus_chunk_count_measured": 1306,
+    "embedding_model": "BAAI/bge-small-en-v1.5"
+  },
+  "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+  "llm": {
+    "provider": null,
+    "model": null,
+    "prompt_version": null,
+    "temperature": null,
+    "status": "blocked_no_real_provider"
+  },
+  "chosen_alpha": 0.5,
+  "k_replays_configured": 5,
+  "k_replays_used": null,
+  "epsilons_configured": [
+    0.02,
+    0.05,
+    0.1
+  ],
+  "epsilons_used": null,
+  "n_draws_per_epsilon_configured": 30,
+  "n_draws_per_epsilon_used": null,
+  "produced_files": [
+    "alpha_sweep.json",
+    "evaluation_summary.json",
+    "performance.json",
+    "reranker_ablation.json",
+    "retrieval_eval_full_corpus.json",
+    "run_manifest.json",
+    "decision_robustness_blocked.txt",
+    "evaluation_results.txt",
+    "llm_evaluation_blocked.txt"
+  ]
+}

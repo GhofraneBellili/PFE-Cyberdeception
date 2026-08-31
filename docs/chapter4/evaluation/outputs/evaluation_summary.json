@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-08-31T20:25:59.859040+00:00",
+  "retrieval": {
+    "status": "executed",
+    "corpus_1306_hybrid_recall_at_5": 0.29215686274509806,
+    "corpus_1306_hybrid_hit_rate_at_5": 0.7058823529411765,
+    "corpus_149_hybrid_recall_at_5": 0.42549019607843136,
+    "delta_recall_at_5_149_to_1306": -0.1333333333333333
+  },
+  "alpha_sweep": {
+    "status": "executed",
+    "best_alpha": 0.5,
+    "alphas_tested": [
+      0.3,
+      0.5,
+      0.7,
+      0.8,
+      0.9
+    ]
+  },
+  "reranker_ablation": {
+    "status": "executed",
+    "recall_at_5_gain": 0.05098039215686273
+  },
+  "llm_annotation": {
+    "status": "blocked_no_real_provider"
+  },
+  "decision_robustness": {
+    "status": "blocked_no_real_provider_or_no_frozen_table"
+  },
+  "performance": {
+    "status": "executed",
+    "small_instance_rag_seconds_per_candidate": 40.911333333332244,
+    "large_instance_rag_seconds_per_candidate": 39.49728260869565,
+    "llm_annotation_latency_available": false
+  }
+}

@@ -1,0 +1,2759 @@
+{
+  "query_count": 17,
+  "top_k": {
+    "recall": [
+      5,
+      10
+    ],
+    "mrr": 5,
+    "ndcg": 5,
+    "hit_rate": 5
+  },
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "hybrid_alpha_used": 0.8,
+  "corpora": {
+    "corpus_149_deception_only": {
+      "chunk_count": 149,
+      "chunk_count_by_source": {
+        "d3fend": 44,
+        "engage": 62,
+        "literature": 43
+      },
+      "ground_truth_coverage": {
+        "query_count": 17,
+        "fully_covered_query_count": 17,
+        "per_query": [
+          {
+            "query_id": "q01_credentials",
+            "expected_count": 4,
+            "present_count": 4,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q02_network_deception",
+            "expected_count": 4,
+            "present_count": 4,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q03_honeypot",
+            "expected_count": 5,
+            "present_count": 5,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q04_decoy_file",
+            "expected_count": 6,
+            "present_count": 6,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q05_lateral_movement",
+            "expected_count": 5,
+            "present_count": 5,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q06_credential_dumping",
+            "expected_count": 5,
+            "present_count": 5,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q07_network_share",
+            "expected_count": 3,
+            "present_count": 3,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q08_web_application",
+            "expected_count": 3,
+            "present_count": 3,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q09_fake_service",
+            "expected_count": 3,
+            "present_count": 3,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q10_decoy_account",
+            "expected_count": 4,
+            "present_count": 4,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q11_persistence",
+            "expected_count": 4,
+            "present_count": 4,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q12_discovery",
+            "expected_count": 4,
+            "present_count": 4,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q13_data_collection",
+            "expected_count": 3,
+            "present_count": 3,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q14_exfiltration",
+            "expected_count": 2,
+            "present_count": 2,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q15_attack_redirection",
+            "expected_count": 2,
+            "present_count": 2,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q16_honeytoken",
+            "expected_count": 3,
+            "present_count": 3,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q17_psychological_effect",
+            "expected_count": 2,
+            "present_count": 2,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          }
+        ]
+      },
+      "modes": {
+        "lexical": {
+          "query_count": 17,
+          "mean_recall_at_5": 0.3313725490196079,
+          "mean_recall_at_10": 0.44313725490196076,
+          "mean_mrr_at_5": 0.5137254901960784,
+          "mean_ndcg_at_5": 0.34008866973148677,
+          "mean_hit_rate_at_5": 0.7647058823529411,
+          "per_query": [
+            {
+              "query_id": "q01_credentials",
+              "topic": "credentials",
+              "retrieved_top10": [
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DUC:1",
+                "engage:EAC0009:long_description",
+                "d3fend:D3-DUC:3",
+                "arxiv_1804.06196__ev001",
+                "d3fend:D3-DP:1",
+                "engage:EAC0021:long_description",
+                "engage:SAC0012:long_description",
+                "d3fend:D3-DST:2",
+                "doi_10.1007_978-3-030-64793-3_8__ev001"
+              ],
+              "recall_at_5": 0.75,
+              "recall_at_10": 0.75,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.8048099750039491,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q02_network_deception",
+              "topic": "network deception",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:0",
+                "engage:EAC0023:description",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DNR:2",
+                "engage:EAC0016:long_description",
+                "engage:EAC0006:description",
+                "engage:EAC0002:long_description",
+                "d3fend:D3-DF:1",
+                "engage:EAC0010:description"
+              ],
+              "recall_at_5": 0.75,
+              "recall_at_10": 0.75,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.7365896932159578,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q03_honeypot",
+              "topic": "honeypot",
+              "retrieved_top10": [
+                "d3fend:D3-DE:3",
+                "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+                "engage:EAC0002:description",
+                "engage:SAC0012:long_description",
+                "doi_10.1145_3214305__ev004",
+                "d3fend:D3-DNR:2",
+                "engage:EAC0011:description",
+                "engage:EAC0001:description",
+                "engage:EAC0010:description",
+                "engage:EAC0003:long_description"
+              ],
+              "recall_at_5": 0.4,
+              "recall_at_10": 0.4,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.5531464700081437,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q04_decoy_file",
+              "topic": "decoy file",
+              "retrieved_top10": [
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DF:2",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DF:3",
+                "doi_10.1109_iaw.2004.1437806__ev001",
+                "engage:EAC0013:description",
+                "engage:EAC0018:long_description",
+                "engage:SAC0012:long_description",
+                "engage:EAC0010:long_description",
+                "engage:EAC0015:long_description"
+              ],
+              "recall_at_5": 0.8333333333333334,
+              "recall_at_10": 0.8333333333333334,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 1.0,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q05_lateral_movement",
+              "topic": "lateral movement",
+              "retrieved_top10": [
+                "d3fend:D3-DO:3",
+                "d3fend:D3-CHN:0",
+                "d3fend:D3-DNR:2",
+                "d3fend:D3-CHN:2",
+                "engage:SAC0012:long_description",
+                "engage:SAC0009:long_description",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "d3fend:D3-IHN:2",
+                "doi_10.1145_3337772__ev001",
+                "d3fend:D3-DP:2"
+              ],
+              "recall_at_5": 0.2,
+              "recall_at_10": 0.2,
+              "mrr_at_5": 0.25,
+              "ndcg_at_5": 0.14606834984270645,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q06_credential_dumping",
+              "topic": "credential dumping",
+              "retrieved_top10": [
+                "doi_10.1007_978-3-030-64793-3_8__ev002",
+                "engage:EAC0018:long_description",
+                "d3fend:D3-DUC:3",
+                "doi_10.1109_comst.2025.3594788__ev001",
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DUC:1",
+                "d3fend:D3-DE:1",
+                "engage:EAC0017:description",
+                "d3fend:D3-DUC:2",
+                "engage:EAC0019:long_description"
+              ],
+              "recall_at_5": 0.2,
+              "recall_at_10": 0.6,
+              "mrr_at_5": 0.2,
+              "ndcg_at_5": 0.13120507751234178,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q07_network_share",
+              "topic": "network share",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DF:2",
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DNR:1",
+                "doi_10.1016_j.cose.2021.102288__ev001",
+                "engage:EAC0023:description",
+                "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+                "d3fend:D3-DNR:2"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 1.0,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.46927872602275644,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q08_web_application",
+              "topic": "web application",
+              "retrieved_top10": [
+                "d3fend:D3-DST:0",
+                "engage:EAC0006:description",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DNR:2",
+                "doi_10.1145_3214305__ev016",
+                "doi_10.1145_3214305__ev010",
+                "engage:EAC0006:long_description",
+                "engage:EAC0001:long_description",
+                "doi_10.1109_iaw.2004.1437806__ev001"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.2,
+              "ndcg_at_5": 0.18154179253735267,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q09_fake_service",
+              "topic": "fake service",
+              "retrieved_top10": [
+                "d3fend:D3-DO:3",
+                "engage:EAC0006:description",
+                "d3fend:D3-DNR:2",
+                "doi_10.1145_3214305__ev008",
+                "engage:SAC0004:long_description",
+                "doi_10.1145_3214305__ev005",
+                "d3fend:D3-DO:1",
+                "doi_10.1145_3678890.3678897__ev001",
+                "engage:EAC0018:long_description",
+                "engage:EAC0008:long_description"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.5,
+              "ndcg_at_5": 0.2960819109658652,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q10_decoy_account",
+              "topic": "decoy account",
+              "retrieved_top10": [
+                "d3fend:D3-DP:1",
+                "doi_10.1145_3214305__ev011",
+                "engage:EAC0002:long_description",
+                "engage:SAC0001:long_description",
+                "d3fend:D3-SHN:2",
+                "engage:SAC0005:long_description",
+                "d3fend:D3-DP:3",
+                "d3fend:D3-DF:1",
+                "engage:SAC0006:description",
+                "d3fend:D3-DUC:1"
+              ],
+              "recall_at_5": 0.25,
+              "recall_at_10": 0.25,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.3903800499921017,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q11_persistence",
+              "topic": "persistence",
+              "retrieved_top10": [
+                "d3fend:D3-DF:3",
+                "d3fend:D3-DP:3",
+                "engage:EAC0018:description",
+                "d3fend:D3-DUC:3",
+                "d3fend:D3-SHN:3",
+                "d3fend:D3-IHN:3",
+                "d3fend:D3-DST:3",
+                "d3fend:D3-DNR:3",
+                "d3fend:D3-DE:4",
+                "d3fend:D3-CHN:3"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q12_discovery",
+              "topic": "discovery",
+              "retrieved_top10": [
+                "engage:EAC0022:long_description",
+                "engage:EAC0022:description",
+                "engage:EAC0007:long_description",
+                "d3fend:D3-DE:0",
+                "engage:EAC0002:long_description",
+                "engage:EAC0008:description",
+                "engage:EAC0008:long_description",
+                "engage:EAC0013:long_description",
+                "engage:EAC0003:long_description",
+                "engage:EAC0019:long_description"
+              ],
+              "recall_at_5": 0.25,
+              "recall_at_10": 0.25,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.19519002499605084,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q13_data_collection",
+              "topic": "data collection",
+              "retrieved_top10": [
+                "engage:EAC0003:description",
+                "engage:EAC0012:description",
+                "engage:SAC0002:description",
+                "engage:SAC0005:description",
+                "engage:EAC0003:long_description",
+                "d3fend:D3-DUC:2",
+                "d3fend:D3-DE:0",
+                "engage:SAC0005:long_description",
+                "engage:EAC0014:long_description",
+                "engage:EAC0002:long_description"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q14_exfiltration",
+              "topic": "exfiltration",
+              "retrieved_top10": [
+                "engage:EAC0002:description",
+                "doi_10.1145_3214305__ev022",
+                "engage:EAC0002:long_description",
+                "engage:EAC0004:long_description",
+                "doi_10.1145_3214305__ev014",
+                "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+                "engage:SAC0006:long_description",
+                "doi_10.1145_3214305__ev001",
+                "engage:EAC0016:long_description",
+                "doi_10.1016_j.cose.2021.102288__ev002"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 0.25,
+              "ndcg_at_5": 0.2640681225725909,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q15_attack_redirection",
+              "topic": "attack redirection",
+              "retrieved_top10": [
+                "engage:EAC0021:long_description",
+                "engage:SAC0009:long_description",
+                "engage:EAC0009:long_description",
+                "engage:SAC0012:long_description",
+                "engage:EAC0015:long_description",
+                "engage:EAC0021:description",
+                "engage:EAC0011:long_description",
+                "d3fend:D3-DP:2",
+                "doi_10.1145_3214305__ev019",
+                "engage:EAC0005:long_description"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 1.0,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6131471927654584,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q16_honeytoken",
+              "topic": "honeytoken",
+              "retrieved_top10": [
+                "doi_10.1145_3214305__ev002",
+                "doi_10.1145_3214305__ev009",
+                "d3fend:D3-CHN:1",
+                "arxiv_1804.06196__ev001",
+                "engage:SAC0001:long_description",
+                "engage:EAC0012:long_description",
+                "doi_10.1145_3678890.3678897__ev001",
+                "d3fend:D3-CHN:2",
+                "engage:EAC0005:long_description",
+                "engage:SAC0002:long_description"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q17_psychological_effect",
+              "topic": "psychological effect on attacker",
+              "retrieved_top10": [
+                "d3fend:D3-DE:4",
+                "engage:SAC0012:long_description",
+                "d3fend:D3-DP:2",
+                "doi_10.1145_3337772__ev001",
+                "engage:EAC0014:description",
+                "arxiv_1804.06196__ev002",
+                "engage:SAC0004:long_description",
+                "d3fend:D3-DPR:1",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "engage:SAC0004:description"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            }
+          ],
+          "mode": "lexical",
+          "source_breakdown": {
+            "d3fend": {
+              "query_count": 6,
+              "mean_recall_at_5": 0.42777777777777776,
+              "mean_mrr_at_5": 0.6083333333333333,
+              "mean_ndcg_at_5": 0.41158226902251066,
+              "mean_hit_rate_at_5": 1.0
+            },
+            "mixed": {
+              "query_count": 7,
+              "mean_recall_at_5": 0.29523809523809524,
+              "mean_mrr_at_5": 0.5476190476190477,
+              "mean_ndcg_at_5": 0.34782835085173736,
+              "mean_hit_rate_at_5": 0.7142857142857143
+            },
+            "engage": {
+              "query_count": 3,
+              "mean_recall_at_5": 0.3333333333333333,
+              "mean_mrr_at_5": 0.4166666666666667,
+              "mean_ndcg_at_5": 0.2924051051126831,
+              "mean_hit_rate_at_5": 0.6666666666666666
+            },
+            "literature": {
+              "query_count": 1,
+              "mean_recall_at_5": 0.0,
+              "mean_mrr_at_5": 0.0,
+              "mean_ndcg_at_5": 0.0,
+              "mean_hit_rate_at_5": 0.0
+            }
+          }
+        },
+        "semantic": {
+          "query_count": 17,
+          "mean_recall_at_5": 0.3519607843137255,
+          "mean_recall_at_10": 0.442156862745098,
+          "mean_mrr_at_5": 0.5490196078431373,
+          "mean_ndcg_at_5": 0.3604324982973221,
+          "mean_hit_rate_at_5": 0.7647058823529411,
+          "per_query": [
+            {
+              "query_id": "q01_credentials",
+              "topic": "credentials",
+              "retrieved_top10": [
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DUC:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DUC:2",
+                "d3fend:D3-DE:1",
+                "doi_10.1145_3214305__ev018",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DST:0"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 0.75,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6366824387328317,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q02_network_deception",
+              "topic": "network deception",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-IHN:1",
+                "doi_10.1145_3214305__ev018",
+                "doi_10.1145_3214305__ev022",
+                "engage:EAC0002:description",
+                "doi_10.1145_3214305__ev005",
+                "engage:EAC0022:description"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6366824387328317,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q03_honeypot",
+              "topic": "honeypot",
+              "retrieved_top10": [
+                "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+                "doi_10.1145_3214305__ev014",
+                "d3fend:D3-DE:3",
+                "doi_10.1109_csac.2003.1254322__ev001",
+                "d3fend:D3-DNR:2",
+                "engage:EAC0002:description",
+                "d3fend:D3-IHN:2",
+                "engage:EAC0002:long_description",
+                "d3fend:D3-CHN:2",
+                "doi_10.1145_3214305__ev008"
+              ],
+              "recall_at_5": 0.6,
+              "recall_at_10": 0.8,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6548086577531307,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q04_decoy_file",
+              "topic": "decoy file",
+              "retrieved_top10": [
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DF:2",
+                "doi_10.1007_978-3-642-05284-2_4__ev001",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DO:0"
+              ],
+              "recall_at_5": 0.6666666666666666,
+              "recall_at_10": 0.6666666666666666,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.7860137352654724,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q05_lateral_movement",
+              "topic": "lateral movement",
+              "retrieved_top10": [
+                "engage:EAC0002:description",
+                "d3fend:D3-DNR:1",
+                "engage:EAC0022:description",
+                "engage:EAC0004:description",
+                "engage:EAC0021:description",
+                "doi_10.1145_3214305__ev004",
+                "doi_10.1145_3214305__ev005",
+                "d3fend:D3-DE:1",
+                "engage:EAC0016:long_description",
+                "engage:EAC0023:description"
+              ],
+              "recall_at_5": 0.2,
+              "recall_at_10": 0.2,
+              "mrr_at_5": 0.5,
+              "ndcg_at_5": 0.21398626473452756,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q06_credential_dumping",
+              "topic": "credential dumping",
+              "retrieved_top10": [
+                "d3fend:D3-DUC:1",
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-IHN:1",
+                "engage:EAC0003:description",
+                "doi_10.1145_3214305__ev018",
+                "doi_10.1145_3214305__ev005"
+              ],
+              "recall_at_5": 0.6,
+              "recall_at_10": 0.6,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.7227265726449519,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q07_network_share",
+              "topic": "network share",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DF:0",
+                "doi_10.1145_3214305__ev022",
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DF:2",
+                "d3fend:D3-DNR:2",
+                "d3fend:D3-DO:0",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DNR:3"
+              ],
+              "recall_at_5": 0.6666666666666666,
+              "recall_at_10": 1.0,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6508205185601091,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q08_web_application",
+              "topic": "web application",
+              "retrieved_top10": [
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DO:0",
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DST:0",
+                "d3fend:D3-DO:1",
+                "doi_10.1145_3214305__ev016",
+                "d3fend:D3-DPR:0",
+                "d3fend:D3-DO:2"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.5,
+              "ndcg_at_5": 0.2960819109658652,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q09_fake_service",
+              "topic": "fake service",
+              "retrieved_top10": [
+                "doi_10.1145_3214305__ev005",
+                "d3fend:D3-DNR:1",
+                "engage:EAC0006:description",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DO:1",
+                "doi_10.1145_3214305__ev018",
+                "doi_10.1145_3214305__ev021",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "d3fend:D3-DF:1"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.23463936301137822,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q10_decoy_account",
+              "topic": "decoy account",
+              "retrieved_top10": [
+                "d3fend:D3-DP:1",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DUC:1",
+                "d3fend:D3-DP:2",
+                "doi_10.1145_3214305__ev005",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DO:1",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "d3fend:D3-DE:1"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.5585075862632192,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q11_persistence",
+              "topic": "persistence",
+              "retrieved_top10": [
+                "engage:EAC0015:description",
+                "doi_10.1145_3214305__ev005",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "arxiv_1804.06196__ev001",
+                "d3fend:D3-DP:1",
+                "doi_10.1016_j.cose.2021.102288__ev001",
+                "engage:SAC0003:description",
+                "doi_10.1145_3337772__ev001",
+                "d3fend:D3-DUC:1",
+                "d3fend:D3-DE:1"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q12_discovery",
+              "topic": "discovery",
+              "retrieved_top10": [
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DE:1",
+                "doi_10.1145_3214305__ev018",
+                "d3fend:D3-DO:0",
+                "engage:EAC0023:description",
+                "doi_10.1145_3214305__ev016",
+                "doi_10.1145_3214305__ev022",
+                "d3fend:D3-DNR:1"
+              ],
+              "recall_at_5": 0.25,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.19519002499605084,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q13_data_collection",
+              "topic": "data collection",
+              "retrieved_top10": [
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DO:0",
+                "engage:EAC0005:description",
+                "d3fend:D3-DNR:0",
+                "engage:EAC0022:description",
+                "d3fend:D3-DE:0"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q14_exfiltration",
+              "topic": "exfiltration",
+              "retrieved_top10": [
+                "engage:EAC0002:description",
+                "doi_10.1145_3214305__ev022",
+                "engage:EAC0004:description",
+                "engage:EAC0002:long_description",
+                "doi_10.1145_3214305__ev004",
+                "d3fend:D3-DNR:1",
+                "engage:EAC0004:long_description",
+                "doi_10.1145_3214305__ev005",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DNR:0"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 1.0,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.3065735963827292,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q15_attack_redirection",
+              "topic": "attack redirection",
+              "retrieved_top10": [
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DNR:1",
+                "doi_10.1145_3214305__ev006",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "engage:SAC0004:description",
+                "doi_10.1145_3214305__ev016",
+                "engage:EAC0023:description",
+                "doi_10.1145_3214305__ev008"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q16_honeytoken",
+              "topic": "honeytoken",
+              "retrieved_top10": [
+                "doi_10.1145_3214305__ev014",
+                "doi_10.1109_csac.2003.1254322__ev001",
+                "doi_10.1145_3678890.3678897__ev001",
+                "d3fend:D3-IHN:0",
+                "doi_10.1145_3214305__ev018",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-IHN:2",
+                "d3fend:D3-CHN:0",
+                "d3fend:D3-SHN:0",
+                "usenixsec2004_provos_virtual_honeypot_framework__ev001"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.23463936301137822,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q17_psychological_effect",
+              "topic": "psychological effect on attacker",
+              "retrieved_top10": [
+                "doi_10.1016_j.cose.2021.102288__ev001",
+                "arxiv_1804.06196__ev001",
+                "doi_10.1145_3337772__ev001",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "doi_10.1145_3214305__ev006",
+                "d3fend:D3-IHN:1",
+                "doi_10.1145_3214305__ev005",
+                "engage:SAC0004:description",
+                "doi_10.1007_978-3-030-64793-3_8__ev002",
+                "engage:EAC0015:description"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            }
+          ],
+          "mode": "semantic",
+          "source_breakdown": {
+            "d3fend": {
+              "query_count": 6,
+              "mean_recall_at_5": 0.4666666666666666,
+              "mean_mrr_at_5": 0.8333333333333334,
+              "mean_ndcg_at_5": 0.5261633573951862,
+              "mean_hit_rate_at_5": 1.0
+            },
+            "mixed": {
+              "query_count": 7,
+              "mean_recall_at_5": 0.3833333333333333,
+              "mean_mrr_at_5": 0.5714285714285714,
+              "mean_ndcg_at_5": 0.38054267575723283,
+              "mean_hit_rate_at_5": 0.8571428571428571
+            },
+            "engage": {
+              "query_count": 3,
+              "mean_recall_at_5": 0.16666666666666666,
+              "mean_mrr_at_5": 0.1111111111111111,
+              "mean_ndcg_at_5": 0.10219119879424306,
+              "mean_hit_rate_at_5": 0.3333333333333333
+            },
+            "literature": {
+              "query_count": 1,
+              "mean_recall_at_5": 0.0,
+              "mean_mrr_at_5": 0.0,
+              "mean_ndcg_at_5": 0.0,
+              "mean_hit_rate_at_5": 0.0
+            }
+          }
+        },
+        "hybrid": {
+          "query_count": 17,
+          "mean_recall_at_5": 0.42549019607843136,
+          "mean_recall_at_10": 0.5715686274509804,
+          "mean_mrr_at_5": 0.5578431372549019,
+          "mean_ndcg_at_5": 0.4026312315244378,
+          "mean_hit_rate_at_5": 0.8235294117647058,
+          "per_query": [
+            {
+              "query_id": "q01_credentials",
+              "topic": "credentials",
+              "retrieved_top10": [
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DUC:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DUC:2",
+                "d3fend:D3-DP:1",
+                "d3fend:D3-DUC:3",
+                "doi_10.1145_3214305__ev018"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 1.0,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6366824387328317,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q02_network_deception",
+              "topic": "network deception",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DNR:2",
+                "engage:EAC0023:description",
+                "doi_10.1145_3214305__ev018",
+                "doi_10.1145_3214305__ev022",
+                "engage:EAC0022:description",
+                "d3fend:D3-DF:1"
+              ],
+              "recall_at_5": 0.75,
+              "recall_at_10": 0.75,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.787702056960637,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q03_honeypot",
+              "topic": "honeypot",
+              "retrieved_top10": [
+                "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+                "d3fend:D3-DE:3",
+                "engage:EAC0002:description",
+                "d3fend:D3-DNR:2",
+                "doi_10.1109_csac.2003.1254322__ev001",
+                "d3fend:D3-IHN:2",
+                "engage:EAC0002:long_description",
+                "doi_10.1145_3214305__ev014",
+                "engage:EAC0001:description",
+                "d3fend:D3-CHN:2"
+              ],
+              "recall_at_5": 0.6,
+              "recall_at_10": 0.8,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6843515475204855,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q04_decoy_file",
+              "topic": "decoy file",
+              "retrieved_top10": [
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DF:2",
+                "d3fend:D3-DO:1",
+                "doi_10.1109_iaw.2004.1437806__ev001",
+                "doi_10.1007_978-3-642-05284-2_4__ev001",
+                "d3fend:D3-IHN:1",
+                "engage:EAC0021:description",
+                "engage:EAC0014:long_description",
+                "d3fend:D3-DE:1"
+              ],
+              "recall_at_5": 0.6666666666666666,
+              "recall_at_10": 0.8333333333333334,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.8539316501572937,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q05_lateral_movement",
+              "topic": "lateral movement",
+              "retrieved_top10": [
+                "engage:EAC0002:description",
+                "d3fend:D3-DNR:1",
+                "engage:EAC0016:long_description",
+                "engage:EAC0004:description",
+                "engage:EAC0021:description",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "d3fend:D3-DE:1",
+                "engage:EAC0002:long_description",
+                "engage:EAC0022:description",
+                "d3fend:D3-DO:3"
+              ],
+              "recall_at_5": 0.2,
+              "recall_at_10": 0.2,
+              "mrr_at_5": 0.5,
+              "ndcg_at_5": 0.21398626473452756,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q06_credential_dumping",
+              "topic": "credential dumping",
+              "retrieved_top10": [
+                "d3fend:D3-DUC:1",
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DUC:3",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DUC:2",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-IHN:1"
+              ],
+              "recall_at_5": 0.6,
+              "recall_at_10": 0.8,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.7227265726449519,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q07_network_share",
+              "topic": "network share",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DF:2",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DNR:2",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DO:1",
+                "doi_10.1145_3214305__ev022"
+              ],
+              "recall_at_5": 0.6666666666666666,
+              "recall_at_10": 1.0,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6713860725233041,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q08_web_application",
+              "topic": "web application",
+              "retrieved_top10": [
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DST:0",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DNR:0",
+                "doi_10.1145_3214305__ev016",
+                "d3fend:D3-DO:0",
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DNR:2",
+                "doi_10.1145_3214305__ev010"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.6666666666666666,
+              "mrr_at_5": 0.2,
+              "ndcg_at_5": 0.18154179253735267,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q09_fake_service",
+              "topic": "fake service",
+              "retrieved_top10": [
+                "doi_10.1145_3214305__ev005",
+                "engage:EAC0006:description",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DNR:1",
+                "doi_10.1145_3214305__ev008",
+                "d3fend:D3-DE:1",
+                "doi_10.1145_3214305__ev021",
+                "d3fend:D3-IHN:1",
+                "doi_10.1145_3214305__ev018",
+                "doi_10.1007_978-3-030-64793-3_8__ev001"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.5,
+              "ndcg_at_5": 0.2960819109658652,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q10_decoy_account",
+              "topic": "decoy account",
+              "retrieved_top10": [
+                "d3fend:D3-DP:1",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DUC:1",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DP:2",
+                "d3fend:D3-DO:1",
+                "doi_10.1145_3214305__ev005",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DUC:0",
+                "doi_10.1145_3214305__ev011"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.5413996682199069,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q11_persistence",
+              "topic": "persistence",
+              "retrieved_top10": [
+                "doi_10.1145_3214305__ev005",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "doi_10.1016_j.cose.2021.102288__ev001",
+                "doi_10.1145_3214305__ev006",
+                "engage:EAC0015:description",
+                "arxiv_1804.06196__ev001",
+                "doi_10.1145_2683467.2683482__ev001",
+                "d3fend:D3-DP:1",
+                "engage:SAC0003:description",
+                "doi_10.1145_3337772__ev001"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q12_discovery",
+              "topic": "discovery",
+              "retrieved_top10": [
+                "d3fend:D3-DE:0",
+                "engage:EAC0022:description",
+                "d3fend:D3-IHN:1",
+                "engage:EAC0022:long_description",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DE:1",
+                "engage:EAC0005:description",
+                "doi_10.1145_3214305__ev018",
+                "d3fend:D3-DO:0",
+                "engage:EAC0003:description"
+              ],
+              "recall_at_5": 0.25,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 0.2,
+              "ndcg_at_5": 0.15101961822780524,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q13_data_collection",
+              "topic": "data collection",
+              "retrieved_top10": [
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-IHN:1",
+                "engage:EAC0003:description",
+                "d3fend:D3-DE:0",
+                "engage:EAC0022:description",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DO:0",
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DF:1"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q14_exfiltration",
+              "topic": "exfiltration",
+              "retrieved_top10": [
+                "engage:EAC0002:description",
+                "doi_10.1145_3214305__ev022",
+                "engage:EAC0002:long_description",
+                "engage:EAC0004:description",
+                "engage:EAC0004:long_description",
+                "doi_10.1145_3214305__ev004",
+                "d3fend:D3-DNR:1",
+                "doi_10.1145_3214305__ev008",
+                "engage:EAC0016:long_description",
+                "engage:EAC0001:description"
+              ],
+              "recall_at_5": 1.0,
+              "recall_at_10": 1.0,
+              "mrr_at_5": 0.25,
+              "ndcg_at_5": 0.5012658353418871,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q15_attack_redirection",
+              "topic": "attack redirection",
+              "retrieved_top10": [
+                "d3fend:D3-DE:1",
+                "d3fend:D3-IHN:1",
+                "engage:EAC0021:long_description",
+                "doi_10.1145_3214305__ev006",
+                "d3fend:D3-DO:1",
+                "engage:EAC0021:description",
+                "d3fend:D3-DNR:1",
+                "engage:EAC0005:description",
+                "engage:EAC0022:description",
+                "doi_10.1007_978-3-030-64793-3_8__ev001"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 1.0,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.3065735963827292,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q16_honeytoken",
+              "topic": "honeytoken",
+              "retrieved_top10": [
+                "doi_10.1145_3214305__ev014",
+                "doi_10.1145_3678890.3678897__ev001",
+                "doi_10.1109_csac.2003.1254322__ev001",
+                "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+                "engage:EAC0002:description",
+                "d3fend:D3-IHN:0",
+                "doi_10.1145_3214305__ev018",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-IHN:2",
+                "d3fend:D3-CHN:0"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.5,
+              "ndcg_at_5": 0.2960819109658652,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q17_psychological_effect",
+              "topic": "psychological effect on attacker",
+              "retrieved_top10": [
+                "doi_10.1145_3337772__ev001",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "doi_10.1016_j.cose.2021.102288__ev001",
+                "engage:SAC0004:description",
+                "doi_10.1145_3214305__ev005",
+                "arxiv_1804.06196__ev001",
+                "doi_10.1145_3214305__ev006",
+                "engage:SAC0003:description",
+                "d3fend:D3-IHN:1",
+                "doi_10.1007_978-3-030-64793-3_8__ev002"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            }
+          ],
+          "mode": "hybrid",
+          "source_breakdown": {
+            "d3fend": {
+              "query_count": 6,
+              "mean_recall_at_5": 0.5083333333333333,
+              "mean_mrr_at_5": 0.7833333333333333,
+              "mean_ndcg_at_5": 0.5356708663556008,
+              "mean_hit_rate_at_5": 1.0
+            },
+            "mixed": {
+              "query_count": 7,
+              "mean_recall_at_5": 0.3833333333333333,
+              "mean_mrr_at_5": 0.6,
+              "mean_ndcg_at_5": 0.4032666151510317,
+              "mean_hit_rate_at_5": 0.8571428571428571
+            },
+            "engage": {
+              "query_count": 3,
+              "mean_recall_at_5": 0.5,
+              "mean_mrr_at_5": 0.19444444444444442,
+              "mean_ndcg_at_5": 0.2692798105748721,
+              "mean_hit_rate_at_5": 0.6666666666666666
+            },
+            "literature": {
+              "query_count": 1,
+              "mean_recall_at_5": 0.0,
+              "mean_mrr_at_5": 0.0,
+              "mean_ndcg_at_5": 0.0,
+              "mean_hit_rate_at_5": 0.0
+            }
+          }
+        }
+      }
+    },
+    "corpus_1306_full": {
+      "chunk_count": 1306,
+      "chunk_count_by_source": {
+        "attack": 1157,
+        "d3fend": 44,
+        "engage": 62,
+        "literature": 43
+      },
+      "ground_truth_coverage": {
+        "query_count": 17,
+        "fully_covered_query_count": 17,
+        "per_query": [
+          {
+            "query_id": "q01_credentials",
+            "expected_count": 4,
+            "present_count": 4,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q02_network_deception",
+            "expected_count": 4,
+            "present_count": 4,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q03_honeypot",
+            "expected_count": 5,
+            "present_count": 5,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q04_decoy_file",
+            "expected_count": 6,
+            "present_count": 6,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q05_lateral_movement",
+            "expected_count": 5,
+            "present_count": 5,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q06_credential_dumping",
+            "expected_count": 5,
+            "present_count": 5,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q07_network_share",
+            "expected_count": 3,
+            "present_count": 3,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q08_web_application",
+            "expected_count": 3,
+            "present_count": 3,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q09_fake_service",
+            "expected_count": 3,
+            "present_count": 3,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q10_decoy_account",
+            "expected_count": 4,
+            "present_count": 4,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q11_persistence",
+            "expected_count": 4,
+            "present_count": 4,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q12_discovery",
+            "expected_count": 4,
+            "present_count": 4,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q13_data_collection",
+            "expected_count": 3,
+            "present_count": 3,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q14_exfiltration",
+            "expected_count": 2,
+            "present_count": 2,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q15_attack_redirection",
+            "expected_count": 2,
+            "present_count": 2,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q16_honeytoken",
+            "expected_count": 3,
+            "present_count": 3,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          },
+          {
+            "query_id": "q17_psychological_effect",
+            "expected_count": 2,
+            "present_count": 2,
+            "missing_chunk_ids": [],
+            "fully_covered": true
+          }
+        ]
+      },
+      "modes": {
+        "lexical": {
+          "query_count": 17,
+          "mean_recall_at_5": 0.13627450980392156,
+          "mean_recall_at_10": 0.19705882352941176,
+          "mean_mrr_at_5": 0.33333333333333337,
+          "mean_ndcg_at_5": 0.16812325808247217,
+          "mean_hit_rate_at_5": 0.4117647058823529,
+          "per_query": [
+            {
+              "query_id": "q01_credentials",
+              "topic": "credentials",
+              "retrieved_top10": [
+                "engage:EAC0009:long_description",
+                "attack:T1102:0",
+                "d3fend:D3-DUC:0",
+                "attack:T1007:0",
+                "attack:T1046:0",
+                "engage:SAC0012:long_description",
+                "d3fend:D3-DP:1",
+                "attack:T1526:0",
+                "engage:EAC0021:long_description",
+                "d3fend:D3-DST:2"
+              ],
+              "recall_at_5": 0.25,
+              "recall_at_10": 0.25,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.19519002499605084,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q02_network_deception",
+              "topic": "network deception",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:0",
+                "engage:EAC0023:description",
+                "d3fend:D3-DO:1",
+                "attack:T1589:3",
+                "attack:T1590:3",
+                "attack:T1591:3",
+                "attack:T1592:3",
+                "attack:T1593:3",
+                "attack:T1594:3",
+                "attack:T1595:3"
+              ],
+              "recall_at_5": 0.25,
+              "recall_at_10": 0.25,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.3903800499921017,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q03_honeypot",
+              "topic": "honeypot",
+              "retrieved_top10": [
+                "d3fend:D3-DE:3",
+                "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+                "engage:SAC0012:long_description",
+                "engage:EAC0002:description",
+                "attack:T1176:0",
+                "attack:T1040:1",
+                "attack:T1011:0",
+                "attack:T1027.004:0",
+                "attack:T1090:1",
+                "attack:T1029:0"
+              ],
+              "recall_at_5": 0.4,
+              "recall_at_10": 0.4,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.5531464700081437,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q04_decoy_file",
+              "topic": "decoy file",
+              "retrieved_top10": [
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DF:2",
+                "attack:T1572:0",
+                "attack:T1568:0",
+                "attack:T1204.002:0",
+                "engage:EAC0013:description",
+                "attack:T1535:1",
+                "attack:T1048:0",
+                "d3fend:D3-DF:1",
+                "attack:T1572:1"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.5531464700081437,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q05_lateral_movement",
+              "topic": "lateral movement",
+              "retrieved_top10": [
+                "d3fend:D3-DO:3",
+                "d3fend:D3-CHN:0",
+                "attack:T1546.009:0",
+                "attack:T1090:0",
+                "engage:SAC0012:long_description",
+                "d3fend:D3-CHN:2",
+                "doi_10.1145_3337772__ev001",
+                "d3fend:D3-IHN:2",
+                "d3fend:D3-DNR:2",
+                "attack:T1091:0"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.2,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q06_credential_dumping",
+              "topic": "credential dumping",
+              "retrieved_top10": [
+                "attack:T1137:0",
+                "attack:T1003:0",
+                "attack:T1535:0",
+                "doi_10.1007_978-3-030-64793-3_8__ev002",
+                "attack:T1574.012:1",
+                "attack:T1547.001:0",
+                "attack:T1037.001:3",
+                "attack:T1037.002:3",
+                "attack:T1037.003:3",
+                "attack:T1037.004:3"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q07_network_share",
+              "topic": "network share",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DF:2",
+                "attack:T1135:0",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DNR:2",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DUC:2",
+                "attack:T1496:1",
+                "engage:EAC0023:description"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 1.0,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.46927872602275644,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q08_web_application",
+              "topic": "web application",
+              "retrieved_top10": [
+                "attack:T1550.001:0",
+                "d3fend:D3-DST:0",
+                "attack:T1569:0",
+                "attack:T1534:0",
+                "attack:T1505.003:1",
+                "attack:T1003.007:0",
+                "attack:T1528:0",
+                "attack:T1566.002:0",
+                "attack:T1566.003:0",
+                "attack:T1566.003:1"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q09_fake_service",
+              "topic": "fake service",
+              "retrieved_top10": [
+                "attack:T1564.007:0",
+                "d3fend:D3-DO:3",
+                "attack:T1589:2",
+                "attack:T1590:2",
+                "attack:T1591:2",
+                "attack:T1592:2",
+                "attack:T1593:2",
+                "attack:T1594:2",
+                "attack:T1595:2",
+                "attack:T1596:2"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q10_decoy_account",
+              "topic": "decoy account",
+              "retrieved_top10": [
+                "d3fend:D3-DP:1",
+                "doi_10.1145_3214305__ev011",
+                "attack:T1498:0",
+                "attack:T1573.002:0",
+                "attack:T1548.002:0",
+                "engage:SAC0001:long_description",
+                "attack:T1595:0",
+                "attack:T1537:0",
+                "attack:T1499:0",
+                "engage:SAC0005:long_description"
+              ],
+              "recall_at_5": 0.25,
+              "recall_at_10": 0.25,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.3903800499921017,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q11_persistence",
+              "topic": "persistence",
+              "retrieved_top10": [
+                "attack:T1003.003:0",
+                "attack:T1142:0",
+                "d3fend:D3-DP:3",
+                "d3fend:D3-DF:3",
+                "d3fend:D3-DUC:3",
+                "attack:T1003.003:1",
+                "d3fend:D3-SHN:3",
+                "d3fend:D3-IHN:3",
+                "attack:T1185:1",
+                "d3fend:D3-DST:3"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q12_discovery",
+              "topic": "discovery",
+              "retrieved_top10": [
+                "d3fend:D3-DE:0",
+                "engage:EAC0022:long_description",
+                "attack:T1485:2",
+                "attack:T1486:2",
+                "attack:T1489:2",
+                "attack:T1491:2",
+                "attack:T1491.002:2",
+                "attack:T1496:2",
+                "attack:T1498:2",
+                "attack:T1499:2"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q13_data_collection",
+              "topic": "data collection",
+              "retrieved_top10": [
+                "attack:T1599:0",
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DUC:2",
+                "engage:EAC0003:description",
+                "attack:T1005:0",
+                "d3fend:D3-DUC:0",
+                "engage:EAC0012:description",
+                "d3fend:D3-DO:0",
+                "attack:T1104:0"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q14_exfiltration",
+              "topic": "exfiltration",
+              "retrieved_top10": [
+                "attack:T1011:0",
+                "engage:EAC0002:description",
+                "attack:T1110.003:0",
+                "attack:T1202:0",
+                "attack:T1485:0",
+                "attack:T1052:0",
+                "attack:T1011:2",
+                "attack:T1020:2",
+                "attack:T1029:2",
+                "attack:T1030:2"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q15_attack_redirection",
+              "topic": "attack redirection",
+              "retrieved_top10": [
+                "attack:T1556.003:1",
+                "engage:EAC0009:long_description",
+                "engage:EAC0021:long_description",
+                "engage:SAC0012:long_description",
+                "d3fend:D3-DNR:2",
+                "engage:EAC0015:long_description",
+                "engage:SAC0009:long_description",
+                "attack:T1105:0",
+                "attack:T1546.006:1",
+                "attack:T1070.002:1"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.3065735963827292,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q16_honeytoken",
+              "topic": "honeytoken",
+              "retrieved_top10": [
+                "attack:T1546.005:0",
+                "attack:T1070.002:0",
+                "attack:T1550:0",
+                "attack:T1007:0",
+                "attack:T1030:0",
+                "doi_10.1145_3214305__ev002",
+                "attack:T1102:0",
+                "attack:T1036.003:0",
+                "attack:T1550:1",
+                "attack:T1036.003:1"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q17_psychological_effect",
+              "topic": "psychological effect on attacker",
+              "retrieved_top10": [
+                "attack:T1548:0",
+                "engage:SAC0012:long_description",
+                "attack:T1561:0",
+                "attack:T1649:0",
+                "doi_10.1145_3337772__ev001",
+                "attack:T1185:1",
+                "attack:T1558:0",
+                "attack:T1555:0",
+                "attack:T1029:0",
+                "doi_10.1007_978-3-030-64793-3_8__ev001"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            }
+          ],
+          "mode": "lexical",
+          "source_breakdown": {
+            "d3fend": {
+              "query_count": 6,
+              "mean_recall_at_5": 0.13888888888888887,
+              "mean_mrr_at_5": 0.3888888888888889,
+              "mean_ndcg_at_5": 0.17580813350181815,
+              "mean_hit_rate_at_5": 0.5
+            },
+            "mixed": {
+              "query_count": 7,
+              "mean_recall_at_5": 0.14047619047619048,
+              "mean_mrr_at_5": 0.42857142857142855,
+              "mean_ndcg_at_5": 0.21381042714405557,
+              "mean_hit_rate_at_5": 0.42857142857142855
+            },
+            "engage": {
+              "query_count": 3,
+              "mean_recall_at_5": 0.16666666666666666,
+              "mean_mrr_at_5": 0.1111111111111111,
+              "mean_ndcg_at_5": 0.10219119879424306,
+              "mean_hit_rate_at_5": 0.3333333333333333
+            },
+            "literature": {
+              "query_count": 1,
+              "mean_recall_at_5": 0.0,
+              "mean_mrr_at_5": 0.0,
+              "mean_ndcg_at_5": 0.0,
+              "mean_hit_rate_at_5": 0.0
+            }
+          }
+        },
+        "semantic": {
+          "query_count": 17,
+          "mean_recall_at_5": 0.25980392156862747,
+          "mean_recall_at_10": 0.3784313725490196,
+          "mean_mrr_at_5": 0.4852941176470588,
+          "mean_ndcg_at_5": 0.27909916241998156,
+          "mean_hit_rate_at_5": 0.7058823529411765,
+          "per_query": [
+            {
+              "query_id": "q01_credentials",
+              "topic": "credentials",
+              "retrieved_top10": [
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DUC:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DST:1",
+                "attack:T1649:0",
+                "attack:T1134.001:0",
+                "attack:T1555:0",
+                "attack:T1110.002:0",
+                "d3fend:D3-DF:1",
+                "attack:T1552:0"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6366824387328317,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q02_network_deception",
+              "topic": "network deception",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DO:1",
+                "attack:T1496:0",
+                "d3fend:D3-IHN:1",
+                "doi_10.1145_3214305__ev018",
+                "doi_10.1145_3214305__ev022",
+                "engage:EAC0002:description",
+                "doi_10.1145_3214305__ev005"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6366824387328317,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q03_honeypot",
+              "topic": "honeypot",
+              "retrieved_top10": [
+                "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+                "doi_10.1145_3214305__ev014",
+                "d3fend:D3-DE:3",
+                "doi_10.1109_csac.2003.1254322__ev001",
+                "d3fend:D3-DNR:2",
+                "engage:EAC0002:description",
+                "d3fend:D3-IHN:2",
+                "engage:EAC0002:long_description",
+                "attack:T1040:1",
+                "d3fend:D3-CHN:2"
+              ],
+              "recall_at_5": 0.6,
+              "recall_at_10": 0.8,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6548086577531307,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q04_decoy_file",
+              "topic": "decoy file",
+              "retrieved_top10": [
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DO:1",
+                "attack:T1140:0",
+                "d3fend:D3-DF:0",
+                "attack:T1204.002:0",
+                "d3fend:D3-DF:2",
+                "attack:T1027:0",
+                "attack:T1204.002:1",
+                "doi_10.1007_978-3-642-05284-2_4__ev001",
+                "d3fend:D3-DE:1"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.6666666666666666,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.48522855511632257,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q05_lateral_movement",
+              "topic": "lateral movement",
+              "retrieved_top10": [
+                "engage:EAC0002:description",
+                "d3fend:D3-DNR:1",
+                "attack:T1011:0",
+                "engage:EAC0022:description",
+                "engage:EAC0004:description",
+                "attack:T1574.006:0",
+                "attack:T1040:0",
+                "engage:EAC0021:description",
+                "attack:T1574.008:0",
+                "doi_10.1145_3214305__ev004"
+              ],
+              "recall_at_5": 0.2,
+              "recall_at_10": 0.2,
+              "mrr_at_5": 0.5,
+              "ndcg_at_5": 0.21398626473452756,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q06_credential_dumping",
+              "topic": "credential dumping",
+              "retrieved_top10": [
+                "attack:T1003:0",
+                "attack:T1212:0",
+                "attack:T1555:0",
+                "d3fend:D3-DUC:1",
+                "attack:T1649:0",
+                "d3fend:D3-DUC:0",
+                "attack:T1552:0",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DF:1",
+                "attack:T1110.002:0"
+              ],
+              "recall_at_5": 0.2,
+              "recall_at_10": 0.6,
+              "mrr_at_5": 0.25,
+              "ndcg_at_5": 0.14606834984270645,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q07_network_share",
+              "topic": "network share",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DF:0",
+                "attack:T1039:0",
+                "attack:T1070.005:0",
+                "attack:T1140:0",
+                "doi_10.1145_3214305__ev022",
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DF:2",
+                "attack:T1080:0"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.6666666666666666,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.46927872602275644,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q08_web_application",
+              "topic": "web application",
+              "retrieved_top10": [
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DO:0",
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DST:0",
+                "d3fend:D3-DO:1",
+                "doi_10.1145_3214305__ev016",
+                "d3fend:D3-DPR:0",
+                "attack:T1140:0"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.5,
+              "ndcg_at_5": 0.2960819109658652,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q09_fake_service",
+              "topic": "fake service",
+              "retrieved_top10": [
+                "doi_10.1145_3214305__ev005",
+                "d3fend:D3-DNR:1",
+                "engage:EAC0006:description",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DO:1",
+                "doi_10.1145_3214305__ev018",
+                "doi_10.1145_3214305__ev021",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "attack:T1210:0"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.23463936301137822,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q10_decoy_account",
+              "topic": "decoy account",
+              "retrieved_top10": [
+                "d3fend:D3-DP:1",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DUC:1",
+                "attack:T1134.001:0",
+                "d3fend:D3-DP:2",
+                "doi_10.1145_3214305__ev005",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DNR:1",
+                "attack:T1098:0",
+                "d3fend:D3-DO:1"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.5413996682199069,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q11_persistence",
+              "topic": "persistence",
+              "retrieved_top10": [
+                "engage:EAC0015:description",
+                "doi_10.1145_3214305__ev005",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "arxiv_1804.06196__ev001",
+                "d3fend:D3-DP:1",
+                "attack:T1557:0",
+                "doi_10.1016_j.cose.2021.102288__ev001",
+                "engage:SAC0003:description",
+                "doi_10.1145_3337772__ev001",
+                "d3fend:D3-DUC:1"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q12_discovery",
+              "topic": "discovery",
+              "retrieved_top10": [
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DO:1",
+                "attack:T1211:0",
+                "attack:T1557:0",
+                "d3fend:D3-DE:1",
+                "attack:T1070:1",
+                "doi_10.1145_3214305__ev018",
+                "d3fend:D3-DO:0",
+                "attack:T1001:0"
+              ],
+              "recall_at_5": 0.25,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.19519002499605084,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q13_data_collection",
+              "topic": "data collection",
+              "retrieved_top10": [
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DNR:1",
+                "attack:T1557:0",
+                "attack:T1001:0",
+                "d3fend:D3-DF:1",
+                "attack:T1485:0",
+                "attack:T1211:0",
+                "d3fend:D3-DO:0"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q14_exfiltration",
+              "topic": "exfiltration",
+              "retrieved_top10": [
+                "engage:EAC0002:description",
+                "attack:T1011:0",
+                "doi_10.1145_3214305__ev022",
+                "attack:T1048:0",
+                "attack:T1040:0",
+                "engage:EAC0004:description",
+                "attack:T1030:1",
+                "attack:T1020:0",
+                "attack:T1041:0",
+                "attack:T1041:2"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q15_attack_redirection",
+              "topic": "attack redirection",
+              "retrieved_top10": [
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DE:1",
+                "attack:T1557:0",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DNR:1",
+                "doi_10.1145_3214305__ev006",
+                "attack:T1211:0",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "engage:SAC0004:description",
+                "doi_10.1145_3214305__ev016"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q16_honeytoken",
+              "topic": "honeytoken",
+              "retrieved_top10": [
+                "doi_10.1145_3214305__ev014",
+                "doi_10.1109_csac.2003.1254322__ev001",
+                "doi_10.1145_3678890.3678897__ev001",
+                "d3fend:D3-IHN:0",
+                "doi_10.1145_3214305__ev018",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-IHN:2",
+                "d3fend:D3-CHN:0",
+                "d3fend:D3-SHN:0",
+                "attack:T1020:0"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.23463936301137822,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q17_psychological_effect",
+              "topic": "psychological effect on attacker",
+              "retrieved_top10": [
+                "doi_10.1016_j.cose.2021.102288__ev001",
+                "arxiv_1804.06196__ev001",
+                "doi_10.1145_3337772__ev001",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "doi_10.1145_3214305__ev006",
+                "d3fend:D3-IHN:1",
+                "doi_10.1145_3214305__ev005",
+                "engage:SAC0004:description",
+                "doi_10.1007_978-3-030-64793-3_8__ev002",
+                "engage:EAC0015:description"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            }
+          ],
+          "mode": "semantic",
+          "source_breakdown": {
+            "d3fend": {
+              "query_count": 6,
+              "mean_recall_at_5": 0.3444444444444444,
+              "mean_mrr_at_5": 0.7083333333333334,
+              "mean_ndcg_at_5": 0.3997966881719199,
+              "mean_hit_rate_at_5": 1.0
+            },
+            "mixed": {
+              "query_count": 7,
+              "mean_recall_at_5": 0.33571428571428574,
+              "mean_mrr_at_5": 0.5714285714285714,
+              "mean_ndcg_at_5": 0.33512937601545245,
+              "mean_hit_rate_at_5": 0.8571428571428571
+            },
+            "engage": {
+              "query_count": 3,
+              "mean_recall_at_5": 0.0,
+              "mean_mrr_at_5": 0.0,
+              "mean_ndcg_at_5": 0.0,
+              "mean_hit_rate_at_5": 0.0
+            },
+            "literature": {
+              "query_count": 1,
+              "mean_recall_at_5": 0.0,
+              "mean_mrr_at_5": 0.0,
+              "mean_ndcg_at_5": 0.0,
+              "mean_hit_rate_at_5": 0.0
+            }
+          }
+        },
+        "hybrid": {
+          "query_count": 17,
+          "mean_recall_at_5": 0.29215686274509806,
+          "mean_recall_at_10": 0.44999999999999996,
+          "mean_mrr_at_5": 0.4901960784313726,
+          "mean_ndcg_at_5": 0.3070273767255487,
+          "mean_hit_rate_at_5": 0.7058823529411765,
+          "per_query": [
+            {
+              "query_id": "q01_credentials",
+              "topic": "credentials",
+              "retrieved_top10": [
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DUC:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DUC:2",
+                "d3fend:D3-DP:1",
+                "attack:T1649:0",
+                "attack:T1134.001:0",
+                "attack:T1555:0"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 0.75,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6366824387328317,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q02_network_deception",
+              "topic": "network deception",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DNR:2",
+                "d3fend:D3-DE:1",
+                "doi_10.1145_3214305__ev008",
+                "attack:T1496:0",
+                "d3fend:D3-IHN:1",
+                "doi_10.1145_3214305__ev018",
+                "doi_10.1145_3214305__ev022"
+              ],
+              "recall_at_5": 0.75,
+              "recall_at_10": 0.75,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.8048099750039491,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q03_honeypot",
+              "topic": "honeypot",
+              "retrieved_top10": [
+                "usenixsec2004_provos_virtual_honeypot_framework__ev001",
+                "d3fend:D3-DE:3",
+                "engage:EAC0002:description",
+                "d3fend:D3-DNR:2",
+                "attack:T1040:1",
+                "doi_10.1145_3214305__ev014",
+                "doi_10.1109_csac.2003.1254322__ev001",
+                "attack:T1011:0",
+                "engage:EAC0001:description",
+                "d3fend:D3-IHN:2"
+              ],
+              "recall_at_5": 0.4,
+              "recall_at_10": 0.6,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.5531464700081437,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q04_decoy_file",
+              "topic": "decoy file",
+              "retrieved_top10": [
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DF:1",
+                "d3fend:D3-DF:2",
+                "attack:T1204.002:0",
+                "attack:T1204.002:1",
+                "d3fend:D3-DO:1",
+                "attack:T1006:1",
+                "attack:T1140:0",
+                "d3fend:D3-DE:0",
+                "doi_10.1109_iaw.2004.1437806__ev001"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 0.6666666666666666,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.7227265726449519,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q05_lateral_movement",
+              "topic": "lateral movement",
+              "retrieved_top10": [
+                "engage:EAC0002:description",
+                "d3fend:D3-DNR:1",
+                "engage:EAC0016:long_description",
+                "attack:T1011:0",
+                "attack:T1092:1",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "engage:EAC0022:description",
+                "engage:EAC0004:description",
+                "attack:T1574.006:0",
+                "attack:T1040:0"
+              ],
+              "recall_at_5": 0.2,
+              "recall_at_10": 0.2,
+              "mrr_at_5": 0.5,
+              "ndcg_at_5": 0.21398626473452756,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q06_credential_dumping",
+              "topic": "credential dumping",
+              "retrieved_top10": [
+                "attack:T1003:0",
+                "attack:T1212:0",
+                "attack:T1555:0",
+                "d3fend:D3-DUC:1",
+                "attack:T1649:0",
+                "d3fend:D3-DUC:0",
+                "attack:T1552:0",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DF:1",
+                "attack:T1110.002:0"
+              ],
+              "recall_at_5": 0.2,
+              "recall_at_10": 0.6,
+              "mrr_at_5": 0.25,
+              "ndcg_at_5": 0.14606834984270645,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q07_network_share",
+              "topic": "network share",
+              "retrieved_top10": [
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DF:2",
+                "attack:T1070.005:0",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DE:0",
+                "attack:T1135:0",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DNR:2",
+                "d3fend:D3-DO:0"
+              ],
+              "recall_at_5": 0.6666666666666666,
+              "recall_at_10": 1.0,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.6508205185601091,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q08_web_application",
+              "topic": "web application",
+              "retrieved_top10": [
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DST:0",
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DO:0",
+                "d3fend:D3-DUC:0",
+                "d3fend:D3-DNR:2",
+                "attack:T1102:0",
+                "doi_10.1145_3214305__ev016"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.6666666666666666,
+              "mrr_at_5": 0.25,
+              "ndcg_at_5": 0.20210734650054757,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q09_fake_service",
+              "topic": "fake service",
+              "retrieved_top10": [
+                "doi_10.1145_3214305__ev005",
+                "engage:EAC0006:description",
+                "doi_10.1145_3214305__ev008",
+                "d3fend:D3-DNR:1",
+                "d3fend:D3-DE:1",
+                "attack:T1566.003:0",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DO:1",
+                "doi_10.1145_3214305__ev018",
+                "doi_10.1145_3214305__ev021"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.5,
+              "ndcg_at_5": 0.2960819109658652,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q10_decoy_account",
+              "topic": "decoy account",
+              "retrieved_top10": [
+                "d3fend:D3-DP:1",
+                "d3fend:D3-DST:1",
+                "d3fend:D3-DUC:1",
+                "d3fend:D3-DF:1",
+                "attack:T1098:0",
+                "attack:T1134.001:0",
+                "d3fend:D3-DP:2",
+                "attack:T1548.002:0",
+                "attack:T1098:1",
+                "doi_10.1145_3214305__ev005"
+              ],
+              "recall_at_5": 0.25,
+              "recall_at_10": 0.5,
+              "mrr_at_5": 1.0,
+              "ndcg_at_5": 0.3903800499921017,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q11_persistence",
+              "topic": "persistence",
+              "retrieved_top10": [
+                "doi_10.1145_3214305__ev005",
+                "engage:EAC0015:description",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "doi_10.1145_2683467.2683482__ev001",
+                "arxiv_1804.06196__ev001",
+                "d3fend:D3-DP:1",
+                "attack:T1557:0",
+                "doi_10.1016_j.cose.2021.102288__ev001",
+                "engage:SAC0003:description",
+                "doi_10.1145_3337772__ev001"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q12_discovery",
+              "topic": "discovery",
+              "retrieved_top10": [
+                "d3fend:D3-DE:0",
+                "engage:EAC0022:description",
+                "d3fend:D3-IHN:1",
+                "attack:T1564:0",
+                "attack:T1564:1",
+                "d3fend:D3-DO:1",
+                "attack:T1211:0",
+                "attack:T1557:0",
+                "d3fend:D3-DE:1",
+                "attack:T1070:1"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.25,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q13_data_collection",
+              "topic": "data collection",
+              "retrieved_top10": [
+                "d3fend:D3-DO:1",
+                "d3fend:D3-DO:0",
+                "d3fend:D3-DE:0",
+                "d3fend:D3-DE:1",
+                "d3fend:D3-DNR:0",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-DF:0",
+                "d3fend:D3-DNR:1",
+                "attack:T1557:0",
+                "attack:T1001:0"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q14_exfiltration",
+              "topic": "exfiltration",
+              "retrieved_top10": [
+                "engage:EAC0002:description",
+                "attack:T1011:0",
+                "doi_10.1145_3214305__ev022",
+                "attack:T1052:2",
+                "attack:T1029:2",
+                "attack:T1011:2",
+                "attack:T1537:2",
+                "attack:T1030:2",
+                "attack:T1048:2",
+                "attack:T1041:2"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            },
+            {
+              "query_id": "q15_attack_redirection",
+              "topic": "attack redirection",
+              "retrieved_top10": [
+                "d3fend:D3-DE:1",
+                "d3fend:D3-IHN:1",
+                "engage:EAC0021:long_description",
+                "attack:T1557:0",
+                "d3fend:D3-DO:1",
+                "engage:EAC0021:description",
+                "d3fend:D3-DNR:1",
+                "doi_10.1145_3214305__ev006",
+                "d3fend:D3-DE:0",
+                "attack:T1211:0"
+              ],
+              "recall_at_5": 0.5,
+              "recall_at_10": 1.0,
+              "mrr_at_5": 0.3333333333333333,
+              "ndcg_at_5": 0.3065735963827292,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q16_honeytoken",
+              "topic": "honeytoken",
+              "retrieved_top10": [
+                "attack:T1546.005:0",
+                "doi_10.1145_3678890.3678897__ev001",
+                "doi_10.1145_3214305__ev014",
+                "doi_10.1109_csac.2003.1254322__ev001",
+                "attack:T1546:1",
+                "d3fend:D3-IHN:0",
+                "doi_10.1145_3214305__ev018",
+                "d3fend:D3-IHN:1",
+                "d3fend:D3-IHN:2",
+                "d3fend:D3-CHN:0"
+              ],
+              "recall_at_5": 0.3333333333333333,
+              "recall_at_10": 0.3333333333333333,
+              "mrr_at_5": 0.5,
+              "ndcg_at_5": 0.2960819109658652,
+              "hit_rate_at_5": 1.0
+            },
+            {
+              "query_id": "q17_psychological_effect",
+              "topic": "psychological effect on attacker",
+              "retrieved_top10": [
+                "doi_10.1145_3337772__ev001",
+                "doi_10.1007_978-3-030-64793-3_8__ev001",
+                "doi_10.1016_j.cose.2021.102288__ev001",
+                "attack:T1548:0",
+                "doi_10.1145_3214305__ev005",
+                "engage:SAC0004:description",
+                "arxiv_1804.06196__ev001",
+                "attack:T1565:1",
+                "doi_10.1145_3214305__ev006",
+                "d3fend:D3-IHN:1"
+              ],
+              "recall_at_5": 0.0,
+              "recall_at_10": 0.0,
+              "mrr_at_5": 0.0,
+              "ndcg_at_5": 0.0,
+              "hit_rate_at_5": 0.0
+            }
+          ],
+          "mode": "hybrid",
+          "source_breakdown": {
+            "d3fend": {
+              "query_count": 6,
+              "mean_recall_at_5": 0.44166666666666665,
+              "mean_mrr_at_5": 0.6666666666666666,
+              "mean_ndcg_at_5": 0.44241248222911195,
+              "mean_hit_rate_at_5": 1.0
+            },
+            "mixed": {
+              "query_count": 7,
+              "mean_recall_at_5": 0.25952380952380955,
+              "mean_mrr_at_5": 0.5714285714285714,
+              "mean_ndcg_at_5": 0.3226309877967039,
+              "mean_hit_rate_at_5": 0.7142857142857143
+            },
+            "engage": {
+              "query_count": 3,
+              "mean_recall_at_5": 0.16666666666666666,
+              "mean_mrr_at_5": 0.1111111111111111,
+              "mean_ndcg_at_5": 0.10219119879424306,
+              "mean_hit_rate_at_5": 0.3333333333333333
+            },
+            "literature": {
+              "query_count": 1,
+              "mean_recall_at_5": 0.0,
+              "mean_mrr_at_5": 0.0,
+              "mean_ndcg_at_5": 0.0,
+              "mean_hit_rate_at_5": 0.0
+            }
+          }
+        }
+      }
+    }
+  },
+  "comparison_149_vs_1306": {
+    "lexical": {
+      "mean_recall_at_5": {
+        "corpus_149": 0.3313725490196079,
+        "corpus_1306": 0.13627450980392156,
+        "delta": -0.19509803921568633
+      },
+      "mean_recall_at_10": {
+        "corpus_149": 0.44313725490196076,
+        "corpus_1306": 0.19705882352941176,
+        "delta": -0.246078431372549
+      },
+      "mean_mrr_at_5": {
+        "corpus_149": 0.5137254901960784,
+        "corpus_1306": 0.33333333333333337,
+        "delta": -0.180392156862745
+      },
+      "mean_ndcg_at_5": {
+        "corpus_149": 0.34008866973148677,
+        "corpus_1306": 0.16812325808247217,
+        "delta": -0.1719654116490146
+      },
+      "mean_hit_rate_at_5": {
+        "corpus_149": 0.7647058823529411,
+        "corpus_1306": 0.4117647058823529,
+        "delta": -0.3529411764705882
+      }
+    },
+    "semantic": {
+      "mean_recall_at_5": {
+        "corpus_149": 0.3519607843137255,
+        "corpus_1306": 0.25980392156862747,
+        "delta": -0.09215686274509804
+      },
+      "mean_recall_at_10": {
+        "corpus_149": 0.442156862745098,
+        "corpus_1306": 0.3784313725490196,
+        "delta": -0.06372549019607843
+      },
+      "mean_mrr_at_5": {
+        "corpus_149": 0.5490196078431373,
+        "corpus_1306": 0.4852941176470588,
+        "delta": -0.06372549019607848
+      },
+      "mean_ndcg_at_5": {
+        "corpus_149": 0.3604324982973221,
+        "corpus_1306": 0.27909916241998156,
+        "delta": -0.08133333587734054
+      },
+      "mean_hit_rate_at_5": {
+        "corpus_149": 0.7647058823529411,
+        "corpus_1306": 0.7058823529411765,
+        "delta": -0.05882352941176461
+      }
+    },
+    "hybrid": {
+      "mean_recall_at_5": {
+        "corpus_149": 0.42549019607843136,
+        "corpus_1306": 0.29215686274509806,
+        "delta": -0.1333333333333333
+      },
+      "mean_recall_at_10": {
+        "corpus_149": 0.5715686274509804,
+        "corpus_1306": 0.44999999999999996,
+        "delta": -0.1215686274509804
+      },
+      "mean_mrr_at_5": {
+        "corpus_149": 0.5578431372549019,
+        "corpus_1306": 0.4901960784313726,
+        "delta": -0.06764705882352928
+      },
+      "mean_ndcg_at_5": {
+        "corpus_149": 0.4026312315244378,
+        "corpus_1306": 0.3070273767255487,
+        "delta": -0.09560385479888911
+      },
+      "mean_hit_rate_at_5": {
+        "corpus_149": 0.8235294117647058,
+        "corpus_1306": 0.7058823529411765,
+        "delta": -0.11764705882352933
+      }
+    },
+    "explanation": "Le corpus complet (1306 chunks) ajoute exclusivement des chunks ATT&CK (1157) ; aucune requete de data/rag/rag_eval_queries.json n a de verite terrain ATT&CK (jeu construit avant l ajout du corpus ATT&CK, pour la recherche de mecanismes de deception). Mesure reelle : une diminution des metriques de recuperation sur les 17 requetes (voir deltas ci-dessus, negatifs pour les trois modes lexical/semantique/hybride) -- les chunks ATT&CK agissent comme du BRUIT pour ce jeu de requetes centre sur la deception, en concurrencant les chunks pertinents dans le classement par score. Ce n est PAS un changement de moteur (memes fonctions de recuperation, meme alpha, meme embedder, memes 17 requetes) : c est un effet de couverture/composition du corpus, mesure honnetement meme quand il degrade le score plutot que de l ameliorer."
+  }
+}

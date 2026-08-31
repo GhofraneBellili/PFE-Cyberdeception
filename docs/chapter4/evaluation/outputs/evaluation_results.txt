@@ -1,0 +1,29 @@
+Campagne d'evaluation reelle RAG/LLM/systeme -- resume
+======================================================================
+Genere le : 2026-08-31T20:25:59.859040+00:00
+Commit : d9f29de28349494cd74eb5ecf3d9d5dcf6fda303
+
+§2 Retrieval (corpus complet 1306 vs 149) : executed
+  Recall@5 hybride, corpus 1306 : 0.292
+  Recall@5 hybride, corpus 149  : 0.425
+  Delta (1306 - 149) : -0.133 (negatif = bruit ATT&CK, aucune verite terrain ATT&CK dans le jeu de requetes)
+
+§3 Balayage alpha : executed
+  Meilleur alpha (Recall@5, corpus complet) : 0.5 (teste : [0.3, 0.5, 0.7, 0.8, 0.9])
+
+§3 Ablation reclassement (cross-encoder reel) : executed
+  Gain Recall@5 avec reclassement : +0.051
+
+§4 Annotation LLM (conformite / ancrage / stabilite temp=0) : blocked_no_real_provider
+  Aucun provider LLM reel exploitable dans cet environnement -- aucun resultat fabrique.
+
+§5 Robustesse de la decision : blocked_no_real_provider_or_no_frozen_table
+  Depend d'une table DE gelee reelle (§4) -- non executee dans cet environnement.
+
+§6 Performance : executed
+  RAG (contexte+retrieval+reclassement), petite instance : 40.911 s/candidat
+  RAG (contexte+retrieval+reclassement), grande instance : 39.497 s/candidat
+  Latence d'annotation LLM disponible : False
+
+======================================================================
+Fichiers produits : alpha_sweep.json, evaluation_summary.json, performance.json, reranker_ablation.json, retrieval_eval_full_corpus.json, run_manifest.json, decision_robustness_blocked.txt, evaluation_results.txt, llm_evaluation_blocked.txt

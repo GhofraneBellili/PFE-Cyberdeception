@@ -1,0 +1,1 @@
+BLOQUE (reference tache section 4) : aucun provider LLM reel exploitable (raison : LLM_PROVIDER/LLM_MODEL/LLM_BASE_URL non configurés (ou LLM_PROVIDER inconnu).). Conformement a la consigne, aucun fichier llm_conformity.json / llm_evidence_grounding.json / llm_stability_temp0.json n'est produit -- aucun resultat LLM n'est fabrique.
